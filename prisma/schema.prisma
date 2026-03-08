@@ -1,0 +1,268 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         String   @default("USER") // USER, DOCTOR, ADMIN
+  status       String   @default("ACTIVE") // ACTIVE, INACTIVE
+  avatar       String?
+  createdAt    DateTime @default(now())
+
+  doctorProfile  Doctor?
+  bookings       Booking[]
+  purchases      Purchase[]
+  threads        Thread[]
+  comments       Comment[]
+  reports        Report[]
+  notifications  Notification[]
+  courseProgress CourseProgress[]
+}
+
+model Doctor {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  bio               String?
+  specialties       String   // Stored as JSON string for sqlite
+  title             String?
+  photo             String?
+  canWriteArticles  Boolean  @default(false)
+  canWriteCourses   Boolean  @default(false)
+  canManageSlots    Boolean  @default(false)
+  rating            Float?
+  sessionPrice      Float    @default(0)
+  sessionLink       String?
+
+  courses           Course[]
+  articles          Article[]
+  slots             AvailableSlot[]
+  bookings          Booking[]
+}
+
+model Course {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  title        String
+  description  String
+  price        Float
+  isFree       Boolean  @default(false)
+  discount     Float?
+  category     String
+  level        String
+  duration     String
+  instructorId String
+  instructor   Doctor   @relation(fields: [instructorId], references: [id])
+  thumbnail       String?
+  whatYouLearn    String?  // Stored as pipe-separated values e.g. "item1|item2|item3"
+  requirements    String?  // Stored as pipe-separated values
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  lessons      CourseLesson[]
+  courseProgress CourseProgress[]
+}
+
+model CourseLesson {
+  id          String   @id @default(uuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  title       String
+  type        String   // video, pdf, link, text
+  resourceUrl String
+  duration    String?  // e.g., "10:00"
+  content     String?  // For text-based lessons
+  order       Int
+  isPreview      Boolean          @default(false)
+  courseProgress CourseProgress[]
+}
+
+model Article {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  title           String
+  excerpt         String?
+  coverImage      String?
+  contentRichText String
+  tags            String   // Stored as JSON string
+  category        String
+  authorId        String
+  author          Doctor   @relation(fields: [authorId], references: [id])
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+}
+
+model ArticleCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model ArticleTag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model InteractiveTool {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  title         String
+  description   String
+  type          String   // PDF, HTML
+  categories    String   // Stored as JSON string
+  priceView     Float
+  priceDownload Float?
+  previewConfig String?  // Stored as JSON string
+  fileKey       String?
+  htmlEntryRoute String?
+  published     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model AvailableSlot {
+  id        String   @id @default(uuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  startAt   DateTime
+  endAt     DateTime
+  isBooked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  bookings  Booking[]
+}
+
+model Booking {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  doctorId          String
+  doctor            Doctor   @relation(fields: [doctorId], references: [id])
+  slotId            String
+  slot              AvailableSlot @relation(fields: [slotId], references: [id])
+  status            String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  notes             String?
+  meetingLink       String?
+  amount            Float    @default(0)
+  paymentMethod     String?  // e.g. VODAFONE_CASH, INSTAPAY
+  paymentReceiptUrl String?
+  paymentStatus     String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt         DateTime @default(now())
+}
+
+model Purchase {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  type            String   // COURSE, TOOL
+  itemId          String
+  amount          Float
+  currency        String   @default("EGP")
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  paymentMethod   String?  // VODAFONE_CASH, INSTAPAY
+  providerRef     String?  // Phone number or transaction ID if provided
+  createdAt       DateTime @default(now())
+}
+
+model ForumCategory {
+  id   String @id @default(uuid())
+  name String
+
+  threads Thread[]
+}
+
+model Thread {
+  id         String   @id @default(uuid())
+  categoryId String
+  category   ForumCategory @relation(fields: [categoryId], references: [id])
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  title      String
+  body       String
+  tags       String   // JSON string
+  createdAt  DateTime @default(now())
+
+  comments   Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  threadId  String
+  thread    Thread   @relation(fields: [threadId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id         String   @id @default(uuid())
+  targetType String   // THREAD, COMMENT, USER
+  targetId   String
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id])
+  reason     String
+  status     String   @default("PENDING") // PENDING, RESOLVED
+  createdAt  DateTime @default(now())
+}
+
+model ModerationAction {
+  id         String   @id @default(uuid())
+  adminId    String
+  actionType String
+  targetType String
+  targetId   String
+  notes      String?
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  type      String   // PURCHASE, COURSE, SYSTEM
+  createdAt DateTime @default(now())
+}
+
+model CourseProgress {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  courseId  String
+  course    Course       @relation(fields: [courseId], references: [id])
+  lessonId  String
+  lesson    CourseLesson @relation(fields: [lessonId], references: [id])
+  completed Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  
+  @@unique([userId, lessonId])
+}

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psycho-Club · Clinical Cases Group</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e2b3c, #2b3f5c, #3b5b7c, #4b7b9c);
+            background-attachment: fixed;
+            transition: background 0.3s ease;
+            color: #f0f4fa;
+            overflow-x: hidden;
+        }
+
+        /* متدرج يتغير مع السكرول - يتم التحكم عبر js */
+        body.scroll-gradient-1 { background: linear-gradient(145deg, #1a2a3a, #2c405a, #3e5f7a, #4f7b9e); }
+        body.scroll-gradient-2 { background: linear-gradient(145deg, #153543, #2b4f63, #3f6f83, #5796af); }
+        body.scroll-gradient-3 { background: linear-gradient(145deg, #123d44, #2a5b63, #3f7d86, #5ba1aa); }
+        body.scroll-gradient-4 { background: linear-gradient(145deg, #162b3a, #314a60, #4b6f86, #679bb3); }
+
+        /* شريط التنقل — لوجو ثابت */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 5%;
+            background: rgba(10, 20, 30, 0.6);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 999;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo img {
+            width: 48px;
+            height: 48px;
+            filter: drop-shadow(0 0 6px #a8d8ff);
+        }
+        .logo span {
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f3e9c0, #b7e1fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+        .nav-links a {
+            color: #f5f5f5;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            position: relative;
+            transition: 0.3s;
+            padding: 0.4rem 0;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 3px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, #ffd966, #66ccff);
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+        .nav-links a:hover {
+            text-shadow: 0 0 6px #c1e4ff;
+        }
+
+        .user-profile {
+            background: rgba(255,255,255,0.1);
+            border-radius: 40px;
+            padding: 0.4rem 1rem 0.4rem 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .user-profile i {
+            background: #375e7e;
+            padding: 0.6rem;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+        .user-profile span {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* المحتوى الرئيسي مع مسافة للnavbar */
+        .main-content {
+            margin-top: 90px;
+            padding: 0 6% 4rem;
+        }
+
+        /* سلايدر أنيق */
+        .hero-slider {
+            position: relative;
+            height: 500px;
+            border-radius: 30px;
+            overflow: hidden;
+            margin-bottom: 4rem;
+            box-shadow: 0 25px 40px -10px black;
+            border: 1px solid rgba(255,255,240,0.2);
+        }
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            padding: 0 10%;
+        }
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        .slide::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, rgba(10,20,40,0.7), rgba(0,30,50,0.3));
+        }
+        .slide-content {
+            position: relative;
+            max-width: 600px;
+            animation: slideUp 1s ease;
+        }
+        @keyframes slideUp {
+            0% { transform: translateY(40px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .slide-content h2 {
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #fff8e0, #b3e5ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .slide-content p {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            opacity: 0.9;
+        }
+        .btn {
+            background: rgba(255,255,245,0.1);
+            backdrop-filter: blur(6px);
+            border: 1.5px solid rgba(255,255,200,0.5);
+            color: white;
+            padding: 12px 40px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background: #ffffff20;
+            border-color: #ffecaa;
+            box-shadow: 0 0 25px #ffe8a0;
+        }
+
+        /* باقي العناصر */
+        .section-title {
+            font-size: 2.6rem;
+            font-weight: 800;
+            margin: 3rem 0 2rem;
+            border-right: 8px solid #ffd966;
+            padding-right: 20px;
+            background: linear-gradient(135deg, #ffffff, #d2eeff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* كروت الكورسات و المقالات */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .card {
+            background: rgba(12, 27, 40, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 28px;
+            padding: 1.8rem 1.2rem;
+            transition: 0.4s;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            animation: float 5s infinite ease-in-out;
+            transform-origin: center;
+        }
+        .card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: #ffecbb;
+            box-shadow: 0 30px 40px -8px #00000080;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .card i {
+            font-size: 2.8rem;
+            color: #ffe28f;
+            margin-bottom: 1rem;
+        }
+        .card h3 {
+            font-size: 1.9rem;
+            font-weight: 700;
+        }
+        .badge {
+            background: #1d4f6e;
+            border-radius: 50px;
+            padding: 0.2rem 1rem;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+
+        /* أدوات تفاعلية - مع حماية */
+        .tools-preview-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .tool-card {
+            background: rgba(0, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid #6b9ec0;
+            border-radius: 24px;
+            padding: 1.8rem;
+            flex: 1 1 280px;
+            transition: 0.2s;
+        }
+        .tool-card.locked {
+            opacity: 0.8;
+            border-color: #b68b40;
+        }
+        .preview-box {
+            margin: 20px 0;
+            padding: 15px;
+            background: #112233cc;
+            border-radius: 20px;
+            border: 1px dashed #c0a86a;
+            max-height: 250px;
+            overflow: hidden;
+            position: relative;
+            pointer-events: none; /* منع التفاعل الحقيقي */
+            user-select: none;
+        }
+        .preview-box iframe {
+            width: 100%;
+            height: 200px;
+            border: none;
+            pointer-events: none; /* منع النقر */
+            filter: blur(0.5px); /* خفيف */
+        }
+        .preview-box::after {
+            content: "⛔ معاينة محمية";
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            background: #000000aa;
+            color: #ffe8a0;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 30px;
+            backdrop-filter: blur(2px);
+        }
+        .tool-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .buy-btn, .preview-btn {
+            background: transparent;
+            border: 2px solid #ffe28f;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .buy-btn:hover {
+            background: #ffd96655;
+        }
+        .preview-btn {
+            border-color: #9ac7e7;
+        }
+
+        /* صفحة حجز جلسة مبسطة */
+        .booking-slot {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .doctor-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 28px;
+            padding: 20px;
+            flex: 1 1 250px;
+        }
+        .slot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .slot {
+            background: #1d4d6b;
+            padding: 12px;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slot button {
+            background: #ecb176;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* منشورات المجتمع (منتدى بسيط) */
+        .community-feed {
+            background: #081f2cdd;
+            border-radius: 40px;
+            padding: 2rem;
+            margin: 4rem 0;
+            backdrop-filter: blur(8px);
+        }
+
+        /* حماية anti-print / screenshot (بسيطة) */
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        /* لكن نسمح بالكتابة في الحقول لو وجدت */
+        input, textarea {
+            user-select: text;
+        }
+
+        /* responsive */
+        @media (max-width: 800px) {
+            .nav-links { display: none; } 
+            .hero-slider { height: 380px; }
+        }
+
+        /* صفحة الأدوات التفاعلية المتطورة */
+        .tool-category {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem;
+            color: #ffefc0;
+        }
+        .protection-badge {
+            background: #b22222bb;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar ثابت مع لوجو -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23203a4b' stroke='%23ffe28f' stroke-width='3'/%3E%3Cpath d='M30 45 L45 30 L70 45 L55 70 L40 70 L30 45' fill='%23ecd9b4' opacity='0.9'/%3E%3Ctext x='28' y='74' font-size='32' fill='%23f5f0dc' font-weight='bold' font-family='Arial'%3EPC%3C/text%3E%3C/svg%3E" alt="Psycho-Club">
+            <span>Psycho-Club</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="active">الرئيسية</a>
+            <a href="#">الكورسات</a>
+            <a href="#">المقالات</a>
+            <a href="#">حجز جلسة</a>
+            <a href="#">الأدوات التفاعلية</a>
+        </div>
+        <div class="user-profile">
+            <i class="fas fa-user-astronaut"></i>
+            <span>أ.د. أحمد</span> <!-- افتراضي يظهر اسم admin -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- السلايدر الرئيسي (hero) -->
+        <div class="hero-slider">
+            <div class="slide active" style="background-image: linear-gradient(120deg, #152b39, #264a60), url('https://placehold.co/1400x600/2b4f6e/white?text=Clinical+Cases+Group')">
+                <div class="slide-content">
+                    <h2>منصة المعالج <br>الخبير</h2>
+                    <p>انطلق من المعرفة إلى الممارسة داخل غرفة العلاج. تدريبات، صياغة حالة، وإشراف مهني.</p>
+                    <a href="#" class="btn">استعرض الكورسات</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: linear-gradient(120deg, #1f3c4b, #34647a), url('https://placehold.co/1400x600/3c6e8f/white?text=Conceptualization')">
+                <div class="slide-content">
+                    <h2>الصياغة <br>الديناميكية</h2>
+                    <p>فهم الحالة بعمق، وليس فقط اتباع البروتوكول. تدريبات متقدمة في الصياغة.</p>
+                    <a href="#" class="btn">المزيد</a>
+                </div>
+            </div>
+            <div class="slide" style="background-image: linear-gradient(120deg, #10404b, #206670), url('https://placehold.co/1400x600/2f7f8f/white?text=Interactive+Tools')">
+                <div class="slide-content">
+                    <h2>أدوات تفاعلية <br>بمعايير مهنية</h2>
+                    <p>نماذج صياغة، أوراق عمل، استمارات تقييم أولي — محمية بالكامل من النسخ.</p>
+                    <a href="#" class="btn">اكتشف الأدوات</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- لمحة عن الكورسات (عرض سريع) -->
+        <h2 class="section-title">كورسات تطبيقية</h2>
+        <div class="card-grid">
+            <div class="card"><i class="fas fa-brain"></i><h3>العلاج المعرفي السلوكي</h3><p>برنامج تدريبي متكامل للاضطرابات.</p><span class="badge">شامل</span></div>
+            <div class="card"><i class="fas fa-heartbeat"></i><h3>صياغة حالة احترافية</h3><p>من التقييم إلى التدخل الدقيق.</p><span class="badge">متقدم</span></div>
+            <div class="card"><i class="fas fa-hand-holding-heart"></i><h3>العمل مع الصدمة</h3><p>تنظيم الجهاز العصبي.</p><span class="badge">جديد</span></div>
+        </div>
+
+        <!-- مقالات حديثة -->
+        <h2 class="section-title">أحدث المقالات</h2>
+        <div class="card-grid">
+            <div class="card"><i class="fas fa-newspaper"></i><h3>فهم القلق الوجودي</h3><p>تحليل دينامي ومعالج مركب.</p></div>
+            <div class="card"><i class="fas fa-file-alt"></i><h3>الوسواس القهري</h3><p>استراتيجيات تدخل محدثة.</p></div>
+        </div>
+
+        <!-- الأدوات التفاعلية مع حماية (مثال عملي) -->
+        <h2 class="section-title">الأدوات التفاعلية <span style="font-size: 1rem; background: #990000; padding: 0.2rem 1rem; border-radius: 30px;">محمي: لا تصوير/نسخ</span></h2>
+        <div class="tools-preview-area">
+            <div class="tool-card">
+                <i class="fas fa-file-pdf" style="font-size: 2rem;"></i>
+                <h3>استمارة تقييم أولي (PDF)</h3>
+                <div class="preview-box">
+                    <iframe srcdoc='
+                        <html><head><style>body{background:#1f3f54;color:#fff;font-family:sans-serif;padding:20px;user-select:none;-webkit-user-select:none;}</style></head><body><h4>🔒 تقييم أولي</h4><p>اسم المريض: _____  التاريخ: _____</p><p>الشكوى الرئيسية: ......</p><p>هذه معاينة آمنة.</p></body></html>' sandbox></iframe>
+                </div>
+                <div class="tool-footer">
+                    <button class="preview-btn" onclick="alert('معاينة محمية. قم بشراء الأداة لعرضها كاملة بدون حجب.')"><i class="fas fa-eye"></i> معاينة</button>
+                    <button class="buy-btn" onclick="alert('انتقال لبوابة الدفع (شراء الأداة)')"><i class="fas fa-lock-open"></i> تحميل (بفلوس)</button>
+                </div>
+                <div class="protection-badge">مضاد للتصوير والسكرين</div>
+            </div>
+            <div class="tool-card locked">
+                <i class="fas fa-code"></i><h3>خرائط مفاهيمية (HTML)</h3>
+                <div class="preview-box">
+                    <iframe srcdoc='<html style="background:#1a3a4a;color:#ccc;padding:10px;user-select:none;"><div style="border:1px solid #ffd966;border-radius:20px;padding:15px;">🧠 خريطة: اضطراب القلق العام <br> ← عوامل بيولوجية <br> ← أفكار آلية</div></html>' sandbox></iframe>
+                </div>
+                <div class="tool-footer">
+                    <button class="preview-btn" onclick="alert('معاينة محمية.')">معاينة</button>
+                    <button class="buy-btn" onclick="alert('شراء: 30$')"><i class="fas fa-cart-plus"></i> تحميل (بفلوس)</button>
+                </div>
+                <span>🔏 كود مصدر محجوب</span>
+            </div>
+            <div class="tool-card">
+                <i class="fas fa-worksheet"></i><h3>أوراق عمل للجلسات</h3>
+                <div class="preview-box">
+                    <div style="background:#0a3342; height:100%; padding:10px; border-radius:10px;">📋 ورقة عمل: سجل الأفكار<br> <span style="opacity:0.5;">[معاينة محدودة]</span></div>
+                </div>
+                <div class="tool-footer"><button class="buy-btn">فتح كامل 💳</button></div>
+            </div>
+        </div>
+
+        <!-- حجز جلسة مثال -->
+        <h2 class="section-title">احجز جلسة مع متخصص</h2>
+        <div class="booking-slot">
+            <div class="doctor-card">
+                <i class="fas fa-user-md"></i>
+                <h3>د. سارة العلي</h3>
+                <p>استشارية علاج معرفي سلوكي</p>
+                <div class="slot-list">
+                    <div class="slot">الاثنين 10 صباحاً <button>احجز</button></div>
+                    <div class="slot">الثلاثاء 2 ظهراً <button>احجز</button></div>
+                </div>
+            </div>
+            <div class="doctor-card">
+                <i class="fas fa-user-nurse"></i>
+                <h3>د. أحمد رمزي</h3>
+                <p>علاج نفسي دينامي</p>
+                <div class="slot-list">
+                    <div class="slot">الأربعاء 4 عصراً <button>احجز</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community / منتدى مبسط -->
+        <div class="community-feed">
+            <h2 style="font-size:2.2rem; display: flex; gap: 10px;"><i class="fas fa-comments"></i> مجتمع Clinical Cases</h2>
+            <p>مناقشات مهنية تحت إشراف دكاترة. تفاعل، اسأل، شارك خبراتك بأمان.</p>
+            <div style="background: #154459; border-radius: 30px; padding: 20px; margin-top: 15px;">
+                <p><i class="fas fa-quote-right"></i> د. منى: كيف تصيغون حالة وسواس مع أكتئاب ؟</p>
+                <p><i class="fas fa-reply-all"></i> د. هشام: مهم فصل الأفكار الدخيلة... </p>
+                <input type="text" placeholder="أضف تعليقاً..." style="width:100%; padding:15px; border-radius:40px; border: none; background:#082b3b; color:white;">
+            </div>
+            <p style="margin-top:10px;"><i class="fas fa-shield-alt"></i> بيئة مهنية خاضعة للإشراف</p>
+        </div>
+
+        <!-- رسالة أسفل الموقع مع رؤية المجموعة -->
+        <div style="margin: 60px 0; background: rgba(0,20,30,0.4); border-radius: 40px; padding: 30px;">
+            <p style="font-size:1.3rem;">🧠 <strong>Clinical Cases Group</strong> مجتمع مهني لرفع كفاءة الممارسين: مناقشات الحالات، صياغة متقدمة، تحليل متكامل. "الصياغة أهم من حفظ البروتوكولات".</p>
+        </div>
+    </div>
+
+    <!-- إضافة سكريبت السلايدر والمتدرج -->
+    <script>
+        // تغيير السلايدر
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+
+        // تغيير gradient background عند السكرول
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const body = document.body;
+            // إزالة كل كلاسات المتدرج
+            body.className = body.className.replace(/scroll-gradient-\d/g, '').trim();
+            if (scrollY < 300) {
+                body.classList.add('scroll-gradient-1');
+            } else if (scrollY < 800) {
+                body.classList.add('scroll-gradient-2');
+            } else if (scrollY < 1500) {
+                body.classList.add('scroll-gradient-3');
+            } else {
+                body.classList.add('scroll-gradient-4');
+            }
+        });
+        // trigger on load
+        window.dispatchEvent(new Event('scroll'));
+
+        // منع أخذ سكرين شوت بطريقة بسيطة (إضافية)
+        document.addEventListener('keydown', function(e) {
+            if ( e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p') ) {
+                alert('تم منع التقاط الشاشة لأسباب حماية المحتوى.');
+                e.preventDefault();
+            }
+        });
+        // منع حفظ الصفحة أو عرض المصدر (محاولة)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+    <!-- حماية إضافية للـ iframe أو الكود -->
+    <style>
+        iframe[sandbox] {
+            pointer-events: none;  /* منع التفاعل مع iframe نفسه */
+        }
+    </style>
+    <!-- أدمن افتراضي لظهور صلاحيات (فقط للعرض) يمكن توسيعه لاحقًا -->
+    <div style="display: none;">(admin dashboard, doctor assignment - ستنفذ مع backend)</div>
+</body>
+</html>
