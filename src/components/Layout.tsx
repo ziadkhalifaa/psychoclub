@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InteractiveBackground } from './InteractiveBackground';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
+import { Toaster } from 'react-hot-toast';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -29,6 +30,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen text-slate-800 dark:text-slate-200 font-sans selection:bg-[#6FA65A]/30 selection:text-[#1F2F4A] dark:selection:text-white transition-colors duration-500 bg-slate-50/80 dark:bg-[#0f172a]/90" dir="rtl">
       <InteractiveBackground />
+      <Toaster position="top-center" reverseOrder={false} />
 
       {/* Navigation */}
       <nav

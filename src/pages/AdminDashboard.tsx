@@ -8,7 +8,7 @@ import {
   XCircle, Plus, Trash2, Edit3, Wrench,
   Clock, TrendingUp, Eye, BarChart3,
   Upload, Image as ImageIcon, Search, Filter,
-  History, ListPlus, Tag, Calendar
+  History, ListPlus, Tag, Calendar, MessageSquare
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -29,6 +29,7 @@ const ADMIN_SIDEBAR_ITEMS = [
   { id: 'tags', label: 'التسميات (Tags)', icon: Tag },
   { id: 'tools', label: 'الأدوات التفاعلية', icon: Wrench },
   { id: 'financials', label: 'التقارير المالية', icon: DollarSign },
+  { id: 'forum', label: 'إدارة المنتدى', icon: MessageSquare },
   { id: 'audit', label: 'سجل النشاطات', icon: Shield },
 ];
 
@@ -45,9 +46,11 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [forumCategories, setForumCategories] = useState<any[]>([]);
   const [tags, setTags] = useState<any[]>([]);
 
   const [newCatName, setNewCatName] = useState('');
+  const [newForumCatName, setNewForumCatName] = useState('');
   const [newTagName, setNewTagName] = useState('');
 
   // Forms
@@ -121,9 +124,18 @@ export default function AdminDashboard() {
           const data = await res.json();
           setTags(Array.isArray(data) ? data : []);
         }
-      } catch (err) {
-        console.error(err);
-        showToast('يرجى التحقق من اتصال قاعدة البيانات', 'error');
+        if (activeTab === 'forum') {
+          const res = await fetch('/api/forum/categories');
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP error ${res.status}`);
+          }
+          const data = await res.json();
+          setForumCategories(Array.isArray(data) ? data : []);
+        }
+      } catch (err: any) {
+        console.error("Dashboard Fetch Error:", err);
+        showToast(`خطأ في جلب البيانات: ${err.message || 'مشكلة في الاتصال'}`, 'error');
       }
     };
     fetchData();
@@ -977,6 +989,86 @@ export default function AdminDashboard() {
     );
   };
 
+  const renderForumManagement = () => (
+    <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden animate-in fade-in duration-500">
+      <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-[#1F2F4A] text-white">
+        <h2 className="text-xl font-bold flex items-center gap-3"><MessageSquare className="w-6 h-6 text-[#6FA65A]" /> إدارة أقسام المنتدى المجتمعي</h2>
+        <div className="text-[10px] font-black bg-white/10 px-4 py-2 rounded-xl border border-white/5 uppercase tracking-widest">تنسيق المجتمع</div>
+      </div>
+
+      <div className="p-10 space-y-10">
+        <div className="flex flex-col md:flex-row gap-4 bg-slate-50 p-8 rounded-[2rem] border border-dashed border-slate-200">
+          <div className="flex-1 space-y-2">
+            <label className="text-[10px] font-black text-slate-400 mr-2 uppercase tracking-widest">اسم القسم الجديد</label>
+            <input
+              type="text"
+              value={newForumCatName}
+              onChange={e => setNewForumCatName(e.target.value)}
+              className="w-full p-5 bg-white border border-slate-100 rounded-2xl font-bold shadow-sm"
+              placeholder="مثلاً: علم النفس الإيجابي، الاضطرابات النفسية..."
+            />
+          </div>
+          <button
+            onClick={async () => {
+              if (!newForumCatName) return;
+              try {
+                const res = await fetch('/api/admin/forum/categories', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: newForumCatName })
+                });
+                if (res.ok) {
+                  const created = await res.json();
+                  setForumCategories([...forumCategories, created]);
+                  setNewForumCatName('');
+                  showToast('تم إضافة القسم بنجاح ✅');
+                } else {
+                  const errData = await res.json().catch(() => ({}));
+                  showToast(`خطأ: ${errData.error || 'فشل في الإضافة'}`, 'error');
+                }
+              } catch (err: any) {
+                showToast(`خطأ في الإضافة: ${err.message}`, 'error');
+              }
+            }}
+            className="self-end h-[60px] bg-[#6FA65A] text-white px-12 rounded-2xl font-black hover:opacity-90 transition-all shadow-xl shadow-[#6FA65A]/20 active:scale-95"
+          >
+            إضافة القسم الآن
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {forumCategories.map(cat => (
+            <div key={cat.id} className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-slate-100 group hover:border-[#6FA65A]/40 hover:shadow-xl transition-all relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-1 h-full bg-[#6FA65A] opacity-10 group-hover:opacity-100 transition-opacity" />
+              <span className="font-black text-[#1F2F4A]">{cat.name}</span>
+              <button
+                onClick={async () => {
+                  if (!confirm('هل أنت متأكد من حذف هذا القسم؟ سيتم حذف جميع الربط المتعلق به.')) return;
+                  try {
+                    const res = await fetch(`/api/admin/forum/categories/${cat.id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                      setForumCategories(forumCategories.filter(c => c.id !== cat.id));
+                      showToast('تم الحذف بنجاح');
+                    }
+                  } catch { showToast('حدث خطأ', 'error'); }
+                }}
+                className="p-3 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {forumCategories.length === 0 && (
+          <div className="py-20 text-center text-slate-200 font-bold border-2 border-dashed border-slate-50 rounded-[3rem]">
+            لا توجد أقسام منتدى حالياً، ابدأ بإضافة أول قسم!
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const renderAudit = () => (
     <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden animate-in fade-in duration-500">
       <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-900 text-white">
@@ -1028,6 +1120,7 @@ export default function AdminDashboard() {
                 {activeTab === 'tags' && renderTags()}
                 {activeTab === 'tools' && renderTools()}
                 {activeTab === 'financials' && renderFinancials()}
+                {activeTab === 'forum' && renderForumManagement()}
                 {activeTab === 'audit' && renderAudit()}
                 <div className="mt-20 flex justify-center opacity-5">
                   <button onClick={handleClearData} className="px-10 py-4 bg-red-600 text-white font-black rounded-[3rem] tracking-[1em] hover:opacity-100 transition-opacity">تصفية شاملة للنظام</button>

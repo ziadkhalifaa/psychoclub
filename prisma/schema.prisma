@@ -29,6 +29,7 @@ model User {
   reports        Report[]
   notifications  Notification[]
   courseProgress CourseProgress[]
+  forumLikes     ForumLike[]
 }
 
 model Doctor {
@@ -194,9 +195,26 @@ model Thread {
   title      String
   body       String
   tags       String   // JSON string
-  createdAt  DateTime @default(now())
+  viewCount  Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
 
   comments   Comment[]
+  likes      ForumLike[]
+}
+
+model ForumLike {
+  id        String   @id @default(uuid())
+  threadId  String?
+  thread    Thread?  @relation(fields: [threadId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, threadId])
+  @@unique([userId, commentId])
 }
 
 model Comment {
@@ -207,6 +225,9 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id])
   body      String
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  likes     ForumLike[]
 }
 
 model Report {

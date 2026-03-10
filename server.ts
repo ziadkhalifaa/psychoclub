@@ -1374,6 +1374,183 @@ async function startServer() {
       res.status(500).json({ error: "Server error" });
     }
   });
+  // ─── Forum System ──────────────────────────────────────────────
+
+  apiRouter.get("/forum/categories", async (req, res) => {
+    try {
+      const categories = await prisma.forumCategory.findMany({
+        orderBy: { name: 'asc' }
+      });
+      res.json(categories);
+    } catch (err: any) {
+      console.error(err);
+      try { require('fs').appendFileSync('debug_logs.txt', `[${new Date().toISOString()}] GET ERROR: ${err.message}\n`); } catch (e) { }
+      res.status(500).json({ error: "Server error: " + err.message });
+    }
+  });
+
+  apiRouter.post("/admin/forum/categories", requireAdmin, async (req, res) => {
+    try {
+      const { name } = req.body;
+      const category = await prisma.forumCategory.create({
+        data: { name }
+      });
+      res.json(category);
+    } catch (err: any) {
+      console.error(err);
+      try { require('fs').appendFileSync('debug_logs.txt', `[${new Date().toISOString()}] POST ERROR: ${err.message}\n`); } catch (e) { }
+      res.status(500).json({ error: "Server error: " + err.message });
+    }
+  });
+
+  apiRouter.delete("/admin/forum/categories/:id", requireAdmin, async (req, res) => {
+    try {
+      await prisma.forumCategory.delete({
+        where: { id: req.params.id }
+      });
+      res.json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  apiRouter.get("/forum/posts", async (req, res) => {
+    try {
+      const { categoryId, search, sort = 'latest' } = req.query;
+      const where: any = {};
+
+      if (categoryId && categoryId !== "all") {
+        where.categoryId = categoryId;
+      }
+
+      if (search) {
+        where.OR = [
+          { title: { contains: search as string } },
+          { body: { contains: search as string } }
+        ];
+      }
+
+      let orderBy: any = { createdAt: 'desc' };
+      if (sort === 'popular') {
+        // Simple popularity sort by likes relation count
+        orderBy = { likes: { _count: 'desc' } };
+      } else if (sort === 'unanswered') {
+        where.comments = { none: {} };
+      }
+
+      const posts = await prisma.thread.findMany({
+        where,
+        include: {
+          author: { select: { id: true, name: true, avatar: true, role: true } },
+          category: true,
+          _count: { select: { comments: true, likes: true } }
+        },
+        orderBy
+      });
+      res.json(posts);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  apiRouter.get("/forum/posts/:id", async (req, res) => {
+    try {
+      const post = await prisma.thread.findUnique({
+        where: { id: req.params.id },
+        include: {
+          author: { select: { id: true, name: true, avatar: true, role: true } },
+          category: true,
+          comments: {
+            include: { author: { select: { id: true, name: true, avatar: true, role: true } } },
+            orderBy: { createdAt: 'asc' }
+          },
+          _count: { select: { likes: true, comments: true } }
+        }
+      });
+      if (!post) return res.status(404).json({ error: "Post not found" });
+
+      await prisma.thread.update({
+        where: { id: req.params.id },
+        data: { viewCount: { increment: 1 } }
+      });
+
+      res.json(post);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  apiRouter.post("/forum/posts", requireAuth, async (req, res) => {
+    try {
+      const { title, body, categoryId } = req.body;
+      const authorId = res.locals.user.userId;
+
+      const post = await prisma.thread.create({
+        data: {
+          title,
+          body,
+          categoryId,
+          authorId,
+          tags: "[]"
+        }
+      });
+
+      await logAudit(authorId, "CREATE_FORUM_POST", "Thread", post.id);
+      res.json(post);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  apiRouter.post("/forum/posts/:id/comments", requireAuth, async (req, res) => {
+    try {
+      const { body } = req.body;
+      const authorId = res.locals.user.userId;
+
+      const comment = await prisma.comment.create({
+        data: {
+          body,
+          threadId: req.params.id,
+          authorId
+        },
+        include: {
+          author: { select: { name: true, avatar: true } }
+        }
+      });
+
+      await logAudit(authorId, "CREATE_FORUM_COMMENT", "Comment", comment.id);
+      res.json(comment);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  apiRouter.post("/forum/posts/:id/like", requireAuth, async (req, res) => {
+    try {
+      const userId = res.locals.user.userId;
+      const threadId = req.params.id;
+
+      const existing = await prisma.forumLike.findFirst({
+        where: { userId, threadId }
+      });
+
+      if (existing) {
+        await prisma.forumLike.delete({ where: { id: existing.id } });
+        return res.json({ liked: false });
+      } else {
+        await prisma.forumLike.create({ data: { userId, threadId } });
+        return res.json({ liked: true });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
 
   // ─── Mount Routes ─────────────────────────────────────────────
 
@@ -1396,8 +1573,22 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, "0.0.0.0", async () => {
     console.log(`Server running on http://localhost:${PORT}`);
+
+    // Auto-seed categories
+    try {
+      const count = await prisma.forumCategory.count();
+      if (count === 0) {
+        console.log("Seeding forum categories...");
+        const categories = ['العلاج المعرفي السلوكي', 'التقييم والتشخيص', 'علاج الإدمان', 'حالات إكلينيكية', 'أدوات ومقاييس'];
+        await prisma.forumCategory.createMany({
+          data: categories.map(name => ({ name }))
+        });
+      }
+    } catch (e) {
+      console.error("Failed to seed categories", e);
+    }
   });
 }
 
