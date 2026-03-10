@@ -23,8 +23,8 @@ export default function Home() {
 
 
       {/* About Section */}
-      <section className="bg-slate-900/40 py-16 md:py-24 relative overflow-hidden backdrop-blur-sm">
-        <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/brain/1920/1080')] bg-cover bg-center mix-blend-overlay opacity-10" />
+      <section className="bg-slate-50 dark:bg-slate-900/40 py-16 md:py-24 relative overflow-hidden transition-colors duration-500">
+        <div className="absolute inset-0 bg-[#6FA65A]/5 dark:bg-[url('https://picsum.photos/seed/brain/1920/1080')] dark:bg-cover dark:bg-center dark:mix-blend-overlay dark:opacity-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -34,14 +34,14 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="space-y-8"
             >
-              <h2 className="text-3xl md:text-4xl font-bold text-white">عن Clinical Cases Group</h2>
-              <p className="text-slate-300 leading-relaxed text-lg">
-                نحن مجموعة رائدة في تقديم الخدمات النفسية والتدريب الإكلينيكي. نهدف إلى سد الفجوة بين المعرفة النظرية والتطبيق العملي من خلال توفير بيئة تعليمية متكاملة تجمع بين أحدث ما توصل إليه العلم والخبرة الإكلينيكية العميقة.
+              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-6 uppercase">عن Clinical Cases Group <span className="text-[#6FA65A] block md:inline text-2xl md:text-3xl font-black">| Psycho-Club</span></h2>
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg font-medium">
+                نحن في **Clinical Cases Group | Psycho-Club**، نؤمن بأن الصحة النفسية هي رحلة مستمرة من التعلم والدعم. نسعى لتقديم خدمات تخصصية تجمع بين التدريب المتقدم، الإرشاد المهني، والجلسات العلاجية المبنية على أحدث الأسس العلمية، لنكون شريكك الدائم في مسار التميز والاستقرار النفسي.
               </p>
               <ul className="space-y-4">
                 {['تدريب عملي مبني على الأدلة', 'إشراف إكلينيكي مستمر', 'أدوات ومقاييس نفسية معتمدة', 'مجتمع مهني داعم'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-200 dark:text-slate-300">
-                    <div className="w-6 h-6 rounded-full bg-[#6FA65A]/20 flex items-center justify-center">
+                  <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold">
+                    <div className="w-6 h-6 rounded-full bg-[#6FA65A]/10 dark:bg-[#6FA65A]/20 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-[#6FA65A]" />
                     </div>
                     {item}
@@ -60,8 +60,8 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="grid grid-cols-2 gap-4"
             >
-              <img src="https://picsum.photos/seed/therapy1/600/800" alt="Therapy Session" className="rounded-3xl object-cover h-64 w-full shadow-2xl" referrerPolicy="no-referrer" />
-              <img src="https://picsum.photos/seed/therapy2/600/800" alt="Clinical Training" className="rounded-3xl object-cover h-64 w-full mt-12 shadow-2xl" referrerPolicy="no-referrer" />
+              <img src="/images/therapy_session.png" alt="Therapy Session" className="rounded-[2.5rem] object-cover h-64 md:h-80 w-full shadow-2xl border-4 border-white dark:border-slate-800" referrerPolicy="no-referrer" />
+              <img src="/images/clinical_training.png" alt="Clinical Training" className="rounded-[2.5rem] object-cover h-64 md:h-80 w-full mt-12 shadow-2xl border-4 border-white dark:border-slate-800" referrerPolicy="no-referrer" />
             </motion.div>
           </div>
         </div>
@@ -81,8 +81,8 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-4 border border-emerald-100 dark:border-emerald-900 shadow-sm">
               <Sparkles className="w-3 h-3" /> التميز الإكلينيكي
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4">أحدث الدورات التدريبية</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-xl text-lg font-medium leading-relaxed">بوابتك لتعلم أحدث البروتوكولات العلاجية المبنية على الدليل العلمي والخبرة العملية.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4">آفاق التعلم والعلاج</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl text-lg font-medium leading-relaxed">بوابتك المتكاملة للبروتوكولات العلاجية المبتكرة والتدريب الإكلينيكي العميق.</p>
           </div>
           <Link to="/courses" className="group flex items-center gap-3 bg-[#1F2F4A] dark:bg-[#6FA65A] hover:bg-[#6FA65A] dark:hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">
             تصفح الأكاديمية
@@ -124,8 +124,12 @@ export default function Home() {
 
                 <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800 mt-auto">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-black text-[#1F2F4A] dark:text-white shadow-sm">
-                      {course.instructor.user.name.charAt(0)}
+                    <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-black text-[#1F2F4A] dark:text-white shadow-sm overflow-hidden">
+                      {course.instructor.photo || course.instructor.user.avatar ? (
+                        <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        course.instructor.user.name.charAt(0)
+                      )}
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-tighter">المحاضر</p>
@@ -192,11 +196,11 @@ export default function Home() {
             >
               <div>
                 <div className="inline-block px-5 py-2 rounded-2xl bg-white/5 border border-white/10 text-[#6FA65A] text-xs font-black uppercase tracking-[0.3em] mb-6">رؤيتنا المهنية</div>
-                <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tighter">الريادة في التدريب <br /><span className="text-[#6FA65A]">النفسي المتخصص</span></h2>
+                <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tighter">الريادة مع <span className="text-[#6FA65A]">Psycho-Club</span> <br />في الإرشاد والعلاج</h2>
               </div>
 
               <p className="text-slate-400 leading-[2.2] text-lg font-medium">
-                في Clinical Cases Group، نؤمن أن المعالج النفسي الشامل يُبنى من خلال الممارسة الواعية والمبنية على أسس علمية متينة. نحن لسنا مجرد منصة دورات، بل مجتمع علمي يرافقك في رحلة تحولك المهني.
+                في **Clinical Cases Group | Psycho-Club**، ندرك أن المختص النفسي يحتاج لمزيج من المعرفة والإرشاد المستمر. نحن لسنا مجرد منصة تعليمية، بل نحن مظلة مهنية وعلاجية ترافقك في كل خطوة، من التدريب الأساسي وحتى الإشراف الإكلينيكي المتقدم.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -240,19 +244,26 @@ export default function Home() {
         >
           <div className="flex-1 space-y-8">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4 leading-tight">المستودع العلمي <br /> <span className="text-[#6FA65A]">والأبحاث الحديثة</span></h2>
+              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4 leading-tight">المعرفة الإرشادية <br /> <span className="text-[#6FA65A]">والعلاجية الحديثة</span></h2>
               <p className="text-slate-500 dark:text-slate-400 text-lg font-medium leading-relaxed">كن دائماً في طليعة العلم من خلال مقالاتنا الدورية المترجمة والأصلية في مختلف المدارس العلاجية.</p>
             </div>
             <div className="space-y-4">
               {articles?.slice(0, 3).map((article: any, i: number) => (
                 <Link key={article.id} to={`/articles/${article.slug}`} className="group flex items-center gap-6 p-4 rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-lg group-hover:rotate-6 transition-transform">
-                    <img src={`https://picsum.photos/seed/${article.slug}/200/200`} className="w-full h-full object-cover" alt="" />
+                    <img src={article.coverImage || `https://picsum.photos/seed/${article.slug}/200/200`} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div className="flex-1">
                     <p className="text-[10px] font-black text-[#6FA65A] uppercase tracking-widest mb-1">{article.category}</p>
                     <h4 className="text-lg font-extrabold text-[#1F2F4A] dark:text-white group-hover:text-[#6FA65A] transition-colors line-clamp-1">{article.title}</h4>
-                    <p className="text-slate-400 dark:text-slate-500 text-xs font-medium mt-1 uppercase tracking-tighter">{new Date(article.publishedAt).toLocaleDateString('ar-EG')}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-5 h-5 rounded-full overflow-hidden border border-[#6FA65A]/30">
+                        <img src={article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author?.user?.name || 'A')}&background=random`} className="w-full h-full object-cover" alt="" />
+                      </div>
+                      <p className="text-slate-400 dark:text-slate-500 text-[10px] font-medium uppercase tracking-tighter">
+                        {article.author?.user?.name || 'الإدارة'} • {new Date(article.publishedAt).toLocaleDateString('ar-EG')}
+                      </p>
+                    </div>
                   </div>
                   <ChevronDown className="w-6 h-6 text-slate-200 dark:text-slate-700 -rotate-90 group-hover:text-[#6FA65A] transition-colors" />
                 </Link>

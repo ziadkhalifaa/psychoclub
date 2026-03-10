@@ -50,7 +50,7 @@ export default function ArticleView() {
             <div className="flex flex-wrap items-center gap-10 pt-4 border-t border-white/10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-0.5 overflow-hidden">
-                  <img src={`https://i.pravatar.cc/100?u=${article.author.user.name}`} className="w-full h-full rounded-[0.9rem]" alt="" />
+                  <img src={article.author.photo || article.author.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.user.name)}&background=random`} className="w-full h-full rounded-[0.9rem] object-cover" alt="" />
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بقلم</p>
@@ -98,8 +98,8 @@ export default function ArticleView() {
 
             <div className="flex flex-col md:flex-row items-center md:items-start gap-10 relative z-10">
               <div className="w-32 h-32 rounded-[2.5rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 shrink-0 shadow-2xl group overflow-hidden">
-                {article.author.photo ? (
-                  <img src={article.author.photo} alt={article.author.user.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                {article.author.photo || article.author.user.avatar ? (
+                  <img src={article.author.photo || article.author.user.avatar} alt={article.author.user.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-4xl">
                     {article.author.user.name.charAt(0)}

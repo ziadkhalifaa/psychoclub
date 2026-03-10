@@ -111,8 +111,8 @@ export default function CourseView() {
 
             <div className="flex items-center gap-5 pt-6 border-t border-white/5">
               <div className="w-16 h-16 rounded-[2rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 group overflow-hidden">
-                {course.instructor.photo ? (
-                  <img src={course.instructor.photo} alt={course.instructor.user.name} className="w-full h-full object-cover rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                {course.instructor.photo || course.instructor.user.avatar ? (
+                  <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-2xl">
                     {course.instructor.user.name.charAt(0)}
@@ -268,11 +268,11 @@ export default function CourseView() {
             <h2 className="text-3xl font-black text-[#1F2F4A] mb-10 tracking-tighter">رؤية المحاضر</h2>
             <div className="flex flex-col md:flex-row gap-10 items-start">
               <div className="w-40 h-40 rounded-[2.5rem] bg-[#1F2F4A] overflow-hidden shrink-0 shadow-2xl border-4 border-white">
-                {course.instructor.photo ? (
-                  <img src={course.instructor.photo} alt={course.instructor.user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                {course.instructor.photo || course.instructor.user.avatar ? (
+                  <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white font-black text-5xl">
-                    {course.instructor.user.name.charAt(0)}
+                    {course.instructor.user.name.charAt(0) || 'D'}
                   </div>
                 )}
               </div>

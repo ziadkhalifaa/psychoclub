@@ -131,8 +131,8 @@ async function startServer() {
       });
 
       const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
-      res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
-      res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+      res.cookie("token", token, { httpOnly: true, secure: false, sameSite: "lax" });
+      res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar } });
     } catch (err) {
       res.status(500).json({ error: "Server error" });
     }
@@ -152,8 +152,8 @@ async function startServer() {
       if (!valid) return res.status(401).json({ error: "Invalid credentials" });
 
       const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
-      res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
-      res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+      res.cookie("token", token, { httpOnly: true, secure: false, sameSite: "lax" });
+      res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar } });
     } catch (err) {
       res.status(500).json({ error: "Server error" });
     }
@@ -360,9 +360,10 @@ async function startServer() {
     const courses = await prisma.course.findMany({
       where: { published: true },
       include: {
-        instructor: { include: { user: { select: { name: true } } } },
+        instructor: { include: { user: { select: { name: true, avatar: true } } } },
         lessons: { orderBy: { order: 'asc' } }
-      }
+      },
+      orderBy: { createdAt: 'desc' }
     });
     res.json(courses);
   });
@@ -430,7 +431,7 @@ async function startServer() {
     const course = await prisma.course.findUnique({
       where: { slug: req.params.slug },
       include: {
-        instructor: { include: { user: { select: { name: true } } } },
+        instructor: { include: { user: { select: { name: true, avatar: true } } } },
         lessons: { orderBy: { order: 'asc' } }
       }
     });
@@ -573,14 +574,17 @@ async function startServer() {
 
   apiRouter.delete("/courses/:id", requireDoctorOrAdmin, async (req, res) => {
     try {
-      // Delete related lessons first
-      await prisma.courseLesson.deleteMany({ where: { courseId: req.params.id } });
-      await prisma.course.delete({ where: { id: req.params.id } });
-      await logAudit(res.locals.user.userId, "DELETE_COURSE", "Course", req.params.id);
+      const courseId = req.params.id;
+      // Delete related records first to avoid foreign key constraints
+      await prisma.courseProgress.deleteMany({ where: { courseId } });
+      await prisma.courseLesson.deleteMany({ where: { courseId } });
+
+      await prisma.course.delete({ where: { id: courseId } });
+      await logAudit(res.locals.user.userId, "DELETE_COURSE", "Course", courseId);
       res.json({ success: true });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "Server error" });
+      res.status(500).json({ error: "Server error during deletion" });
     }
   });
 
@@ -654,7 +658,7 @@ async function startServer() {
   apiRouter.get("/articles", async (req, res) => {
     const articles = await prisma.article.findMany({
       where: { publishedAt: { not: null } },
-      include: { author: { include: { user: { select: { name: true } } } } },
+      include: { author: { include: { user: { select: { name: true, avatar: true } } } } },
       orderBy: { publishedAt: 'desc' }
     });
     res.json(articles);
@@ -663,7 +667,7 @@ async function startServer() {
   apiRouter.get("/articles/:slug", async (req, res) => {
     const article = await prisma.article.findUnique({
       where: { slug: req.params.slug },
-      include: { author: { include: { user: { select: { name: true } } } } }
+      include: { author: { include: { user: { select: { name: true, avatar: true } } } } }
     });
     if (!article) return res.status(404).json({ error: "Not found" });
     res.json(article);
@@ -744,7 +748,8 @@ async function startServer() {
 
   apiRouter.get("/tools", async (req, res) => {
     const tools = await prisma.interactiveTool.findMany({
-      where: { published: true }
+      where: { published: true },
+      orderBy: { createdAt: 'desc' }
     });
     res.json(tools);
   });
@@ -955,7 +960,7 @@ async function startServer() {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
       const doctor = await prisma.doctor.findUnique({
         where: { userId: decoded.userId },
-        include: { user: { select: { name: true, email: true } } }
+        include: { user: { select: { name: true, email: true, avatar: true } } }
       });
       if (!doctor) return res.status(404).json({ error: "Doctor profile not found" });
       res.json(doctor);
@@ -1113,7 +1118,7 @@ async function startServer() {
 
       const articles = await prisma.article.findMany({
         where: { authorId: doctor.id },
-        include: { author: { include: { user: { select: { name: true } } } } },
+        include: { author: { include: { user: { select: { name: true, avatar: true } } } } },
         orderBy: { createdAt: 'desc' }
       });
       res.json(articles);

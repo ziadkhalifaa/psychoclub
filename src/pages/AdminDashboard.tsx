@@ -540,8 +540,12 @@ export default function AdminDashboard() {
               <tr key={u.id} className="group transition-all">
                 <td className="px-10 py-8 bg-white border-y border-r border-slate-50 rounded-r-[2.5rem] shadow-sm group-hover:shadow-xl transition-all">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-[#1F2F4A] text-xl">
-                      {u.name.charAt(0)}
+                    <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-[#1F2F4A] text-xl overflow-hidden">
+                      {u.avatar ? (
+                        <img src={u.avatar} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        u.name.charAt(0)
+                      )}
                     </div>
                     <div>
                       <div className="font-black text-[#1F2F4A] text-lg leading-none mb-1">{u.name}</div>
@@ -1003,7 +1007,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 pt-10">
         <DashboardHeader
           title="نظام الإدارة المتكامل "
-          subtitle="تحكم شمولي في منصة Clinical Cases Group وإدارة شؤون المتدربين"
+          subtitle="تحكم شمولي في منصة Clinical Cases Group | Psycho-Club وإدارة شؤون المتدربين"
           extra={<div className="bg-[#6FA65A]/10 text-[#6FA65A] border border-[#6FA65A]/30 px-6 py-2.5 rounded-2xl font-bold shadow-xl flex items-center gap-3 backdrop-blur-md"><Activity className="w-5 h-5 animate-pulse" /> استقرار النظام: 100%</div>}
         />
         <div className="flex flex-col lg:flex-row gap-10">

@@ -116,8 +116,8 @@ export default function Articles() {
                     <img src={article.coverImage || `https://picsum.photos/seed/${article.slug}/600/400`} alt={article.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1F2F4A]/80 to-transparent opacity-60" />
                     <div className="absolute bottom-6 right-6 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full border-2 border-[#6FA65A] p-0.5 shadow-xl">
-                        <img src={`https://i.pravatar.cc/100?u=${article.author?.user?.name || 'admin'}`} className="w-full h-full rounded-full" alt="" />
+                      <div className="w-10 h-10 rounded-full border-2 border-[#6FA65A] p-0.5 shadow-xl overflow-hidden">
+                        <img src={article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-full object-cover" alt="" />
                       </div>
                       <span className="text-white text-[10px] font-black uppercase tracking-wider">{article.author?.user?.name || 'الإدارة'}</span>
                     </div>

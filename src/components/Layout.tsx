@@ -42,7 +42,7 @@ export default function Layout() {
             <div className="flex items-center justify-center overflow-hidden mr-[12px]">
               <img
                 src={theme === 'dark' ? '/logo-dark.png' : '/logo.png'}
-                alt="Clinical Cases Group Logo"
+                alt="Clinical Cases Group | Psycho-Club"
                 style={{ height: '52px', width: 'auto' }}
                 className="object-contain transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-[0_0_15px_rgba(111,166,90,0.3)]"
               />
@@ -84,7 +84,11 @@ export default function Layout() {
                 )}
                 <Link to="/profile" className="flex items-center gap-2 group">
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-transparent group-hover:border-[#6FA65A] transition-all overflow-hidden">
-                    <User className="w-5 h-5 text-slate-400 group-hover:text-[#6FA65A]" />
+                    {user.avatar ? (
+                      <img src={user.avatar} className="w-full h-full object-cover" alt={user.name} />
+                    ) : (
+                      <User className="w-5 h-5 text-slate-400 group-hover:text-[#6FA65A]" />
+                    )}
                   </div>
                   <span className="text-sm font-extrabold text-[#1F2F4A] dark:text-white group-hover:text-[#6FA65A] transition-colors">{user.name}</span>
                 </Link>
@@ -161,12 +165,12 @@ export default function Layout() {
                   <img src={theme === 'dark' ? '/logo-dark.png' : '/logo.png'} className="h-full w-auto object-contain" alt="CCG Logo" />
                 </div>
                 <div>
-                  <h2 className="font-black text-2xl text-white tracking-tighter">Clinical Cases Group</h2>
-                  <p className="text-[10px] text-[#6FA65A] font-bold uppercase tracking-[0.3em] mt-1">Psycho-Club Group</p>
+                  <h2 className="font-black text-2xl text-white tracking-tighter uppercase">Clinical Cases Group</h2>
+                  <p className="text-[12px] text-[#6FA65A] font-black uppercase tracking-[0.4em] mt-1 bg-white/5 px-3 py-1 rounded-lg">Psycho-Club</p>
                 </div>
               </Link>
               <p className="text-slate-400 text-sm leading-8 max-w-md font-medium">
-                بوابتك المتخصصة للنمو الإكلينيكي والمهني. نقدم بيئة متكاملة تجمع بين المعرفة العلمية الرصينة والتطبيقات العملية المتقدمة في قلب القاهرة، لخدمة مجتمع الصحة النفسية العربي.
+                بوابتك الشاملة للنمو الإكلينيكي والاستقرار النفسي. نقدم منظومة متكاملة تجمع بين التدريب التخصصي، الإرشاد المهني، والدعم العلاجي المتقدم لخدمة مجتمع الصحة النفسية العربي بكفاءة عالمية.
               </p>
               <div className="flex gap-4 mt-8">
                 {/* Social placeholders could go here */}
@@ -206,7 +210,7 @@ export default function Layout() {
 
           <div className="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-              © {new Date().getFullYear()} Clinical Cases Group. جودة مصرية بمواصفات عالمية.
+              © {new Date().getFullYear()} Clinical Cases Group | Psycho-Club. رحلة مهنية متكاملة بلمسة إنسانية.
             </p>
             <div className="flex gap-8 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
               <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>

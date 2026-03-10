@@ -1,5 +1,29 @@
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { Brain, Target, Users, Award, Heart, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, EffectFade, Pagination, Controller } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/effect-fade';
+import 'swiper/css/pagination';
+
+const specialists = [
+    { src: '/images/specialists/specialist1.png', name: 'أ.مصطفى صالح' },
+    { src: '/images/specialists/specialist2.png', name: 'أ.سهى خيري' },
+    { src: '/images/specialists/specialist3.png', name: 'أ.احمد عبد العظيم' },
+    { src: '/images/specialists/specialist4.png', name: 'أ.رانيا محمد' },
+    { src: '/images/specialists/spicialist5.png', name: 'أ.مريم السيد' },
+    { src: '/images/specialists/spicialist6.png', name: 'أ.صفية سويلم' },
+    { src: '/images/specialists/spicialist7.png', name: 'أ.حنان بلال' },
+    { src: '/images/specialists/spicialist8.png', name: 'أ.شروق فتوح' },
+    { src: '/images/specialists/spicialist9.png', name: 'أ.مصطفى احمد' },
+    { src: '/images/specialists/spicialist10.png', name: 'أ.سماح احمد' },
+    { src: '/images/specialists/spicialist11.png', name: 'أ.شيرين همام' },
+];
 
 const stats = [
     { label: 'خريج متدرب', value: '+1500', icon: Users },
@@ -27,6 +51,9 @@ const values = [
 ];
 
 export default function About() {
+    const { user } = useAuth();
+    const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
+    const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
     return (
         <div className="pt-20 lg:pt-32 pb-24 overflow-hidden">
             {/* Hero Section */}
@@ -42,11 +69,11 @@ export default function About() {
                             <Sparkles className="w-3 h-3" /> من نحن
                         </div>
                         <h1 className="text-4xl lg:text-6xl font-black text-[#1F2F4A] dark:text-white mb-8 leading-[1.1] tracking-tighter">
-                            نصنع مستقبلاً أفضل <br />
-                            <span className="text-[#6FA65A]">للجيل القادم من المعالجين</span>
+                            رؤيتنا نحو ممارسة <br />
+                            <span className="text-[#6FA65A]">إرشادية وعلاجية أكثر عمقاً</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 text-lg lg:text-xl leading-relaxed font-medium mb-10 max-w-xl">
-                            تأسست Clinical Cases Group لتكون المنارة التي تضيء طريق الممارسة الإكلينيكية الواعية. نحن لسنا مجرد مركز تدريب، بل نحن رحلة تحول مهني شاملة لكل مختص يطمح للتميز.
+                            انطلقت **Clinical Cases Group | Psycho-Club** لتكون الحاضنة المهنية التي تدعم المختص النفسي في رحلته الإنسانية. نحن لا نقدم مجرد دورات، بل نوفر منظومة متكاملة من التعليم التخصصي، الإرشاد المهني، والدعم العلاجي الذي يضمن استدامة الأثر الإيجابي.
                         </p>
                     </motion.div>
 
@@ -56,12 +83,55 @@ export default function About() {
                         transition={{ duration: 1 }}
                         className="relative"
                     >
-                        <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-slate-800">
-                            <img
-                                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=1000"
-                                alt="Our Team"
-                                className="w-full h-full object-cover"
-                            />
+                        <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-slate-800 bg-white dark:bg-slate-900">
+                            <Swiper
+                                modules={[Autoplay, EffectFade, Pagination, Controller]}
+                                onSwiper={setFirstSwiper}
+                                controller={{ control: secondSwiper }}
+                                effect="fade"
+                                autoplay={{
+                                    delay: 3500,
+                                    disableOnInteraction: false,
+                                }}
+                                pagination={{
+                                    clickable: true,
+                                }}
+                                loop={true}
+                                className="w-full h-full aspect-[4/5] lg:aspect-auto"
+                            >
+                                {specialists.map((item, index) => (
+                                    <SwiperSlide key={index}>
+                                        <img
+                                            src={item.src}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
+                        </div>
+
+                        {/* Text Slider */}
+                        <div className="mt-8 relative z-20">
+                            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-8 shadow-xl max-w-[280px] mx-auto text-center transform hover:scale-105 transition-transform duration-300">
+                                <Swiper
+                                    modules={[Autoplay, Controller]}
+                                    onSwiper={setSecondSwiper}
+                                    controller={{ control: firstSwiper }}
+                                    slidesPerView={1}
+                                    loop={true}
+                                    className="h-8"
+                                >
+                                    {specialists.map((item, index) => (
+                                        <SwiperSlide key={index} className="flex items-center justify-center">
+                                            <span className="text-xl font-black text-[#1F2F4A] dark:text-white tracking-tight">
+                                                {item.name}
+                                            </span>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                                <div className="h-1 w-12 bg-[#6FA65A] mx-auto mt-2 rounded-full opacity-50" />
+                            </div>
                         </div>
                         <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#1F2F4A] rounded-full -z-10 animate-pulse" />
                         <div className="absolute -top-10 -left-10 w-32 h-32 bg-[#6FA65A]/20 rounded-full -z-10 blur-2xl" />
@@ -73,6 +143,10 @@ export default function About() {
             <section className="bg-[#1F2F4A] py-24 relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_50%,#6FA65A_0%,transparent_50%)]" />
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <h2 className="text-white text-3xl md:text-4xl font-black">أثرنا في أرقام</h2>
+                        <p className="text-slate-400 mt-4 font-bold">بناء مجتمع قائم على العلم، الإرشاد، والرحمة</p>
+                    </div>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
                         {stats.map((stat, i) => (
                             <motion.div
@@ -124,7 +198,7 @@ export default function About() {
                     <div className="bg-slate-50 dark:bg-slate-900 rounded-[4rem] p-12 lg:p-24 flex flex-col lg:flex-row gap-16 items-center border border-transparent dark:border-slate-800">
                         <div className="w-64 h-64 lg:w-96 lg:h-96 rounded-[3rem] overflow-hidden shadow-2xl shrink-0">
                             <img
-                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=1000"
+                                src="/images/specialists/spicialist12.png"
                                 alt="Founder"
                                 className="w-full h-full object-cover"
                             />
@@ -132,10 +206,10 @@ export default function About() {
                         <div className="flex-1 text-right">
                             <h2 className="text-3xl lg:text-5xl font-black text-[#1F2F4A] dark:text-white mb-6 tracking-tighter">رسالة من الإدارة</h2>
                             <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-xl leading-loose italic mb-10">
-                                "هدفنا في CCG هو توفير الدفء المعرفي والاحتضان المهني لكل معالج نفسي عربي. نؤمن أن جودة الخدمات النفسية في مجتمعنا تبدأ من جودة تدريب الممارسين، وهذا هو العهد الذي قطعناه على أنفسنا."
+                                "في **Clinical Cases Group | Psycho-Club**، هدفنا هو تجاوز حدود التدريب التقليدي لنصنع مجتمعاً علاجياً متكاتفاً. نؤمن أن جودة الرعاية النفسية تبدأ من التوازن بين المعرفة العلمية الرصينة وفن الإرشاد الإنساني."
                             </p>
                             <div>
-                                <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">د. محمود الشريف</h4>
+                                <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">د. مصطفى صالح</h4>
                                 <p className="text-[#6FA65A] font-bold uppercase tracking-widest text-xs mt-1">المدير التنفيذي والمؤسس</p>
                             </div>
                         </div>
@@ -152,15 +226,28 @@ export default function About() {
                         viewport={{ once: true }}
                         className="space-y-10"
                     >
-                        <h2 className="text-4xl lg:text-6xl font-black text-[#1F2F4A] dark:text-white tracking-tighter">جاهز لبدء رحلتك المهنية؟</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-xl font-medium">انضم إلى مجتمعنا اليوم واكتشف عالمًا جديدًا من الفرص التعليمية.</p>
+                        <h2 className="text-4xl lg:text-6xl font-black text-[#1F2F4A] dark:text-white tracking-tighter">
+                            {user ? 'مستمرون معك في رحلة التعلم' : 'جاهز لبدء رحلتك المهنية؟'}
+                        </h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-xl font-medium">
+                            {user
+                                ? 'استكشف أحدث الدورات والمقالات المتاحة لتطوير مهاراتك بشكل إحترافي.'
+                                : 'انضم إلى مجتمعنا اليوم واكتشف عالمًا جديدًا من الفرص التعليمية.'}
+                        </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <a href="/register" className="w-full sm:w-auto px-10 py-5 bg-[#1F2F4A] dark:bg-[#6FA65A] text-white rounded-[2rem] font-black text-lg hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95 flex items-center justify-center gap-3 group">
-                                انضم إلينا الآن
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform rotate-180" />
-                            </a>
-                            <a href="/courses" className="w-full sm:w-auto px-10 py-5 bg-white dark:bg-slate-800 text-[#1F2F4A] dark:text-white border border-slate-200 dark:border-slate-700 rounded-[2rem] font-black text-lg hover:border-[#6FA65A] transition-all flex items-center justify-center">
-                                تصفح الدورات
+                            {user ? (
+                                <a href="/courses" className="w-full sm:w-auto px-10 py-5 bg-[#1F2F4A] dark:bg-[#6FA65A] text-white rounded-[2rem] font-black text-lg hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95 flex items-center justify-center gap-3 group">
+                                    تصفح الدورات التدريبية
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform rotate-180" />
+                                </a>
+                            ) : (
+                                <a href="/register" className="w-full sm:w-auto px-10 py-5 bg-[#1F2F4A] dark:bg-[#6FA65A] text-white rounded-[2rem] font-black text-lg hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95 flex items-center justify-center gap-3 group">
+                                    انضم إلينا الآن
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform rotate-180" />
+                                </a>
+                            )}
+                            <a href={user ? "/community" : "/courses"} className="w-full sm:w-auto px-10 py-5 bg-white dark:bg-slate-800 text-[#1F2F4A] dark:text-white border border-slate-200 dark:border-slate-700 rounded-[2rem] font-black text-lg hover:border-[#6FA65A] transition-all flex items-center justify-center">
+                                {user ? "المجتمع المهني" : "تصفح الدورات"}
                             </a>
                         </div>
                     </motion.div>

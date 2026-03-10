@@ -19,6 +19,17 @@ export default function Profile() {
     avatar: user?.avatar || ''
   });
 
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name,
+        email: user.email,
+        phone: user.phone || '',
+        avatar: user.avatar || ''
+      });
+    }
+  }, [user]);
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
