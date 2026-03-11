@@ -1,12 +1,13 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Brain, LogOut, Menu, User, BookOpen, PenTool, LayoutDashboard, ChevronDown, X, Activity, Layers } from 'lucide-react';
+import { Brain, LogOut, Menu, User, BookOpen, PenTool, LayoutDashboard, ChevronDown, X, Activity, Layers, ShieldAlert } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InteractiveBackground } from './InteractiveBackground';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
 import { Toaster } from 'react-hot-toast';
+import ScrollToTop from './ScrollToTop';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -15,12 +16,55 @@ export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
+  const [isBlurred, setIsBlurred] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 0);
     };
+    
+    // Pre-emptive Screenshot Protection
+    const handleCaptureStart = () => setIsBlurred(true);
+    const handleCaptureEnd = () => setIsBlurred(false);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Block PrintScreen or Win+Shift+S or Cmd+Shift+4
+      if (
+        e.key === 'PrintScreen' || 
+        (e.metaKey && e.shiftKey && (e.key === 's' || e.key === 'S')) ||
+        (e.ctrlKey && e.key === 'p')
+      ) {
+        handleCaptureStart();
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('blur', handleCaptureStart);
+    window.addEventListener('focus', handleCaptureEnd);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('mouseleave', handleCaptureStart);
+    window.addEventListener('mouseenter', handleCaptureEnd);
+    window.addEventListener('beforeprint', handleCaptureStart);
+    window.addEventListener('afterprint', handleCaptureEnd);
+    
+    // High-frequency health check for focus
+    const interval = setInterval(() => {
+      if (!document.hasFocus()) {
+        handleCaptureStart();
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('blur', handleCaptureStart);
+      window.removeEventListener('focus', handleCaptureEnd);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mouseleave', handleCaptureStart);
+      window.removeEventListener('mouseenter', handleCaptureEnd);
+      window.removeEventListener('beforeprint', handleCaptureStart);
+      window.removeEventListener('afterprint', handleCaptureEnd);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -28,9 +72,32 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen text-slate-800 dark:text-slate-200 font-sans selection:bg-[#6FA65A]/30 selection:text-[#1F2F4A] dark:selection:text-white transition-colors duration-500 bg-slate-50/80 dark:bg-[#0f172a]/90" dir="rtl">
+    <div 
+      className={`min-h-screen text-slate-800 dark:text-slate-200 font-sans selection:bg-[#6FA65A]/30 selection:text-[#1F2F4A] dark:selection:text-white transition-colors duration-500 bg-slate-50/80 dark:bg-[#0f172a]/90 ${isBlurred ? 'blur-[50px] select-none pointer-events-none' : ''}`} 
+      style={{ transition: isBlurred ? 'none' : 'filter 0.5s, background-color 0.5s, color 0.5s' }}
+      dir="rtl"
+    >
+      <ScrollToTop />
       <InteractiveBackground />
       <Toaster position="top-center" reverseOrder={false} />
+
+      {/* Global Security Overlay (only visible when blurred) */}
+      {isBlurred && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-white/20 dark:bg-black/20 backdrop-blur-3xl">
+          <div className="p-8 bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl text-center border border-rose-500/20 max-w-md mx-4">
+            <div className="w-20 h-20 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShieldAlert className="w-10 h-10 text-rose-500" />
+            </div>
+            <h2 className="text-2xl font-black text-[#1F2F4A] dark:text-white mb-4">المحتوى محميّ</h2>
+            <p className="text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
+              عذراً، لا يمكن التقاط صور للشاشة أو مغادرة الصفحة أثناء عرض المحتوى المحمي. 🛡️
+            </p>
+            <div className="mt-8 py-3 px-6 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[10px] text-rose-500 font-black uppercase tracking-widest">
+              نظام الحماية الإكلينيكية المتقدم
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav
@@ -215,8 +282,8 @@ export default function Layout() {
               © {new Date().getFullYear()} Clinical Cases Group | Psycho-Club. رحلة مهنية متكاملة بلمسة إنسانية.
             </p>
             <div className="flex gap-8 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
-              <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
-              <a href="#" className="hover:text-white transition-colors">شروط الاستخدام</a>
+              <Link to="/privacy" className="hover:text-white transition-colors">سياسة الخصوصية</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">شروط الاستخدام</Link>
             </div>
           </div>
         </div>

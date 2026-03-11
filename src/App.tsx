@@ -22,6 +22,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfUse from './pages/TermsOfUse';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './components/Toast';
@@ -52,6 +54,8 @@ const router = createBrowserRouter([
       { path: 'register', element: <Register /> },
       { path: 'payment/success', element: <PaymentSuccess /> },
       { path: 'payment/failed', element: <PaymentFailed /> },
+      { path: 'privacy', element: <PrivacyPolicy /> },
+      { path: 'terms', element: <TermsOfUse /> },
     ],
   },
   {

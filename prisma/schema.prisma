@@ -119,20 +119,27 @@ model ArticleTag {
   createdAt DateTime @default(now())
 }
 
-model InteractiveTool {
-  id            String   @id @default(uuid())
-  slug          String   @unique
-  title         String
-  description   String
-  type          String   // PDF, HTML
-  categories    String   // Stored as JSON string
-  priceView     Float
-  priceDownload Float?
-  previewConfig String?  // Stored as JSON string
-  fileKey       String?
-  htmlEntryRoute String?
-  published     Boolean  @default(false)
-  createdAt     DateTime @default(now())
+model Package {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float    @default(0)
+  coverImage  String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  files       PackageFile[]
+}
+
+model PackageFile {
+  id          String   @id @default(uuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  title       String
+  fileName    String
+  fileUrl     String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
 }
 
 model AvailableSlot {
@@ -160,6 +167,7 @@ model Booking {
   meetingLink       String?
   amount            Float    @default(0)
   paymentMethod     String?  // e.g. VODAFONE_CASH, INSTAPAY
+  payerPhone        String?  // رقم الموبايل المحوّل منه
   paymentReceiptUrl String?
   paymentStatus     String   @default("PENDING") // PENDING, APPROVED, REJECTED
   createdAt         DateTime @default(now())
@@ -169,12 +177,13 @@ model Purchase {
   id              String   @id @default(uuid())
   userId          String
   user            User     @relation(fields: [userId], references: [id])
-  type            String   // COURSE, TOOL
+  type            String   // COURSE, PACKAGE
   itemId          String
   amount          Float
   currency        String   @default("EGP")
   status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
   paymentMethod   String?  // VODAFONE_CASH, INSTAPAY
+  payerPhone      String?  // رقم الموبايل المحوّل منه
   providerRef     String?  // Phone number or transaction ID if provided
   createdAt       DateTime @default(now())
 }

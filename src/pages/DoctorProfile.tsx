@@ -13,6 +13,8 @@ export default function DoctorProfile() {
 
     const [showBookingOptions, setShowBookingOptions] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState<any>(null);
+    const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+    const [payerPhone, setPayerPhone] = useState('');
     const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
     const { data: doctor, isLoading, error } = useQuery({
@@ -23,13 +25,17 @@ export default function DoctorProfile() {
         })
     });
 
-    const handleBooking = async (paymentMethod: string) => {
+    const handleBooking = async () => {
         if (!user) {
             alert("يرجى تسجيل الدخول أولاً");
             return;
         }
         if (!selectedSlot) {
             alert("يرجى اختيار ميعاد أولاً");
+            return;
+        }
+        if (!paymentMethod || !payerPhone.trim()) {
+            alert("يرجى اختيار طريقة دفع وإدخال رقم الهاتف");
             return;
         }
 
@@ -42,7 +48,8 @@ export default function DoctorProfile() {
                     doctorId: doctor.id,
                     slotId: selectedSlot.id,
                     amount: doctor.sessionPrice,
-                    paymentMethod
+                    paymentMethod,
+                    payerPhone
                 })
             });
             const data = await res.json();
@@ -138,17 +145,18 @@ export default function DoctorProfile() {
                                 المواعيد المتاحة
                             </button>
                         ) : paymentStatus === 'success' ? (
-                            <div className="p-6 bg-emerald-50 text-emerald-900 rounded-[2rem] text-sm font-bold border border-emerald-100 italic text-center">
-                                " تم استلام طلب الحجز! يرجى التواصل عبر واتساب لتأكيد الدفع الجلسة. "
-                                <a href="https://wa.me/201000000000" target="_blank" rel="noopener noreferrer" className="block mt-4 flex items-center justify-center gap-2 bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-emerald-700 transition-all">
-                                    <MessageCircle className="w-5 h-5" />
-                                    أرسل الإيصال واتساب
-                                </a>
+                            <div className="space-y-4">
+                                <div className="p-6 bg-emerald-50 text-emerald-900 rounded-[2rem] text-sm font-bold border border-emerald-100 italic text-right">
+                                    " تم استلام طلب الحجز بنجاح! طلبك الآن قيد المراجعة من قبل الإدارة لتأكيد الجلسة. "
+                                </div>
+                                <div className="py-3 px-6 bg-slate-50 rounded-2xl text-[10px] text-[#1F2F4A] font-black uppercase tracking-widest border border-slate-100 text-center">
+                                     حالة الطلب: قيد المراجعة 🕒
+                                </div>
                             </div>
                         ) : (
                             <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
                                 <div className="space-y-3">
-                                    <label className="text-sm font-black text-slate-500 uppercase tracking-widest">اختر الموعد المناسب</label>
+                                    <label className="text-sm font-black text-slate-500 uppercase tracking-widest text-right block">اختر الموعد المناسب</label>
                                     {doctor.slots && doctor.slots.length > 0 ? (
                                         <div className="grid grid-cols-2 gap-3">
                                             {doctor.slots.map((slot: any) => (
@@ -171,24 +179,55 @@ export default function DoctorProfile() {
                                 </div>
 
                                 {selectedSlot && (
-                                    <div className="space-y-3 pt-6 border-t border-slate-100">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex justify-center mb-2 italic">طرق الدفع الإكلينيكية</label>
+                                    <div className="space-y-4 pt-6 border-t border-slate-100">
+                                        {!paymentMethod ? (
+                                            <div className="space-y-3">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic text-center">اختر طريقة الدفع</p>
+                                                
+                                                <button onClick={() => setPaymentMethod('VODAFONE_CASH')} className="w-full flex items-center justify-between bg-rose-50 hover:bg-rose-100 text-rose-700 p-4 rounded-2xl transition-all border border-rose-100 group/pay">
+                                                    <span className="font-black text-xs">فودافون كاش</span>
+                                                    <img src="/images/logos/vodafone-cash.png" alt="Vodafone Cash" className="h-6 object-contain" />
+                                                </button>
 
-                                        <button onClick={() => handleBooking('VODAFONE_CASH')} disabled={paymentStatus === 'loading'} className="w-full flex items-center justify-between bg-rose-50 hover:bg-rose-100 text-rose-700 p-4 rounded-2xl transition-all border border-rose-100 group/pay shadow-sm disabled:opacity-50">
-                                            <div className="flex items-center gap-3 font-black text-sm">
-                                                <Phone className="w-5 h-5 group-hover/pay:rotate-12 transition-transform" />
-                                                فودافون كاش
-                                            </div>
-                                            <span className="text-xs font-black tracking-widest">01000000000</span>
-                                        </button>
+                                                <button onClick={() => setPaymentMethod('INSTAPAY')} className="w-full flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-4 rounded-2xl transition-all border border-indigo-100 group/pay">
+                                                    <span className="font-black text-xs">إنستاباي</span>
+                                                    <img src="/images/logos/instapay.png" alt="InstaPay" className="h-6 object-contain" />
+                                                </button>
 
-                                        <button onClick={() => handleBooking('INSTAPAY')} disabled={paymentStatus === 'loading'} className="w-full flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-4 rounded-2xl transition-all border border-indigo-100 group/pay shadow-sm disabled:opacity-50">
-                                            <div className="flex items-center gap-3 font-black text-sm">
-                                                <Activity className="w-5 h-5 group-hover/pay:scale-125 transition-transform" />
-                                                إنستاباي
+                                                <button onClick={() => setSelectedSlot(null)} className="w-full text-slate-400 text-[10px] font-bold py-2 text-center">إلغاء</button>
                                             </div>
-                                            <span className="text-xs font-black tracking-widest">user@instapay</span>
-                                        </button>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className={`p-4 rounded-2xl border ${paymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                                                    <p className="text-[10px] font-black mb-1 opacity-60 text-right">حول المبلغ إلى:</p>
+                                                    <p className="font-black text-lg tracking-wider text-center" dir="ltr">{paymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}</p>
+                                                </div>
+
+                                                <div className="space-y-2 text-right">
+                                                    <label className="text-[10px] font-black text-slate-500 mr-2 uppercase tracking-widest flex items-center gap-1 justify-end">
+                                                        رقم الموبايل المحوّل منه <Phone className="w-3 h-3" />
+                                                    </label>
+                                                    <input 
+                                                        type="tel" 
+                                                        value={payerPhone}
+                                                        onChange={e => setPayerPhone(e.target.value)}
+                                                        placeholder="01xxxxxxxxx"
+                                                        dir="ltr"
+                                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center font-bold focus:ring-2 focus:ring-[#6FA65A]/50 focus:border-[#6FA65A] outline-none"
+                                                    />
+                                                </div>
+
+                                                <button 
+                                                    onClick={handleBooking} 
+                                                    disabled={paymentStatus === 'loading' || !payerPhone.trim()}
+                                                    className="w-full bg-[#6FA65A] text-white py-4 rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-lg disabled:opacity-50"
+                                                >
+                                                    {paymentStatus === 'loading' ? 'جاري التأكيد...' : 'تأكيد إرسال المبلغ'}
+                                                </button>
+
+                                                <button onClick={() => { setPaymentMethod(null); setPayerPhone(''); }} className="text-slate-400 text-[10px] font-bold block mx-auto">← تغيير الطريقة</button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

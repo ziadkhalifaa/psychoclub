@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Document, Page, pdfjs } from 'react-pdf';
+import ScrollToTop from '../components/ScrollToTop';
 
 // Fix version mismatch: The installed API version is 5.4.296, we must force the worker to match this exactly.
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
@@ -216,6 +217,7 @@ export default function CoursePlayer() {
 
     return (
         <div className="flex bg-slate-50 fixed inset-0 z-[100]" dir="rtl">
+            <ScrollToTop />
             {/* Sidebar Overlay for Mobile */}
             <AnimatePresence>
                 {sidebarOpen && (

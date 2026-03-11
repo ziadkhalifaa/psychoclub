@@ -1,4 +1,6 @@
 import "dotenv/config";
+import fs from "fs";
+import path from "path";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import cookieParser from "cookie-parser";
@@ -258,7 +260,7 @@ async function startServer() {
         prisma.user.count(),
         prisma.course.count({ where: { published: true } }),
         prisma.article.count({ where: { publishedAt: { not: null } } }),
-        prisma.interactiveTool.count({ where: { published: true } }),
+        prisma.package.count({ where: { published: true } }),
         prisma.purchase.findMany({ where: { status: "APPROVED" }, select: { amount: true, createdAt: true } }),
         prisma.purchase.findMany({
           where: { status: "APPROVED" },
@@ -744,72 +746,483 @@ async function startServer() {
     }
   });
 
-  // ─── Tools ────────────────────────────────────────────────────
+  // ─── Packages (الحزم) ─────────────────────────────────────────
 
-  apiRouter.get("/tools", async (req, res) => {
-    const tools = await prisma.interactiveTool.findMany({
-      where: { published: true },
-      orderBy: { createdAt: 'desc' }
-    });
-    res.json(tools);
-  });
-
-  apiRouter.get("/admin/tools", requireAdmin, async (req, res) => {
-    const tools = await prisma.interactiveTool.findMany({ orderBy: { createdAt: 'desc' } });
-    res.json(tools);
-  });
-
-  apiRouter.post("/tools", requireAdmin, async (req, res) => {
+  // Public: list published packages
+  apiRouter.get("/packages", async (req, res) => {
     try {
-      const { title, description, type, categories, priceView, priceDownload, fileUrl } = req.body;
-      const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '') + '-' + Date.now();
+      const packages = await prisma.package.findMany({
+        where: { published: true },
+        include: { files: { select: { id: true }, orderBy: { order: 'asc' } } },
+        orderBy: { createdAt: 'desc' }
+      });
+      const result = packages.map(p => ({ ...p, fileCount: p.files.length }));
+      res.json(result);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
 
-      const tool = await prisma.interactiveTool.create({
+  // Public: get single package with files
+  apiRouter.get("/packages/:id", async (req, res) => {
+    try {
+      const pkg = await prisma.package.findUnique({
+        where: { id: req.params.id },
+        include: { files: { orderBy: { order: 'asc' } } }
+      });
+      if (!pkg) return res.status(404).json({ error: "Package not found" });
+      res.json(pkg);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Public: preview an HTML file (serve content for iframe)
+  apiRouter.get("/packages/:id/files/:fileId/preview", async (req, res) => {
+    try {
+      const token = req.cookies.token;
+      if (!token) return res.status(401).send("Unauthorized");
+      
+      let decodedUser: any = null;
+      try {
+        decodedUser = jwt.verify(token, JWT_SECRET);
+      } catch {
+        return res.status(401).send("Unauthorized");
+      }
+
+      // Fetch user for watermark
+      const user = await prisma.user.findUnique({
+        where: { id: decodedUser.userId },
+        select: { name: true, email: true }
+      });
+
+      const file = await prisma.packageFile.findFirst({
+        where: { id: req.params.fileId, packageId: req.params.id }
+      });
+      if (!file) return res.status(404).json({ error: "File not found" });
+
+      const relativeUrl = file.fileUrl.startsWith('/') ? file.fileUrl.substring(1) : file.fileUrl;
+      const filePath = path.join(process.cwd(), 'public', relativeUrl);
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).send("File not found on server");
+      }
+
+      if (path.extname(filePath).toLowerCase() === '.html') {
+        let content = fs.readFileSync(filePath, 'utf8');
+        
+        // Extract body content for obfuscation
+        let bodyContent = "";
+        const bodyMatch = content.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        bodyContent = bodyMatch ? bodyMatch[1] : content;
+
+        const encodedBody = Buffer.from(bodyContent).toString('base64');
+        const userIdentifier = `${user?.name || 'User'} (${user?.email || ''})`;
+        const watermarkText = `${userIdentifier} - ${new Date().toLocaleDateString('ar-EG')}`;
+
+        // Hardened Protection Shell
+        const shell = `
+          <!DOCTYPE html>
+          <html lang="ar" dir="rtl">
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              * { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
+              @media print { body { display: none !important; } }
+              body { margin: 0; padding: 0; background: #fff; overflow-x: hidden; font-family: sans-serif; }
+              #app-container { width: 100%; min-height: 100vh; position: relative; }
+              
+              /* Shield Overlay */
+              #security-shield {
+                position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;
+                background: repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(0,0,0,0.01) 100px, rgba(0,0,0,0.01) 200px);
+              }
+
+              /* Moving Watermark */
+              .security-tag {
+                position: fixed; color: rgba(111, 166, 90, 0.3); font-weight: 900; z-index: 2147483646;
+                pointer-events: none; white-space: nowrap; font-size: 12px;
+                animation: floatTag 15s linear infinite;
+              }
+              @keyframes floatTag {
+                0% { transform: translate(-100%, -100%); top: 0; left: 0; }
+                100% { transform: translate(100vw, 100vh); top: 0; left: 0; }
+              }
+              #blur-mask {
+                position: fixed; inset: 0; backdrop-filter: blur(20px); z-index: 2147483645;
+                display: none; background: rgba(255,255,255,0.8);
+                align-items: center; justify-content: center; text-align: center;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="security-shield"></div>
+            <div class="security-tag">${watermarkText}</div>
+            <div class="security-tag" style="animation-delay: -5s; animation-duration: 25s;">${watermarkText}</div>
+            <div class="security-tag" style="animation-delay: -10s; animation-duration: 20s;">${watermarkText}</div>
+            
+            <div id="blur-mask">
+                <div style="padding: 40px; border-radius: 20px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <h2 style="margin: 0; color: #DC2626;">الوصول مقيد</h2>
+                    <p style="color: #64748B;">تم تعليق العرض مؤقتاً لحماية المحتوى. يرجى العودة لصفحة العرض.</p>
+                </div>
+            </div>
+
+            <div id="app-container"></div>
+
+            <script>
+              (function() {
+                const container = document.getElementById('app-container');
+                const blurMask = document.getElementById('blur-mask');
+                let isSecure = true;
+
+                // ─── Shadow DOM (Closed) ──────────────────────────────
+                // This makes the internal DOM nearly impossible to see in standard "Elements" tree for many
+                const shadow = container.attachShadow({ mode: 'closed' });
+                const mount = document.createElement('div');
+                mount.id = 'protected-content';
+                shadow.appendChild(mount);
+
+                // Inject Styles into Shadow
+                const style = document.createElement('style');
+                style.textContent = \`
+                    :host { display: block; }
+                    #protected-content { position: relative; z-index: 1; }
+                    /* Reinforce protection inside shadow */
+                    * { -webkit-user-select: none !important; user-select: none !important; }
+                \`;
+                shadow.appendChild(style);
+
+                function loadContent() {
+                    try {
+                        const b64 = "${encodedBody}";
+                        mount.innerHTML = decodeURIComponent(escape(atob(b64)));
+                    } catch(e) { container.innerHTML = "Security Load Error."; }
+                }
+                loadContent();
+
+                // ─── Aggressive Protection ───────────────────────────
+                
+                function nuke() {
+                    if (!isSecure) return;
+                    isSecure = false;
+                    mount.innerHTML = "";
+                    document.body.innerHTML = \`
+                        <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fee2e2; color:#991b1b; font-family:sans-serif; direction:rtl; text-align:center; padding:20px;">
+                            <h1 style="font-size:4rem; margin:0">⚠️</h1>
+                            <h2>انتهاك أمني خطير</h2>
+                            <p>تم اكتشاف محاولة الوصول للكود المصدري أو تصوير الشاشة. تم إلغاء الجلسة فوراً.</p>
+                            <button onclick="window.location.reload()" style="background:#b91c1c; color:white; border:none; padding:12px 24px; border-radius:12px; cursor:pointer; font-weight:bold;">إعادة المحاولة</button>
+                        </div>
+                    \`;
+                }
+
+                // 1. DevTools Detection via Dimension Check (for docked tools)
+                const checkDimensions = () => {
+                    const threshold = 160;
+                    const widthDiff = window.outerWidth - window.innerWidth;
+                    const heightDiff = window.outerHeight - window.innerHeight;
+                    if (widthDiff > threshold || heightDiff > threshold) {
+                        nuke();
+                    }
+                };
+                setInterval(checkDimensions, 1000);
+
+                // 2. Hardened Debugger Detection
+                (function detectionLoop() {
+                    const start = Date.now();
+                    (function() { debugger; })();
+                    if (Date.now() - start > 100) {
+                        nuke();
+                    }
+                    setTimeout(detectionLoop, 500);
+                })();
+
+                // 3. Screen Capture Deterrence (Blur on focus loss)
+                window.addEventListener('blur', () => { blurMask.style.display = 'flex'; });
+                window.addEventListener('focus', () => { blurMask.style.display = 'none'; });
+
+                // 4. Block Key Shortcuts & Right Click
+                window.addEventListener('contextmenu', e => e.preventDefault());
+                window.addEventListener('keydown', e => {
+                    if (
+                        e.keyCode === 123 || // F12
+                        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
+                        (e.ctrlKey && e.keyCode === 85) || 
+                        (e.ctrlKey && e.keyCode === 83) || 
+                        (e.ctrlKey && e.keyCode === 80)
+                    ) {
+                        e.preventDefault();
+                        nuke();
+                        return false;
+                    }
+                });
+
+                // 5. Anti-Console Inspection
+                let devtools = function() {};
+                devtools.toString = function() {
+                    nuke();
+                    return "Security Active";
+                };
+                console.log('%c', devtools);
+
+                // Detect Print
+                window.onbeforeprint = nuke;
+
+              })();
+            </script>
+          </body>
+          </html>
+        `;
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+        return res.send(shell);
+      } else {
+        res.sendFile(filePath);
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+    }
+  });
+
+  // Auth: download all package files (requires approved purchase)
+  // Securing Download Route with Pretty Info Page
+  const renderDownloadInfoPage = (reason: 'AUTH' | 'PURCHASE') => {
+    const isAuth = reason === 'AUTH';
+    return `
+      <!DOCTYPE html>
+      <html lang="ar" dir="rtl">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Clinical Cases Group | الوصول مطلوب</title>
+          <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+          <style>
+              body { font-family: 'Tajawal', sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; color: #1F2F4A; }
+              .card { background: white; padding: 3rem; border-radius: 3rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); max-width: 500px; width: 90%; text-align: center; border: 1px solid #f1f5f9; }
+              .icon-box { width: 80px; height: 80px; background: ${isAuth ? '#fef2f2' : '#fffbeb'}; border-radius: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; }
+              h1 { font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem; }
+              p { color: #64748b; line-height: 1.6; margin-bottom: 2.5rem; }
+              .btn { display: block; width: 100%; padding: 1.25rem; border-radius: 1.5rem; font-weight: 700; text-decoration: none; transition: all 0.3s; margin-bottom: 1rem; }
+              .btn-primary { background: #6FA65A; color: white; box-shadow: 0 10px 15px -3px rgba(111, 166, 90, 0.3); }
+              .btn-primary:hover { transform: translateY(-3px); background: #5d8c4b; }
+              .btn-secondary { background: #f1f5f9; color: #475569; }
+              .btn-secondary:hover { background: #e2e8f0; }
+          </style>
+      </head>
+      <body>
+          <div class="card">
+              <div class="icon-box">
+                  ${isAuth ? 
+                    `<svg viewBox="0 0 24 24" width="40" height="40" stroke="#ef4444" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>` : 
+                    `<svg viewBox="0 0 24 24" width="40" height="40" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+                  }
+              </div>
+              <h1>${isAuth ? 'تحتاج إلى تسجيل الدخول أولاً' : 'تحتاج إلى شراء الحزمة'}</h1>
+              <p>
+                  ${isAuth ? 
+                    'لا يمكنك تحميل هذه المحتويات العلمية بدون حساب مفعل. يرجى تسجيل الدخول أو إنشاء حساب جديد أولاً للوصول إلى مكتبة الأدوات.' : 
+                    'هذه الحزمة مدفوعة، يرجى إتمام عملية الشراء من صفحة الحزمة للتمكن من تحميل الملفات العلمية كاملة بصيغة ZIP.'
+                  }
+              </p>
+              <a href="${isAuth ? '/register' : '#'}" onclick="${isAuth ? '' : 'window.history.back(); return false;'}" class="btn btn-primary">
+                  ${isAuth ? 'تسجيل حساب جديد' : 'الرجوع لشراء الحزمة'}
+              </a>
+              ${isAuth ? `<a href="/login" class="btn btn-secondary">تسجيل الدخول</a>` : ''}
+              <a href="/" class="btn btn-secondary">العودة للرئيسية</a>
+          </div>
+      </body>
+      </html>
+    `;
+  };
+
+  apiRouter.get("/packages/:id/download", async (req, res) => {
+    try {
+      // Manual Auth Check for Pretty Info Page
+      const token = req.cookies.token;
+      let decodedUser: any = null;
+      if (token) {
+        try {
+          decodedUser = jwt.verify(token, JWT_SECRET);
+        } catch {}
+      }
+
+      if (!decodedUser) {
+        return res.send(renderDownloadInfoPage('AUTH'));
+      }
+
+      const userId = decodedUser.userId;
+      const role = decodedUser.role;
+      const packageId = req.params.id;
+
+      // Check purchase access
+      if (role !== 'ADMIN') {
+        const purchase = await prisma.purchase.findFirst({
+          where: { userId, itemId: packageId, type: 'PACKAGE', status: 'APPROVED' }
+        });
+        if (!purchase) {
+          return res.send(renderDownloadInfoPage('PURCHASE'));
+        }
+      }
+
+      const pkg = await prisma.package.findUnique({
+        where: { id: packageId },
+        include: { files: { orderBy: { order: 'asc' } } }
+      });
+      if (!pkg) return res.status(404).json({ error: "Package not found" });
+
+      // Create a ZIP file with all package files
+      const archiver = (await import('archiver')).default;
+      res.setHeader('Content-Type', 'application/zip');
+      // Use Express's built-in helper for safer headers
+      res.attachment(`${pkg.title || 'package'}.zip`);
+
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      archive.pipe(res);
+
+      for (const file of pkg.files) {
+        // Ensure relative path for path.join on Windows
+        const relativeUrl = file.fileUrl.startsWith('/') ? file.fileUrl.substring(1) : file.fileUrl;
+        const filePath = path.join(process.cwd(), 'public', relativeUrl);
+        
+        if (fs.existsSync(filePath)) {
+          archive.file(filePath, { name: file.fileName });
+        } else {
+          console.warn(`File not found for ZIP: ${filePath}`);
+        }
+      }
+
+      await archive.finalize();
+    } catch (err) {
+      console.error("Download Error:", err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Server error during download" });
+      }
+    }
+  });
+
+  // Admin: list all packages
+  apiRouter.get("/admin/packages", requireAdmin, async (req, res) => {
+    try {
+      const packages = await prisma.package.findMany({
+        include: { files: { orderBy: { order: 'asc' } } },
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(packages);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin: create package
+  apiRouter.post("/admin/packages", requireAdmin, async (req, res) => {
+    try {
+      const { title, description, price, coverImage } = req.body;
+      const pkg = await prisma.package.create({
         data: {
-          title, slug, description,
-          type: type || "PDF",
-          categories: JSON.stringify(categories || []),
-          priceView: parseFloat(priceView) || 0,
-          priceDownload: priceDownload ? parseFloat(priceDownload) : null,
-          fileKey: fileUrl || null,
+          title, description,
+          price: parseFloat(price) || 0,
+          coverImage: coverImage || null,
           published: true,
         }
       });
-
-      await logAudit(res.locals.user.userId, "CREATE_TOOL", "InteractiveTool", tool.id);
-      res.json(tool);
+      await logAudit(res.locals.user.userId, "CREATE_PACKAGE", "Package", pkg.id);
+      res.json(pkg);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });
     }
   });
 
-  apiRouter.put("/tools/:id", requireAdmin, async (req, res) => {
+  // Admin: update package
+  apiRouter.put("/admin/packages/:id", requireAdmin, async (req, res) => {
     try {
-      const { title, description, type, categories, priceView, priceDownload, published, fileUrl } = req.body;
-      const tool = await prisma.interactiveTool.update({
+      const { title, description, price, coverImage, published } = req.body;
+      const pkg = await prisma.package.update({
         where: { id: req.params.id },
         data: {
-          title, description, type,
-          categories: typeof categories === 'string' ? categories : JSON.stringify(categories || []),
-          priceView: parseFloat(priceView) || 0,
-          priceDownload: priceDownload ? parseFloat(priceDownload) : null,
-          fileKey: fileUrl !== undefined ? fileUrl : null,
+          title, description,
+          price: parseFloat(price) || 0,
+          coverImage: coverImage || null,
           published: published !== undefined ? published : true,
         }
       });
-      await logAudit(res.locals.user.userId, "UPDATE_TOOL", "InteractiveTool", tool.id);
-      res.json(tool);
+      await logAudit(res.locals.user.userId, "UPDATE_PACKAGE", "Package", pkg.id);
+      res.json(pkg);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });
     }
   });
 
-  apiRouter.delete("/tools/:id", requireAdmin, async (req, res) => {
+  // Admin: delete package (cascade deletes files)
+  apiRouter.delete("/admin/packages/:id", requireAdmin, async (req, res) => {
     try {
-      await prisma.interactiveTool.delete({ where: { id: req.params.id } });
-      await logAudit(res.locals.user.userId, "DELETE_TOOL", "InteractiveTool", req.params.id);
+      await prisma.package.delete({ where: { id: req.params.id } });
+      await logAudit(res.locals.user.userId, "DELETE_PACKAGE", "Package", req.params.id);
+      res.json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin: add file to package
+  apiRouter.post("/admin/packages/:id/files", requireAdmin, async (req, res) => {
+    try {
+      const { title, fileName, fileUrl } = req.body;
+      const maxOrder = await prisma.packageFile.findFirst({
+        where: { packageId: req.params.id },
+        orderBy: { order: 'desc' },
+        select: { order: true }
+      });
+      const file = await prisma.packageFile.create({
+        data: {
+          packageId: req.params.id,
+          title, fileName, fileUrl,
+          order: (maxOrder?.order ?? -1) + 1
+        }
+      });
+      await logAudit(res.locals.user.userId, "ADD_PACKAGE_FILE", "PackageFile", file.id);
+      res.json(file);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin: update file in package (title or replacing the file)
+  apiRouter.put("/admin/packages/:id/files/:fileId", requireAdmin, async (req, res) => {
+    try {
+      const { title, fileName, fileUrl } = req.body;
+      const file = await prisma.packageFile.update({
+        where: { id: req.params.fileId },
+        data: {
+          title,
+          fileName: fileName || undefined,
+          fileUrl: fileUrl || undefined,
+        }
+      });
+      await logAudit(res.locals.user.userId, "UPDATE_PACKAGE_FILE", "PackageFile", file.id);
+      res.json(file);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin: delete file from package
+  apiRouter.delete("/admin/packages/:id/files/:fileId", requireAdmin, async (req, res) => {
+    try {
+      await prisma.packageFile.delete({ where: { id: req.params.fileId } });
+      await logAudit(res.locals.user.userId, "DELETE_PACKAGE_FILE", "PackageFile", req.params.fileId);
       res.json({ success: true });
     } catch (err) {
       console.error(err);
@@ -822,17 +1235,17 @@ async function startServer() {
   apiRouter.post("/checkout/manual", requireAuth, async (req, res) => {
     try {
       const userId = res.locals.user.userId;
-      const { itemId, type, paymentMethod } = req.body; // type can be 'COURSE' or 'TOOL'
+      const { itemId, type, paymentMethod, payerPhone } = req.body;
 
       let amount = 0;
       if (type === 'COURSE') {
         const course = await prisma.course.findUnique({ where: { id: itemId } });
         if (!course) return res.status(404).json({ error: "Course not found" });
         amount = course.price;
-      } else if (type === 'TOOL') {
-        const tool = await prisma.interactiveTool.findUnique({ where: { id: itemId } });
-        if (!tool) return res.status(404).json({ error: "Tool not found" });
-        amount = tool.priceView || 0; // default to priceView for tools
+      } else if (type === 'PACKAGE') {
+        const pkg = await prisma.package.findUnique({ where: { id: itemId } });
+        if (!pkg) return res.status(404).json({ error: "Package not found" });
+        amount = pkg.price || 0;
       } else {
         return res.status(400).json({ error: "Invalid purchase type" });
       }
@@ -849,7 +1262,9 @@ async function startServer() {
         data: {
           userId, type, itemId,
           amount, currency: "EGP",
-          status: "PENDING", paymentMethod: paymentMethod || "MANUAL"
+          status: "PENDING",
+          paymentMethod: paymentMethod || "MANUAL",
+          payerPhone: payerPhone || null
         }
       });
 
@@ -907,14 +1322,17 @@ async function startServer() {
         include: { user: { select: { name: true, email: true, phone: true } } },
         orderBy: { createdAt: 'desc' }
       });
-      // Enrich with course info
+      // Enrich with item info
       const enriched = await Promise.all(purchases.map(async (p) => {
-        let courseTitle = null;
+        let itemTitle = null;
         if (p.type === "COURSE") {
           const course = await prisma.course.findUnique({ where: { id: p.itemId }, select: { title: true } });
-          courseTitle = course?.title || null;
+          itemTitle = course?.title || null;
+        } else if (p.type === "PACKAGE") {
+          const pkg = await prisma.package.findUnique({ where: { id: p.itemId }, select: { title: true } });
+          itemTitle = pkg?.title || null;
         }
-        return { ...p, courseTitle };
+        return { ...p, courseTitle: itemTitle, itemTitle };
       }));
       res.json(enriched);
     } catch (err) {
@@ -1259,7 +1677,7 @@ async function startServer() {
 
   apiRouter.post("/bookings", requireAuth, async (req, res) => {
     try {
-      const { doctorId, slotId, paymentMethod, amount } = req.body;
+      const { doctorId, slotId, paymentMethod, payerPhone, amount } = req.body;
       const userId = res.locals.user.userId;
 
       // Check slot exists and is not booked
@@ -1284,6 +1702,7 @@ async function startServer() {
           slotId,
           amount: parseFloat(amount) || 0,
           paymentMethod,
+          payerPhone: payerPhone || null,
           status: "PENDING",
           paymentStatus: "PENDING"
         }

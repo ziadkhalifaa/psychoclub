@@ -9,7 +9,7 @@ import {
   Clock, TrendingUp, Eye, BarChart3,
   Upload, Image as ImageIcon, Search, Filter,
   History, ListPlus, Tag, Calendar, MessageSquare,
-  PlusCircle, User
+  PlusCircle, User, FolderClosed
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -29,7 +29,7 @@ const ADMIN_SIDEBAR_ITEMS = [
   { id: 'articles', label: 'إدارة المقالات', icon: FileText },
   { id: 'categories', label: 'الأقسام العلمية', icon: ListPlus },
   { id: 'tags', label: 'التسميات (Tags)', icon: Tag },
-  { id: 'tools', label: 'الأدوات التفاعلية', icon: Wrench },
+  { id: 'tools', label: 'الحزم التعليمية', icon: Wrench },
   { id: 'financials', label: 'التقارير المالية', icon: DollarSign },
   { id: 'forum', label: 'إدارة المنتدى', icon: MessageSquare },
   { id: 'audit', label: 'سجل النشاطات', icon: Shield },
@@ -70,9 +70,12 @@ export default function AdminDashboard() {
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [editingArticle, setEditingArticle] = useState<any>(null);
   const [editingTool, setEditingTool] = useState<any>(null);
+  const [editingFile, setEditingFile] = useState<any>(null); // file being edited
+  const [managingFiles, setManagingFiles] = useState<any>(null); // package being file-managed
 
+  const [toolForm, setToolForm] = useState({ title: '', description: '', price: '', coverImage: '' });
   const [articleForm, setArticleForm] = useState({ title: '', excerpt: '', coverImage: '', contentRichText: '', category: 'مقالات عامة', tags: '' });
-  const [toolForm, setToolForm] = useState({ title: '', description: '', type: 'PDF', categories: '', priceView: '', priceDownload: '', fileUrl: '' });
+  const [newFileForm, setNewFileForm] = useState({ title: '', file: null as File | null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,8 +97,8 @@ export default function AdminDashboard() {
           setArticles(Array.isArray(data) ? data : []);
           if (data.error) showToast(data.error, 'error');
         }
-        if (activeTab === 'tools' && !showAddTool) {
-          const res = await fetch('/api/admin/tools');
+        if (activeTab === 'tools' && !showAddTool && !managingFiles) {
+          const res = await fetch('/api/admin/packages');
           const data = await res.json();
           setTools(Array.isArray(data) ? data : []);
           if (data.error) showToast(data.error, 'error');
@@ -164,7 +167,7 @@ export default function AdminDashboard() {
       }
     };
     fetchData();
-  }, [activeTab, showAddCourse, showAddArticle, showAddTool, editingCourse, editingArticle, editingTool]);
+  }, [activeTab, showAddCourse, showAddArticle, showAddTool, editingCourse, editingArticle, editingTool, managingFiles]);
 
   // Initialize tool form when editing starts
   useEffect(() => {
@@ -172,14 +175,11 @@ export default function AdminDashboard() {
       setToolForm({
         title: editingTool.title || '',
         description: editingTool.description || '',
-        type: editingTool.type || 'PDF',
-        categories: Array.isArray(editingTool.categories) ? editingTool.categories.join(', ') : (editingTool.categories || ''),
-        priceView: editingTool.priceView?.toString() || '0',
-        priceDownload: editingTool.priceDownload?.toString() || '0',
-        fileUrl: editingTool.fileKey || ''
+        price: editingTool.price?.toString() || '0',
+        coverImage: editingTool.coverImage || ''
       });
     } else {
-      setToolForm({ title: '', description: '', type: 'PDF', categories: '', priceView: '0', priceDownload: '0', fileUrl: '' });
+      setToolForm({ title: '', description: '', price: '', coverImage: '' });
     }
   }, [editingTool]);
 
@@ -250,18 +250,75 @@ export default function AdminDashboard() {
   const submitTool = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = { ...toolForm, categories: toolForm.categories.split(',').map(t => t.trim()).filter(Boolean) };
-      const res = await fetch('/api/tools', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (res.ok) { showToast('تم إضافة الأداة بنجاح ✅'); setShowAddTool(false); }
+      const payload = { ...toolForm, price: parseFloat(toolForm.price) || 0 };
+      const url = editingTool ? `/api/admin/packages/${editingTool.id}` : '/api/admin/packages';
+      const method = editingTool ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (res.ok) { showToast(editingTool ? 'تم تحديث الحزمة بنجاح ✅' : 'تم إضافة الحزمة بنجاح ✅'); setShowAddTool(false); setEditingTool(null); }
       else showToast('حدث خطأ', 'error');
     } catch { showToast('حدث خطأ', 'error'); }
   };
 
   const deleteTool = async (id: string) => {
-    if (!confirm('حذف هذه الأداة؟')) return;
+    if (!confirm('حذف هذه الحزمة؟ سيتم حذف جميع ملفاتها.')) return;
     try {
-      const res = await fetch(`/api/tools/${id}`, { method: 'DELETE' });
-      if (res.ok) { setTools(tools.filter(t => t.id !== id)); showToast('تم حذف الأداة'); }
+      const res = await fetch(`/api/admin/packages/${id}`, { method: 'DELETE' });
+      if (res.ok) { setTools(tools.filter(t => t.id !== id)); showToast('تم حذف الحزمة'); }
+    } catch { showToast('حدث خطأ', 'error'); }
+  };
+
+  const addFileToPackage = async (packageId: string) => {
+    if (!newFileForm.title.trim() || (!editingFile && !newFileForm.file)) {
+      showToast('يرجى إدخال اسم الملف ورفع ملف HTML', 'error');
+      return;
+    }
+    try {
+      let fileUrl = editingFile?.fileUrl;
+      let fileName = editingFile?.fileName;
+
+      if (newFileForm.file) {
+        const url = await handleFileUpload(newFileForm.file);
+        if (!url) return;
+        fileUrl = url;
+        fileName = newFileForm.file.name;
+      }
+
+      const method = editingFile ? 'PUT' : 'POST';
+      const url = editingFile 
+        ? `/api/admin/packages/${packageId}/files/${editingFile.id}`
+        : `/api/admin/packages/${packageId}/files`;
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newFileForm.title, fileName, fileUrl })
+      });
+
+      if (res.ok) {
+        showToast(editingFile ? 'تم تحديث الملف ✅' : 'تم رفع الملف بنجاح ✅');
+        setNewFileForm({ title: '', file: null });
+        setEditingFile(null);
+        // Refresh package data
+        const pkgRes = await fetch('/api/admin/packages');
+        const pkgData = await pkgRes.json();
+        if (Array.isArray(pkgData)) {
+          setTools(pkgData);
+          const updated = pkgData.find((p: any) => p.id === packageId);
+          if (updated) setManagingFiles(updated);
+        }
+      } else showToast('خطأ في العملية', 'error');
+    } catch { showToast('حدث خطأ', 'error'); }
+  };
+
+  const deleteFileFromPackage = async (packageId: string, fileId: string) => {
+    if (!confirm('حذف هذا الملف؟')) return;
+    try {
+      const res = await fetch(`/api/admin/packages/${packageId}/files/${fileId}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('تم حذف الملف');
+        const updatedFiles = managingFiles.files.filter((f: any) => f.id !== fileId);
+        setManagingFiles({ ...managingFiles, files: updatedFiles });
+      } else showToast('خطأ في الحذف', 'error');
     } catch { showToast('حدث خطأ', 'error'); }
   };
 
@@ -850,13 +907,25 @@ export default function AdminDashboard() {
       </div>
       <div className="overflow-x-auto min-h-[500px] p-4 md:p-6">
         <table className="w-full text-right border-separate border-spacing-y-4 min-w-[900px]">
-          <thead className="text-slate-400 text-[10px] font-bold uppercase tracking-widest"><tr><th className="px-8 py-4">بيانات المشتري</th><th className="px-8 py-4">المحتوى المطلوب</th><th className="px-8 py-4 text-center">قيمة العملية</th><th className="px-8 py-4 text-center">الحالة النهائية</th><th className="px-8 py-4 text-center">إجراءات المراجعة</th></tr></thead>
+          <thead className="text-slate-400 text-[10px] font-bold uppercase tracking-widest"><tr><th className="px-8 py-4">بيانات المشتري</th><th className="px-8 py-4">المحتوى المطلوب</th><th className="px-8 py-4 text-center">قيمة العملية</th><th className="px-8 py-4 text-center">طريقة الدفع</th><th className="px-8 py-4 text-center">الحالة النهائية</th><th className="px-8 py-4 text-center">إجراءات المراجعة</th></tr></thead>
           <tbody>
             {Array.isArray(purchases) && purchases.map(p => (
               <tr key={p.id} className="bg-white border border-slate-50 shadow-sm rounded-3xl hover:bg-slate-50/30 transition-colors">
                 <td className="px-8 py-6 first:rounded-r-[2rem] border-y border-r border-slate-50"><div className="font-black text-[#1F2F4A] hover:text-[#6FA65A] transition-colors">{p.user?.name}</div><div className="text-[10px] text-slate-400 mt-1 font-mono tracking-tighter">{p.user?.phone || p.user?.email}</div></td>
-                <td className="px-8 py-6 text-slate-500 text-sm font-black border-y border-slate-50 italic">{p.courseTitle || '---'}</td>
+                <td className="px-8 py-6 text-slate-500 text-sm font-black border-y border-slate-50 italic">{p.itemTitle || p.courseTitle || '---'}</td>
                 <td className="px-8 py-6 text-center font-black text-[#6FA65A] border-y border-slate-50 text-xl">{p.amount} <span className="text-[10px]">ج.م</span></td>
+                <td className="px-8 py-6 text-center border-y border-slate-50">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-slate-600">
+                        {p.paymentMethod === 'VODAFONE_CASH' ? 'فودافون كاش' : p.paymentMethod === 'INSTAPAY' ? 'إنستاباي' : p.paymentMethod || '---'}
+                      </span>
+                      {p.paymentMethod === 'VODAFONE_CASH' && <img src="/images/logos/vodafone-cash.png" alt="Vodafone" className="h-4 object-contain" />}
+                      {p.paymentMethod === 'INSTAPAY' && <img src="/images/logos/instapay.png" alt="InstaPay" className="h-4 object-contain" />}
+                    </div>
+                    {p.payerPhone && <div className="text-[10px] text-blue-600 font-mono" dir="ltr">☎ {p.payerPhone}</div>}
+                  </div>
+                </td>
                 <td className="px-8 py-6 text-center border-y border-slate-50">
                   <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${p.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 shadow-sm border border-emerald-200' : p.status === 'REJECTED' ? 'bg-rose-100 text-rose-700 border border-rose-200 shadow-sm' : 'bg-amber-100 text-amber-700 shadow-sm border border-amber-200 animate-pulse'}`}>
                     {p.status === 'APPROVED' ? 'تم التحصيل' : p.status === 'REJECTED' ? 'عملية مرفوضة' : 'في انتظار المراجعة'}
@@ -903,7 +972,7 @@ export default function AdminDashboard() {
               <tr key={b.id} className="bg-white border border-slate-50 shadow-sm rounded-3xl hover:bg-slate-50/30 transition-colors">
                 <td className="px-8 py-6 first:rounded-r-[2rem] border-y border-r border-slate-50">
                   <div className="font-black text-[#1F2F4A] hover:text-[#6FA65A] transition-colors">{b.user?.name}</div>
-                  <div className="text-[10px] text-slate-400 mt-1 font-mono tracking-tighter">{b.paymentMethod}</div>
+                  <div className="text-[10px] text-slate-400 mt-1 font-mono tracking-tighter" dir="ltr">{b.user?.phone || b.user?.email}</div>
                 </td>
                 <td className="px-8 py-6 text-slate-500 text-sm font-black border-y border-slate-50 italic">
                   مع {b.doctor?.user?.name || '---'}
@@ -911,6 +980,18 @@ export default function AdminDashboard() {
                 </td>
                 <td className="px-8 py-6 text-center border-y border-slate-50">
                   <div className="font-black text-[#1F2F4A] text-xl">{b.amount} <span className="text-[10px]">ج.م</span></div>
+                  <div className="mt-2 space-y-1 flex flex-col items-center">
+                    <div className="flex items-center gap-2">
+                       <span className="font-bold text-[10px] text-slate-600">
+                        {b.paymentMethod === 'VODAFONE_CASH' ? 'فودافون كاش' : b.paymentMethod === 'INSTAPAY' ? 'إنستاباي' : b.paymentMethod || '---'}
+                      </span>
+                      {b.paymentMethod === 'VODAFONE_CASH' && <img src="/images/logos/vodafone-cash.png" alt="Vodafone" className="h-4 object-contain" />}
+                      {b.paymentMethod === 'INSTAPAY' && <img src="/images/logos/instapay.png" alt="InstaPay" className="h-4 object-contain" />}
+                    </div>
+                    {b.payerPhone && (
+                      <div className="text-[10px] text-blue-600 font-black" dir="ltr">☎ {b.payerPhone}</div>
+                    )}
+                  </div>
                   <span className={`px-5 py-1 mt-2 inline-block rounded-full text-[10px] font-black uppercase tracking-widest ${b.paymentStatus === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : b.paymentStatus === 'REJECTED' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700 animate-pulse'}`}>
                     {b.paymentStatus === 'APPROVED' ? 'تم الدفع' : b.paymentStatus === 'REJECTED' ? 'مرفوض' : 'في الانتظار'}
                   </span>
@@ -1028,115 +1109,201 @@ export default function AdminDashboard() {
   const renderTools = () => {
     const isEditing = !!editingTool;
 
+    // File Management View
+    if (managingFiles) return (
+      <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-2xl animate-in fade-in duration-500 space-y-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-black text-[#1F2F4A]">إدارة ملفات: {managingFiles.title}</h2>
+            <p className="text-sm text-slate-400 mt-1">{managingFiles.files?.length || 0} ملف في الحزمة</p>
+          </div>
+          <button onClick={() => { setManagingFiles(null); setNewFileForm({ title: '', file: null }); }} className="text-slate-400 hover:text-rose-500 font-bold px-4 py-2">← رجوع</button>
+        </div>
+
+        {/* Upload New File */}
+        <div className="bg-slate-50 p-8 rounded-[2rem] border-2 border-dashed border-slate-200 space-y-4">
+          <h3 className="font-bold text-[#1F2F4A] flex items-center gap-2">
+            {editingFile ? <Edit3 className="w-5 h-5 text-blue-500" /> : <Upload className="w-5 h-5 text-[#6FA65A]" />}
+            {editingFile ? `تعديل ملف: ${editingFile.title}` : 'رفع ملف HTML جديد'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 mr-2">عنوان الملف</label>
+              <input
+                type="text"
+                value={newFileForm.title}
+                onChange={e => setNewFileForm({ ...newFileForm, title: e.target.value })}
+                className="w-full p-4 bg-white border border-slate-100 rounded-2xl font-bold"
+                placeholder="مثلاً: مقياس القلق"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 mr-2">
+                {editingFile ? 'استبدال ملف HTML (اختياري)' : 'ملف HTML'}
+              </label>
+              <input
+                type="file"
+                accept=".html,.htm"
+                onChange={e => setNewFileForm({ ...newFileForm, file: e.target.files?.[0] || null })}
+                className="w-full p-4 bg-white border border-slate-100 rounded-2xl text-sm"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); addFileToPackage(managingFiles.id); }}
+              disabled={!newFileForm.title || (!editingFile && !newFileForm.file)}
+              className={`${editingFile ? 'bg-blue-500 hover:bg-blue-600' : 'bg-[#6FA65A] hover:bg-emerald-600'} text-white px-8 py-4 rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+            >
+              {editingFile ? <CheckCircle className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              {editingFile ? 'حفظ التعديلات' : 'رفع الملف'}
+            </button>
+            {editingFile && (
+              <button
+                type="button"
+                onClick={() => { setEditingFile(null); setNewFileForm({ title: '', file: null }); }}
+                className="bg-slate-200 text-slate-600 px-8 py-4 rounded-2xl font-bold hover:bg-slate-300 transition-all"
+              >
+                إلغاء التعديل
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Files List */}
+        <div className="space-y-3">
+          {managingFiles.files?.length === 0 && (
+            <div className="py-16 text-center text-slate-200 font-bold border-2 border-dashed border-slate-50 rounded-[2rem]">لا توجد ملفات — ابدأ برفع أول ملف HTML</div>
+          )}
+          {managingFiles.files?.map((f: any, i: number) => (
+            <div key={f.id} className="flex items-center justify-between bg-slate-50 p-5 rounded-2xl border border-slate-100 group hover:bg-slate-100 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-[#6FA65A]/10 text-[#6FA65A] rounded-xl flex items-center justify-center font-black text-sm">{i + 1}</div>
+                <div>
+                  <div className="font-bold text-[#1F2F4A]">{f.title}</div>
+                  <div className="text-[10px] text-slate-400">{f.fileName}</div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <a href={f.fileUrl} target="_blank" rel="noreferrer" className="w-10 h-10 bg-blue-50 text-blue-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm flex items-center justify-center" title="معاينة">
+                  <Eye className="w-4 h-4" />
+                </a>
+                <button 
+                  onClick={() => { setEditingFile(f); setNewFileForm({ title: f.title, file: null }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                  className="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm flex items-center justify-center"
+                  title="تعديل أو استبدال الملف"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button onClick={() => deleteFileFromPackage(managingFiles.id, f.id)} className="w-10 h-10 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm flex items-center justify-center" title="حذف">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    // Add/Edit Package Form
     if (showAddTool || isEditing) return (
       <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-2xl animate-in fade-in duration-500">
         <div className="flex justify-between items-center mb-10">
-          <h2 className="text-2xl font-black text-[#1F2F4A]">{isEditing ? 'تعديل الأداة التفاعلية' : 'إضافة أداة تفاعلية جديدة'}</h2>
+          <h2 className="text-2xl font-black text-[#1F2F4A]">{isEditing ? 'تعديل الحزمة' : 'إضافة حزمة جديدة'}</h2>
           <button type="button" onClick={() => { setShowAddTool(false); setEditingTool(null); }} className="text-slate-400 hover:text-rose-500 font-bold">إلغاء</button>
         </div>
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          const payload = {
-            ...toolForm,
-            priceView: parseFloat(toolForm.priceView) || 0,
-            priceDownload: parseFloat(toolForm.priceDownload) || 0,
-            categories: toolForm.categories.split(',').map((t: string) => t.trim()).filter(Boolean)
-          };
-          try {
-            const url = isEditing ? `/api/tools/${editingTool.id}` : '/api/tools';
-            const method = isEditing ? 'PUT' : 'POST';
-            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (res.ok) {
-              showToast(isEditing ? 'تم تحديث الأداة بنجاح ✅' : 'تم إضافة الأداة بنجاح ✅');
-              setShowAddTool(false);
-              setEditingTool(null);
-            }
-            else showToast('حدث خطأ', 'error');
-          } catch { showToast('حدث خطأ', 'error'); }
-        }} className="space-y-6">
+        <form onSubmit={submitTool} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 mr-2">اسم الأداة</label>
+              <label className="text-xs font-bold text-slate-400 mr-2">اسم الحزمة</label>
               <input
                 type="text"
                 value={toolForm.title}
                 onChange={e => setToolForm({ ...toolForm, title: e.target.value })}
-                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl"
-                placeholder="مثلاً: اختبار تحليل الشخصية"
+                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold"
+                placeholder="مثلاً: حزمة مقاييس القلق"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 mr-2">نوع الأداة</label>
-              <select
-                value={toolForm.type}
-                onChange={e => setToolForm({ ...toolForm, type: e.target.value })}
-                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl"
-              >
-                <option value="PDF">ملف PDF</option>
-                <option value="HTML">أداة برمجية HTML</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 mr-2">السعر (ج.م)</label>
+              <label className="text-xs font-bold text-slate-400 mr-2">سعر التحميل (ج.م)</label>
               <input
                 type="number"
-                value={toolForm.priceView}
-                onChange={e => setToolForm({ ...toolForm, priceView: e.target.value })}
-                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl"
-                placeholder="0"
+                value={toolForm.price}
+                onChange={e => setToolForm({ ...toolForm, price: e.target.value })}
+                className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold"
+                placeholder="0 = مجاني"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 mr-2">ملف الأداة (PDF/HTML)</label>
-              <div className="relative group">
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-400 mr-2">وصف الحزمة</label>
+            <textarea
+              value={toolForm.description}
+              onChange={e => setToolForm({ ...toolForm, description: e.target.value })}
+              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold h-32"
+              placeholder="وصف مختصر لمحتويات الحزمة..."
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-400 mr-2">صورة الغلاف (رابط أو رفع)</label>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={toolForm.coverImage}
+                onChange={e => setToolForm({ ...toolForm, coverImage: e.target.value })}
+                className="flex-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold"
+                placeholder="رابط صورة الغلاف (اختياري)"
+              />
+              <label className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-4 rounded-2xl font-bold cursor-pointer transition-colors flex items-center gap-2">
+                <Upload className="w-5 h-5" />
+                رفع
                 <input
                   type="file"
-                  accept=".pdf,.html"
+                  accept="image/*"
+                  className="hidden"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
                       const url = await handleFileUpload(file);
-                      if (url) {
-                        setToolForm(prev => ({ ...prev, fileUrl: url }));
-                        showToast('تم رفع الملف بنجاح ✅');
-                      }
+                      if (url) setToolForm(prev => ({ ...prev, coverImage: url }));
                     }
                   }}
-                  className="w-full p-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-sm file:hidden cursor-pointer hover:bg-slate-100 transition-colors"
                 />
-                <input type="hidden" value={toolForm.fileUrl} />
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-2">
-                  {toolForm.fileUrl && <CheckCircle className="w-5 h-5 text-emerald-500" />}
-                  <Upload className="w-5 h-5 text-slate-300 group-hover:text-[#6FA65A] transition-colors" />
-                </div>
-              </div>
-              {toolForm.fileUrl && <p className="text-[10px] text-emerald-600 font-bold mt-1 mr-2">✓ تم العثور على ملف مرفوع</p>}
+              </label>
             </div>
+            {toolForm.coverImage && (
+              <div className="mt-3 w-32 h-20 rounded-xl overflow-hidden border border-slate-100">
+                <img src={toolForm.coverImage} className="w-full h-full object-cover" alt="" />
+              </div>
+            )}
           </div>
-          <button type="submit" className="w-full bg-[#6FA65A] text-white py-5 rounded-3xl font-black text-lg hover:bg-emerald-600 transition-all">{isEditing ? 'تحديث الأداة' : 'إضافة الأداة'}</button>
+          <button type="submit" className="w-full bg-[#6FA65A] text-white py-5 rounded-3xl font-black text-lg hover:bg-emerald-600 transition-all">
+            {isEditing ? 'تحديث الحزمة' : 'إضافة الحزمة'}
+          </button>
         </form>
       </div>
     );
 
+    // Packages List
     return (
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-2xl overflow-hidden animate-in fade-in duration-500">
         <div className="p-8 md:p-10 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center bg-[#1F2F4A] relative overflow-hidden gap-6">
           <div className="absolute top-0 right-0 w-full h-full bg-[length:20px_20px] opacity-10" />
           <div className="relative z-10 text-white">
-            <h2 className="text-xl md:text-2xl font-bold">مكتبة الأدوات التفاعلية</h2>
-            <p className="text-slate-400 text-xs md:text-sm mt-1 font-medium">إدارة الأدوات والوسائل التعليمية المساعدة</p>
+            <h2 className="text-xl md:text-2xl font-bold">إدارة الحزم التعليمية</h2>
+            <p className="text-slate-400 text-xs md:text-sm mt-1 font-medium">إنشاء وإدارة الحزم التعليمية وملفات HTML الخاصة بها</p>
           </div>
-          <button onClick={() => setShowAddTool(true)} className="w-full md:w-auto bg-[#6FA65A] hover:bg-emerald-600 text-white px-8 py-3 rounded-xl md:rounded-2xl font-bold shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-3 relative z-10 active:scale-95"><Plus className="w-5 h-5" /> أداة جديدة</button>
+          <button onClick={() => setShowAddTool(true)} className="w-full md:w-auto bg-[#6FA65A] hover:bg-emerald-600 text-white px-8 py-3 rounded-xl md:rounded-2xl font-bold shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-3 relative z-10 active:scale-95"><Plus className="w-5 h-5" /> حزمة جديدة</button>
         </div>
         <div className="overflow-x-auto min-h-[400px] p-4 md:p-6">
           <table className="w-full text-right border-separate border-spacing-y-4 min-w-[700px]">
             <thead className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
               <tr>
-                <th className="px-8 py-4">الأداة</th>
-                <th className="px-8 py-4">النوع</th>
+                <th className="px-8 py-4">الحزمة</th>
+                <th className="px-8 py-4 text-center">الملفات</th>
                 <th className="px-8 py-4 text-center">السعر</th>
                 <th className="px-8 py-4 text-center">أدوات التحكم</th>
               </tr>
@@ -1146,18 +1313,32 @@ export default function AdminDashboard() {
                 <tr key={t.id} className="bg-white border border-slate-50 shadow-sm rounded-3xl group hover:shadow-lg transition-all">
                   <td className="px-8 py-6 first:rounded-r-[2rem]">
                     <div className="flex items-center gap-6">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-                        <Wrench className="w-6 h-6 text-slate-400" />
+                      <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden">
+                        {t.coverImage ? (
+                          <img src={t.coverImage} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                          <Wrench className="w-6 h-6 text-slate-400" />
+                        )}
                       </div>
-                      <span className="font-extrabold text-[#1F2F4A]">{t.title}</span>
+                      <div>
+                        <span className="font-extrabold text-[#1F2F4A] block">{t.title}</span>
+                        <span className="text-[10px] text-slate-400 font-bold line-clamp-1">{t.description}</span>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <span className="px-4 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[10px] font-black">{t.type}</span>
+                  <td className="px-8 py-6 text-center">
+                    <button
+                      onClick={() => setManagingFiles(t)}
+                      className="px-4 py-1.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all border border-blue-100 cursor-pointer"
+                      title="عرض وإدارة الملفات"
+                    >
+                      {t.files?.length || 0} ملف
+                    </button>
                   </td>
-                  <td className="px-8 py-6 text-center font-black text-[#6FA65A] text-lg">{t.priceView} ج.م</td>
+                  <td className="px-8 py-6 text-center font-black text-[#6FA65A] text-lg">{t.price || 0} ج.م</td>
                   <td className="px-8 py-6 text-center last:rounded-l-[2rem]">
                     <div className="flex justify-center gap-2">
+                      <button onClick={() => setManagingFiles(t)} className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm" title="إدارة ملفات الحزمة"><FolderClosed className="w-4 h-4 mx-auto" /></button>
                       <button onClick={() => setEditingTool(t)} className="w-10 h-10 bg-blue-50 text-blue-400 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-sm"><Edit3 className="w-4 h-4 mx-auto" /></button>
                       <button onClick={() => deleteTool(t.id)} className="w-10 h-10 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"><Trash2 className="w-4 h-4 mx-auto" /></button>
                     </div>
@@ -1166,7 +1347,7 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
-          {tools.length === 0 && <div className="py-20 text-center font-bold text-slate-200">لا توجد أدوات حالياً</div>}
+          {tools.length === 0 && <div className="py-20 text-center font-bold text-slate-200">لا توجد حزم حالياً — ابدأ بإضافة أول حزمة تعليمية</div>}
         </div>
       </div>
     );

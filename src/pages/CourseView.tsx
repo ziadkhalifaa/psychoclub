@@ -11,6 +11,8 @@ export default function CourseView() {
   const { user } = useAuth();
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [payerPhone, setPayerPhone] = useState('');
 
   const { data: course, isLoading } = useQuery({
     queryKey: ['course', slug],
@@ -30,21 +32,32 @@ export default function CourseView() {
   const hasPurchased = user?.role === 'ADMIN' || coursePurchase?.status === 'APPROVED';
   const isPending = coursePurchase?.status === 'PENDING';
 
-  const handleManualCheckout = async (method: string) => {
+  const handleManualCheckout = async () => {
     if (!user) {
       alert("يرجى تسجيل الدخول أولاً");
       return;
     }
+    if (!paymentMethod || !payerPhone.trim()) {
+      alert("يرجى اختيار طريقة دفع وإدخال رقم الهاتف");
+      return;
+    }
+
     setPaymentStatus('loading');
     try {
       const res = await fetch('/api/checkout/manual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId: course.id, type: 'COURSE', paymentMethod: method })
+        body: JSON.stringify({ 
+          itemId: course.id, 
+          type: 'COURSE', 
+          paymentMethod, 
+          payerPhone 
+        })
       });
       const data = await res.json();
       if (data.success) {
         setPaymentStatus('success');
+        queryClient.invalidateQueries({ queryKey: ['myPurchases'] });
       } else {
         setPaymentStatus('error');
         alert(data.error || "حدث خطأ أثناء إعداد الدفع");
@@ -145,17 +158,12 @@ export default function CourseView() {
                 </div>
               ) : (
                 <div className="absolute inset-0 bg-[#1F2F4A]/60 flex items-center justify-center backdrop-blur-md transition-all group-hover:bg-[#1F2F4A]/40">
-                  <div className="bg-white/95 backdrop-blur-xl p-10 rounded-[3rem] text-center shadow-2xl max-w-sm w-full mx-6 border border-white">
+                  <div className="bg-white/95 backdrop-blur-xl p-8 rounded-[3rem] text-center shadow-2xl max-w-sm w-full mx-6 border border-white">
                     <div className="text-3xl font-black text-[#1F2F4A] mb-4 tracking-tighter">
                       {course.isFree ? (
                         <span className="text-[#6FA65A]">مجاناً بالكامل</span>
-                      ) : course.discount ? (
-                        <div className="flex flex-col items-center">
-                          <span className="text-slate-400 line-through text-xs font-bold mb-1">{course.price} ج.م</span>
-                          <span className="text-[#6FA65A]">{course.discount} <span className="text-sm font-black uppercase">ج.م</span></span>
-                        </div>
                       ) : (
-                        <span className="text-[#6FA65A]">{course.price} <span className="text-sm font-black uppercase">ج.م</span></span>
+                        <span className="text-[#6FA65A]">{course.discount || course.price} <span className="text-sm font-black uppercase">ج.م</span></span>
                       )}
                     </div>
 
@@ -163,44 +171,65 @@ export default function CourseView() {
                       <button onClick={handleFreeCheckout} disabled={paymentStatus === 'loading'} className="w-full bg-[#1F2F4A] text-white py-5 rounded-[2rem] font-black hover:bg-[#6FA65A] transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95 disabled:opacity-50">
                         {paymentStatus === 'loading' ? 'جاري الإضافة...' : 'امتلك الدورة الآن'}
                       </button>
+                    ) : paymentStatus === 'success' || isPending ? (
+                      <div className="space-y-4">
+                        <div className="p-6 bg-emerald-50 text-emerald-900 rounded-[2rem] text-xs font-bold border border-emerald-100 italic text-right">
+                          " تم استلام طلبك بنجاح! طلبك الآن قيد المراجعة من قبل الإدارة لتفعيل الدورة لك. "
+                        </div>
+                        <div className="py-3 px-6 bg-slate-50 rounded-2xl text-[10px] text-[#1F2F4A] font-black uppercase tracking-widest border border-slate-100">
+                           حالة الطلب: قيد المراجعة 🕒
+                        </div>
+                      </div>
                     ) : !showPaymentOptions ? (
                       <button onClick={() => setShowPaymentOptions(true)} className="w-full bg-[#1F2F4A] text-white py-5 rounded-[2rem] font-black hover:bg-[#6FA65A] transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">
-                        {isPending ? 'الطلب قيد المراجعة' : 'احصل على الدورة'}
+                        احصل على الدورة
                       </button>
-                    ) : paymentStatus === 'success' || isPending ? (
-                      <div className="mt-4 p-6 bg-emerald-50 text-emerald-900 rounded-[2rem] text-xs font-bold border border-emerald-100 italic">
-                        " تم استلام طلبك! يرجى التواصل عبر واتساب لتأكيد الدفع وتفعيل الدورة. "
-                        <a href="https://wa.me/201000000000" target="_blank" rel="noopener noreferrer" className="block mt-4 bg-emerald-600 text-white py-3 rounded-2xl font-black text-center shadow-lg hover:bg-emerald-700 transition-all">
-                          أرسل الإيصال واتساب
-                        </a>
+                    ) : !paymentMethod ? (
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">اختر طريقة الدفع</p>
+                        
+                        <button onClick={() => setPaymentMethod('VODAFONE_CASH')} className="w-full flex items-center justify-between bg-rose-50 hover:bg-rose-100 text-rose-700 p-4 rounded-2xl transition-all border border-rose-100 group/pay">
+                          <span className="font-black text-xs">فودافون كاش</span>
+                          <img src="/images/logos/vodafone-cash.png" alt="Vodafone Cash" className="h-6 object-contain" />
+                        </button>
+
+                        <button onClick={() => setPaymentMethod('INSTAPAY')} className="w-full flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-4 rounded-2xl transition-all border border-indigo-100 group/pay">
+                          <span className="font-black text-xs">إنستاباي</span>
+                          <img src="/images/logos/instapay.png" alt="InstaPay" className="h-6 object-contain" />
+                        </button>
+
+                        <button onClick={() => setShowPaymentOptions(false)} className="w-full text-slate-400 text-[10px] font-bold py-2">إلغاء</button>
                       </div>
                     ) : (
-                      <div className="mt-6 space-y-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">طرق الدفع الإكلينيكية</p>
+                      <div className="space-y-4">
+                        <div className={`p-4 rounded-2xl border ${paymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                          <p className="text-[10px] font-black mb-1 opacity-60">حول المبلغ إلى:</p>
+                          <p className="font-black text-lg tracking-wider" dir="ltr">{paymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}</p>
+                        </div>
 
-                        <button onClick={() => handleManualCheckout('VODAFONE_CASH')} className="w-full flex items-center justify-between bg-rose-50 hover:bg-rose-100 text-rose-700 p-4 rounded-2xl transition-all border border-rose-100 group/pay shadow-sm">
-                          <div className="flex items-center gap-3 font-black text-xs">
-                            <Phone className="w-4 h-4 group-hover/pay:rotate-12 transition-transform" />
-                            فودافون كاش
-                          </div>
-                          <span className="text-[10px] font-black tracking-widest">01000000000</span>
+                        <div className="space-y-2 text-right">
+                          <label className="text-[10px] font-black text-slate-500 mr-2 uppercase tracking-widest flex items-center gap-1 justify-end">
+                            رقم الموبايل المحوّل منه <Phone className="w-3 h-3" />
+                          </label>
+                          <input 
+                            type="tel" 
+                            value={payerPhone}
+                            onChange={e => setPayerPhone(e.target.value)}
+                            placeholder="01xxxxxxxxx"
+                            dir="ltr"
+                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center font-bold focus:ring-2 focus:ring-[#6FA65A]/50 focus:border-[#6FA65A] outline-none"
+                          />
+                        </div>
+
+                        <button 
+                          onClick={handleManualCheckout} 
+                          disabled={paymentStatus === 'loading' || !payerPhone.trim()}
+                          className="w-full bg-[#6FA65A] text-white py-4 rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-lg disabled:opacity-50"
+                        >
+                          {paymentStatus === 'loading' ? 'جاري التأكيد...' : 'تأكيد إرسال المبلغ'}
                         </button>
 
-                        <button onClick={() => handleManualCheckout('INSTAPAY')} className="w-full flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-4 rounded-2xl transition-all border border-indigo-100 group/pay shadow-sm">
-                          <div className="flex items-center gap-3 font-black text-xs">
-                            <Activity className="w-4 h-4 group-hover/pay:scale-125 transition-transform" />
-                            إنستاباي
-                          </div>
-                          <span className="text-[10px] font-black tracking-widest">user@instapay</span>
-                        </button>
-
-                        <button onClick={() => handleManualCheckout('WHATSAPP')} className="w-full flex items-center justify-between bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-4 rounded-2xl transition-all border border-emerald-100 group/pay shadow-sm">
-                          <div className="flex items-center gap-3 font-black text-xs">
-                            <MessageCircle className="w-4 h-4 group-hover/pay:translate-y-[-2px] transition-transform" />
-                            مساعدة فنية
-                          </div>
-                          <ArrowLeft className="w-4 h-4 opacity-0 group-hover/pay:opacity-100 transition-all" />
-                        </button>
+                        <button onClick={() => { setPaymentMethod(null); setPayerPhone(''); }} className="text-slate-400 text-[10px] font-bold">← تغيير الطريقة</button>
                       </div>
                     )}
                   </div>
