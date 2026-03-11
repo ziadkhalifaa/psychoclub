@@ -36,10 +36,10 @@ export default function Home() {
             >
               <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-6 uppercase">عن Clinical Cases Group <span className="text-[#6FA65A] block md:inline text-2xl md:text-3xl font-black">| Psycho-Club</span></h2>
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg font-medium">
-                نحن في **Clinical Cases Group | Psycho-Club**، نؤمن بأن الصحة النفسية هي رحلة مستمرة من التعلم والدعم. نسعى لتقديم خدمات تخصصية تجمع بين التدريب المتقدم، الإرشاد المهني، والجلسات العلاجية المبنية على أحدث الأسس العلمية، لنكون شريكك الدائم في مسار التميز والاستقرار النفسي.
+                نحن في Clinical Cases Group | Psycho-Club، نؤمن بأن الصحة النفسية هي رحلة مستمرة من التعلم والدعم. نسعى لتقديم خدمات تخصصية تجمع بين التدريب المتقدم، الإرشاد المهني، والجلسات العلاجية المبنية على أحدث الأسس العلمية، لنكون شريكك الدائم في مسار التميز والاستقرار النفسي.
               </p>
               <ul className="space-y-4">
-                {['تدريب عملي مبني على الأدلة', 'إشراف إكلينيكي مستمر', 'أدوات ومقاييس نفسية معتمدة', 'مجتمع مهني داعم'].map((item, i) => (
+                {['تدريب عملي مبني على الأدلة', 'دعم وعلاج نفسي متخصص', 'أدوات ومقاييس نفسية معتمدة', 'مجتمع مهني داعم'].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold">
                     <div className="w-6 h-6 rounded-full bg-[#6FA65A]/10 dark:bg-[#6FA65A]/20 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-[#6FA65A]" />
@@ -205,7 +205,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
-                  { title: 'إشراف مباشر', desc: 'جلسات إشراف فردية وجماعية' },
+                  { title: 'جلسات علاجية', desc: 'دعم نفسي وعلاج متخصص للأفرد' },
                   { title: 'مواد حصرية', desc: 'مكتبة من المقاييس والأدوات المعتمدة' },
                   { title: 'شهادات مهنية', desc: 'اعتماد مهني يعزز مسارك الوظيفي' },
                   { title: 'دعم تقني', desc: 'مساعدة مستمرة طوال فترة التعلم' }

@@ -188,7 +188,7 @@ export default function Layout() {
                   { to: '/courses', label: 'الأكاديمية التدريبية' },
                   { to: '/articles', label: 'المستودع العلمي' },
                   { to: '/tools', label: 'الحقيبة الإكلينيكية' },
-                  { to: '/sessions', label: 'الحجز المباشر' }
+                  { to: '/sessions', label: 'حجز جلسة' }
                 ].map((link) => (
                   <li key={link.to}>
                     <Link to={link.to} className="text-slate-400 hover:text-[#6FA65A] text-sm font-bold transition-colors flex items-center gap-2 group">

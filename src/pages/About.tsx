@@ -73,7 +73,7 @@ export default function About() {
                             <span className="text-[#6FA65A]">إرشادية وعلاجية أكثر عمقاً</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 text-lg lg:text-xl leading-relaxed font-medium mb-10 max-w-xl">
-                            انطلقت **Clinical Cases Group | Psycho-Club** لتكون الحاضنة المهنية التي تدعم المختص النفسي في رحلته الإنسانية. نحن لا نقدم مجرد دورات، بل نوفر منظومة متكاملة من التعليم التخصصي، الإرشاد المهني، والدعم العلاجي الذي يضمن استدامة الأثر الإيجابي.
+                            انطلقت Clinical Cases Group | Psycho-Club لتكون الحاضنة المهنية التي تدعم المختص النفسي في رحلته الإنسانية. نحن لا نقدم مجرد دورات، بل نوفر منظومة متكاملة من التعليم التخصصي، الإرشاد المهني، والدعم العلاجي الذي يضمن استدامة الأثر الإيجابي.
                         </p>
                     </motion.div>
 
@@ -206,7 +206,7 @@ export default function About() {
                         <div className="flex-1 text-right">
                             <h2 className="text-3xl lg:text-5xl font-black text-[#1F2F4A] dark:text-white mb-6 tracking-tighter">رسالة من الإدارة</h2>
                             <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-xl leading-loose italic mb-10">
-                                "في **Clinical Cases Group | Psycho-Club**، هدفنا هو تجاوز حدود التدريب التقليدي لنصنع مجتمعاً علاجياً متكاتفاً. نؤمن أن جودة الرعاية النفسية تبدأ من التوازن بين المعرفة العلمية الرصينة وفن الإرشاد الإنساني."
+                                "في Clinical Cases Group | Psycho-Club، هدفنا هو تجاوز حدود التدريب التقليدي لنصنع مجتمعاً علاجياً متكاتفاً. نؤمن أن جودة الرعاية النفسية تبدأ من التوازن بين المعرفة العلمية الرصينة وفن الإرشاد الإنساني."
                             </p>
                             <div>
                                 <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">د. مصطفى صالح</h4>

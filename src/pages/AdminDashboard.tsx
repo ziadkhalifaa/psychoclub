@@ -8,7 +8,8 @@ import {
   XCircle, Plus, Trash2, Edit3, Wrench,
   Clock, TrendingUp, Eye, BarChart3,
   Upload, Image as ImageIcon, Search, Filter,
-  History, ListPlus, Tag, Calendar, MessageSquare
+  History, ListPlus, Tag, Calendar, MessageSquare,
+  PlusCircle, User
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -23,6 +24,7 @@ const ADMIN_SIDEBAR_ITEMS = [
   { id: 'overview', label: 'نظرة عامة', icon: Activity },
   { id: 'users', label: 'إدارة المستخدمين', icon: Users },
   { id: 'bookings', label: 'حجوزات الجلسات', icon: Calendar },
+  { id: 'myProfile', label: 'ملفي الشخصي (إشراف)', icon: Users },
   { id: 'courses', label: 'إدارة الدورات', icon: BookOpen },
   { id: 'articles', label: 'إدارة المقالات', icon: FileText },
   { id: 'categories', label: 'الأقسام العلمية', icon: ListPlus },
@@ -48,6 +50,13 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState<any[]>([]);
   const [forumCategories, setForumCategories] = useState<any[]>([]);
   const [tags, setTags] = useState<any[]>([]);
+
+  // New states for Portfolio & Slots (for Admin/Mostafa)
+  const [portfolio, setPortfolio] = useState({
+    bio: '', specialties: '', title: '', photo: '', sessionPrice: 0, sessionLink: ''
+  });
+  const [slots, setSlots] = useState<any[]>([]);
+  const [newSlot, setNewSlot] = useState({ date: '', time: '', durationMinutes: 45 });
 
   const [newCatName, setNewCatName] = useState('');
   const [newForumCatName, setNewForumCatName] = useState('');
@@ -132,6 +141,22 @@ export default function AdminDashboard() {
           }
           const data = await res.json();
           setForumCategories(Array.isArray(data) ? data : []);
+        }
+        if (activeTab === 'myProfile') {
+          const res = await fetch('/api/doctor/me');
+          if (res.ok) {
+            const data = await res.json();
+            setPortfolio({
+              bio: data.bio || '',
+              specialties: data.specialties ? (typeof data.specialties === 'string' ? JSON.parse(data.specialties).join(', ') : data.specialties) : '',
+              title: data.title || '',
+              photo: data.photo || '',
+              sessionPrice: data.sessionPrice || 0,
+              sessionLink: data.sessionLink || '',
+            });
+            const slotsRes = await fetch('/api/doctor/slots');
+            if (slotsRes.ok) setSlots(await slotsRes.json());
+          }
         }
       } catch (err: any) {
         console.error("Dashboard Fetch Error:", err);
@@ -328,7 +353,165 @@ export default function AdminDashboard() {
     if (res.ok) { showToast('تم مسح البيانات بنجاح'); setCourses([]); setArticles([]); setTools([]); }
   };
 
+  const submitPortfolio = async () => {
+    try {
+      const payload = {
+        ...portfolio,
+        specialties: portfolio.specialties.split(',').map((s: string) => s.trim()).filter(Boolean)
+      };
+      const res = await fetch('/api/doctor/portfolio', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) showToast('تم تحديث البورتفوليو بنجاح ✅');
+      else showToast('حدث خطأ أثناء التحديث', 'error');
+    } catch {
+      showToast('حدث خطأ', 'error');
+    }
+  };
+
+  const submitSlot = async () => {
+    try {
+      if (!newSlot.date || !newSlot.time) return showToast('الرجاء إدخال التاريخ والوقت', 'error');
+      const startAt = new Date(`${newSlot.date}T${newSlot.time}`);
+      const endAt = new Date(startAt.getTime() + newSlot.durationMinutes * 60000);
+
+      const res = await fetch('/api/doctor/slots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startAt, endAt })
+      });
+      if (res.ok) {
+        setSlots([...slots, await res.json()]);
+        setNewSlot({ date: '', time: '', durationMinutes: 45 });
+        showToast('تمت إضافة الموعد بنجاح ✅');
+      } else {
+        const d = await res.json();
+        showToast(d.error || 'حدث خطأ', 'error');
+      }
+    } catch {
+      showToast('حدث خطأ', 'error');
+    }
+  };
+
+  const deleteSlot = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الموعد؟')) return;
+    const res = await fetch(`/api/doctor/slots/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setSlots(slots.filter(s => s.id !== id));
+      showToast('تم الحذف بنجاح');
+    }
+  };
+
   // ─── Render Functions ─────────────────────────────────
+
+  const renderMyProfile = () => (
+    <div className="space-y-10 animate-in fade-in duration-700">
+      <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-100 shadow-xl overflow-hidden">
+        <h2 className="text-2xl font-black text-[#1F2F4A] mb-10 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#6FA65A]/10 flex items-center justify-center text-[#6FA65A]">
+            <User className="w-6 h-6" />
+          </div>
+          إعداد ملف الإشراف الشخصي
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="space-y-6">
+            <div>
+              <label className="text-sm font-black text-slate-500 block mb-2 mr-2">المسمى الوظيفي (مثال: استشاري نفسي)</label>
+              <input type="text" value={portfolio.title} onChange={e => setPortfolio({ ...portfolio, title: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" />
+            </div>
+
+            <div>
+              <label className="text-sm font-black text-slate-500 mt-4 block mb-2 mr-2">التخصصات (مفصولة بفاصلة)</label>
+              <input type="text" value={portfolio.specialties} onChange={e => setPortfolio({ ...portfolio, specialties: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" />
+            </div>
+
+            <div className="flex gap-6">
+              <div className="flex-1">
+                <label className="text-sm font-black text-slate-500 block mb-2 mr-2">سعر جلسة الإشراف (ج.م)</label>
+                <input type="number" value={portfolio.sessionPrice} onChange={e => setPortfolio({ ...portfolio, sessionPrice: Number(e.target.value) })} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-black text-slate-500 mt-4 block mb-2 mr-2">رابط اجتماع Zoom الدائم</label>
+              <input type="text" value={portfolio.sessionLink} onChange={e => setPortfolio({ ...portfolio, sessionLink: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" placeholder="https://zoom.us/j/123456789..." />
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <label className="text-sm font-black text-slate-500 block mb-2 mr-2">النبذة الشخصية (Portfolio / CV)</label>
+              <textarea value={portfolio.bio} onChange={e => setPortfolio({ ...portfolio, bio: e.target.value })} rows={8} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" />
+            </div>
+
+            <div>
+              <label className="text-sm font-black text-slate-500 mt-4 block mb-2 mr-2">رابط الصورة الشخصية</label>
+              <input type="text" value={portfolio.photo} onChange={e => setPortfolio({ ...portfolio, photo: e.target.value })} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" placeholder="ارفع الصورة وانسخ الرابط هنا" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-12 flex justify-end">
+          <button onClick={submitPortfolio} className="bg-[#1F2F4A] text-white px-12 py-5 rounded-[2rem] font-black hover:bg-[#6FA65A] transition-all shadow-2xl active:scale-95 shadow-[#1F2F4A]/20">
+            حفظ وتحديث الملف الشخصي
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-100 shadow-xl overflow-hidden">
+        <h2 className="text-2xl font-black text-[#1F2F4A] mb-10 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500">
+            <Calendar className="w-6 h-6" />
+          </div>
+          إدارة مواعيد جلسات الإشراف
+        </h2>
+
+        <div className="bg-slate-50 p-10 rounded-[2.5rem] border-2 border-slate-100 mb-12 flex flex-col md:flex-row gap-6 items-end">
+          <div className="flex-1 w-full">
+            <label className="text-[10px] font-black text-slate-400 block mb-3 uppercase tracking-widest mr-4">تاريخ الموعد المتاح</label>
+            <input type="date" value={newSlot.date} onChange={e => setNewSlot({ ...newSlot, date: e.target.value })} className="w-full bg-white border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" />
+          </div>
+          <div className="flex-1 w-full">
+            <label className="text-[10px] font-black text-slate-400 block mb-3 uppercase tracking-widest mr-4">الوقت (ص/م)</label>
+            <input type="time" value={newSlot.time} onChange={e => setNewSlot({ ...newSlot, time: e.target.value })} className="w-full bg-white border-2 border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-[#6FA65A] transition-all font-bold" />
+          </div>
+          <button onClick={submitSlot} className="bg-[#1F2F4A] text-white px-10 py-5 rounded-2xl font-black hover:bg-blue-600 transition-all shadow-xl h-[60px] shrink-0 active:scale-95">
+            إضافة موعد متاح
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {slots.length === 0 ? (
+            <div className="col-span-full text-center py-20 text-slate-300 font-black border-2 border-dashed border-slate-50 rounded-[3rem]">لا توجد مواعيد متاحة مسجلة حالياً.</div>
+          ) : (
+            slots.map(slot => {
+              const start = new Date(slot.startAt);
+              const isBooked = slot.isBooked;
+              return (
+                <div key={slot.id} className={`flex items-center justify-between p-6 rounded-[2rem] border-2 transition-all ${isBooked ? 'border-amber-100 bg-amber-50/50' : 'border-emerald-100 bg-emerald-50/50'}`}>
+                  <div className="flex items-center gap-6">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isBooked ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                      <Calendar className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <div className="font-black text-[#1F2F4A] text-lg">{start.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                      <div className={`text-sm font-black ${isBooked ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        {start.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })} • {isBooked ? 'محجوز (بانتظار التأكيد)' : 'متاح للحجز'}
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={() => deleteSlot(slot.id)} disabled={isBooked} className={`w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-100 text-rose-500 shadow-sm transition-all ${isBooked ? 'opacity-20 cursor-not-allowed' : 'hover:bg-rose-500 hover:text-white hover:border-rose-500 active:scale-90'}`}>
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1122,6 +1305,7 @@ export default function AdminDashboard() {
                 {activeTab === 'financials' && renderFinancials()}
                 {activeTab === 'forum' && renderForumManagement()}
                 {activeTab === 'audit' && renderAudit()}
+                {activeTab === 'myProfile' && renderMyProfile()}
                 <div className="mt-20 flex justify-center opacity-5">
                   <button onClick={handleClearData} className="px-10 py-4 bg-red-600 text-white font-black rounded-[3rem] tracking-[1em] hover:opacity-100 transition-opacity">تصفية شاملة للنظام</button>
                 </div>

@@ -15,9 +15,9 @@ export default function Sessions() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
       <div className="bg-[#1F2F4A] rounded-3xl p-12 text-center text-white relative overflow-hidden mt-10">
         <div className="absolute inset-0 bg-gradient-to-br from-[#6FA65A]/20 to-transparent mix-blend-overlay" />
-        <h1 className="text-4xl font-bold mb-4 relative z-10">حجز جلسة إشراف</h1>
-        <p className="text-slate-300 max-w-2xl mx-auto relative z-10">
-          احجز جلستك مع نخبة من الاستشاريين والأخصائيين لتطوير مهاراتك الإكلينيكية ومناقشة الحالات المعقدة.
+        <h1 className="text-4xl font-bold mb-4 relative z-10">حجز جلسة علاجية</h1>
+        <p className="text-slate-300 max-w-2xl mx-auto relative z-10 font-bold">
+          احجز جلستك الآن مع نخبة من الأخصائيين النفسيين المعتمدين للحصول على الدعم النفسي والعلاج المتكامل في بيئة آمنة ومهنية.
         </p>
       </div>
 

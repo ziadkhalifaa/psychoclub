@@ -10,17 +10,17 @@ const SLIDES = [
         description: 'Psycho-Club هو المنصة التعليمية والتدريبية الرائدة لتطوير مهارات الممارسين في مجال الصحة النفسية من خلال دورات متخصصة وأدوات تفاعلية.',
         image: '/images/hero1.png',
         ctaPrimary: 'استكشف الدورات',
-        ctaSecondary: 'احجز جلسة إشراف',
+        ctaSecondary: 'احجز جلستك الآن',
         linkPrimary: '/courses',
         linkSecondary: '/sessions',
         tag: 'المنصة التعليمية الرائدة'
     },
     {
         id: 2,
-        title: 'إشراف إكلينيكي متخصص',
-        description: 'احصل على توجيه مهني من نخبة الخبراء لتطوير ممارستك العملية وضمان تقديم أفضل جودة رعاية لعملائك.',
-        image: '/images/hero2.png',
-        ctaPrimary: 'خدمات الإشراف',
+        title: 'جلسات دعم وعلاج نفسي',
+        description: 'احصل على دعم نفسي متخصص من نخبة الأخصائيين والمعالجين للتعامل مع مختلف التحديات النفسية في بيئة آمنة وخصوصية تامة.',
+        image: '/images/therapy_session_new.png',
+        ctaPrimary: 'احجز الآن',
         ctaSecondary: 'تعرف علينا',
         linkPrimary: '/sessions',
         linkSecondary: '/about',
@@ -36,6 +36,17 @@ const SLIDES = [
         linkPrimary: '/tools',
         linkSecondary: '/articles',
         tag: 'ابتكار في الممارسة'
+    },
+    {
+        id: 4,
+        title: 'الإشراف الإكلينيكي المتخصص',
+        description: 'احجز جلسة إشراف مهني متخصصة مع د. مصطفى صالح لتطوير ممارستك الإكلينيكية والحصول على التوجيه المهني اللازم.',
+        image: '/images/clinical_supervision.png',
+        ctaPrimary: 'احجز جلسة إشراف',
+        ctaSecondary: 'عن الخدمة',
+        linkPrimary: '/sessions/2880b57d-b858-480d-b32d-c5303cbff1e6',
+        linkSecondary: '/about',
+        tag: 'تطوير مهني متخصص'
     }
 ];
 

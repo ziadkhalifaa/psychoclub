@@ -1129,6 +1129,19 @@ async function startServer() {
   });
 
   // ─── Doctor Portfolio & Slots ──────────────────────────────────
+  apiRouter.get("/doctor/me", requireDoctorOrAdmin, async (req, res) => {
+    try {
+      const doctor = await prisma.doctor.findUnique({
+        where: { userId: res.locals.user.userId },
+        include: { user: { select: { name: true, email: true, avatar: true } } }
+      });
+      if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+      res.json(doctor);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
 
   apiRouter.put("/doctor/portfolio", requireDoctorOrAdmin, async (req, res) => {
     try {
