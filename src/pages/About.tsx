@@ -69,11 +69,11 @@ export default function About() {
                             <Sparkles className="w-3 h-3" /> من نحن
                         </div>
                         <h1 className="text-4xl lg:text-6xl font-black text-[#1F2F4A] dark:text-white mb-8 leading-[1.1] tracking-tighter">
-                            رؤيتنا نحو ممارسة <br />
-                            <span className="text-[#6FA65A]">إرشادية وعلاجية أكثر عمقاً</span>
+                            رواد الرعاية المتخصصة.. <br />
+                            <span className="text-[#6FA65A]">من الصحة النفسية إلى التميز المهني</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 text-lg lg:text-xl leading-relaxed font-medium mb-10 max-w-xl">
-                            انطلقت Clinical Cases Group | Psycho-Club لتكون الحاضنة المهنية التي تدعم المختص النفسي في رحلته الإنسانية. نحن لا نقدم مجرد دورات، بل نوفر منظومة متكاملة من التعليم التخصصي، الإرشاد المهني، والدعم العلاجي الذي يضمن استدامة الأثر الإيجابي.
+                            تأسست Clinical Cases Group | Psycho-Club لتكون صرحاً يجمع بين العلم والرحمة. نحن نؤمن أن جودة الرعاية تبدأ من كفاءة المعالج؛ لذا نقدم منظومة متكاملة تجمع بين تدريب الممارسين على أحدث المنهجيات العلمية، وتقديم جلسات دعم وعلاج نفسي متخصصة تضمن لكم رحلة تعافي آمنة ومستدامة.
                         </p>
                     </motion.div>
 
@@ -209,7 +209,7 @@ export default function About() {
                                 "في Clinical Cases Group | Psycho-Club، هدفنا هو تجاوز حدود التدريب التقليدي لنصنع مجتمعاً علاجياً متكاتفاً. نؤمن أن جودة الرعاية النفسية تبدأ من التوازن بين المعرفة العلمية الرصينة وفن الإرشاد الإنساني."
                             </p>
                             <div>
-                                <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">د. مصطفى صالح</h4>
+                                <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">مصطفى صالح</h4>
                                 <p className="text-[#6FA65A] font-bold uppercase tracking-widest text-xs mt-1">المدير التنفيذي والمؤسس</p>
                             </div>
                         </div>

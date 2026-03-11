@@ -6,17 +6,6 @@ import { ArrowLeft, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react';
 const SLIDES = [
     {
         id: 1,
-        title: 'ارتقِ بمهاراتك الإكلينيكية',
-        description: 'Psycho-Club هو المنصة التعليمية والتدريبية الرائدة لتطوير مهارات الممارسين في مجال الصحة النفسية من خلال دورات متخصصة وأدوات تفاعلية.',
-        image: '/images/hero1.png',
-        ctaPrimary: 'استكشف الدورات',
-        ctaSecondary: 'احجز جلستك الآن',
-        linkPrimary: '/courses',
-        linkSecondary: '/sessions',
-        tag: 'المنصة التعليمية الرائدة'
-    },
-    {
-        id: 2,
         title: 'جلسات دعم وعلاج نفسي',
         description: 'احصل على دعم نفسي متخصص من نخبة الأخصائيين والمعالجين للتعامل مع مختلف التحديات النفسية في بيئة آمنة وخصوصية تامة.',
         image: '/images/therapy_session_new.png',
@@ -25,6 +14,17 @@ const SLIDES = [
         linkPrimary: '/sessions',
         linkSecondary: '/about',
         tag: 'دعم مهني مستمر'
+    },
+    {
+        id: 2,
+        title: 'ارتقِ بمهاراتك الإكلينيكية',
+        description: 'Psycho-Club هو المنصة التعليمية والتدريبية الرائدة لتطوير مهارات الممارسين في مجال الصحة النفسية من خلال دورات متخصصة وأدوات تفاعلية.',
+        image: '/images/hero1.png',
+        ctaPrimary: 'استكشف الدورات',
+        ctaSecondary: 'احجز جلستك الآن',
+        linkPrimary: '/courses',
+        linkSecondary: '/sessions',
+        tag: 'المنصة التعليمية الرائدة'
     },
     {
         id: 3,
@@ -40,7 +40,7 @@ const SLIDES = [
     {
         id: 4,
         title: 'الإشراف الإكلينيكي المتخصص',
-        description: 'احجز جلسة إشراف مهني متخصصة مع د. مصطفى صالح لتطوير ممارستك الإكلينيكية والحصول على التوجيه المهني اللازم.',
+        description: 'احجز جلسة إشراف مهني متخصصة مع مصطفى صالح لتطوير ممارستك الإكلينيكية والحصول على التوجيه المهني اللازم.',
         image: '/images/clinical_supervision.png',
         ctaPrimary: 'احجز جلسة إشراف',
         ctaSecondary: 'عن الخدمة',
