@@ -988,8 +988,6 @@ async function startServer() {
       res.status(500).json({ error: "Server error" });
     }
   });
-    }
-  });
 
   // Auth: download all package files (requires approved purchase)
   // Securing Download Route with Pretty Info Page
