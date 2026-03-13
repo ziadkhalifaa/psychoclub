@@ -141,7 +141,6 @@ export default function ToolView() {
                     </div>
                     <div>
                       <h3 className="font-bold text-[#1F2F4A] text-sm">{previewFile.title}</h3>
-                      <p className="text-[10px] text-rose-500 font-bold animate-pulse">محتوى محمي — أي محاولة لسرقة الكود أو تصوير الشاشة تعرض حسابك للحظر</p>
                     </div>
                   </div>
                   <button

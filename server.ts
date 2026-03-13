@@ -813,95 +813,55 @@ async function startServer() {
       if (path.extname(filePath).toLowerCase() === '.html') {
         let content = fs.readFileSync(filePath, 'utf8');
         
-        // Extract body content for obfuscation
-        let bodyContent = "";
-        const bodyMatch = content.match(/<body[^>]*>([\s\S]*)<\/body>/i);
-        bodyContent = bodyMatch ? bodyMatch[1] : content;
-
-        const encodedBody = Buffer.from(bodyContent).toString('base64');
         const userIdentifier = `${user?.name || 'User'} (${user?.email || ''})`;
         const watermarkText = `${userIdentifier} - ${new Date().toLocaleDateString('ar-EG')}`;
 
-        // Hardened Protection Shell
-        const shell = `
-          <!DOCTYPE html>
-          <html lang="ar" dir="rtl">
-          <head>
-            <meta charset="UTF-8">
-            <style>
-              @media print { body { display: none !important; } }
-              body { margin: 0; padding: 0; background: #fff; overflow-x: hidden; font-family: sans-serif; }
-              #app-container { width: 100%; min-height: 100vh; position: relative; }
-              
-              /* Shield Overlay */
-              #security-shield {
-                position: fixed; inset: 0; z-index: 2147483647; pointer-events: none;
-                background: repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(0,0,0,0.01) 100px, rgba(0,0,0,0.01) 200px);
-              }
+        // Prepare Base URL (directory of the file)
+        const fileDir = path.dirname(file.fileUrl).replace(/\\/g, '/');
+        const baseUrl = fileDir.endsWith('/') ? fileDir : `${fileDir}/`;
 
-              /* Moving Watermark */
-              .security-tag {
-                position: fixed; color: rgba(111, 166, 90, 0.3); font-weight: 900; z-index: 2147483646;
-                pointer-events: none; white-space: nowrap; font-size: 12px;
-                animation: floatTag 15s linear infinite;
-              }
-              @keyframes floatTag {
-                0% { transform: translate(-100%, -100%); top: 0; left: 0; }
-                100% { transform: translate(100vw, 100vh); top: 0; left: 0; }
-              }
-
-            </style>
-          </head>
-          <body>
-            <div id="security-shield"></div>
-            <div class="security-tag">${watermarkText}</div>
-            <div class="security-tag" style="animation-delay: -5s; animation-duration: 25s;">${watermarkText}</div>
-            <div class="security-tag" style="animation-delay: -10s; animation-duration: 20s;">${watermarkText}</div>
-            
-
-
-            <div id="app-container"></div>
-
-            <script>
-              (function() {
-                const container = document.getElementById('app-container');
-                let isSecure = true;
-
-                // ─── Shadow DOM (Closed) ──────────────────────────────
-                // This makes the internal DOM nearly impossible to see in standard "Elements" tree for many
-                const shadow = container.attachShadow({ mode: 'closed' });
-                const mount = document.createElement('div');
-                mount.id = 'protected-content';
-                shadow.appendChild(mount);
-
-                // Inject Styles into Shadow
-                const style = document.createElement('style');
-                style.textContent = \`
-                    :host { display: block; }
-                    #protected-content { position: relative; z-index: 1; }
-
-                \`;
-                shadow.appendChild(style);
-
-                function loadContent() {
-                    try {
-                        const b64 = "${encodedBody}";
-                        mount.innerHTML = decodeURIComponent(escape(atob(b64)));
-                    } catch(e) { container.innerHTML = "Security Load Error."; }
-                }
-                loadContent();
-
-
-
-              })();
-            </script>
-          </body>
-          </html>
+        // Security CSS & Elements to inject
+        const securityStyle = `
+          <style>
+            @media print { body { display: none !important; } }
+            .security-tag {
+              position: fixed; color: rgba(111, 166, 90, 0.3); font-weight: 900; z-index: 2147483646;
+              pointer-events: none; white-space: nowrap; font-size: 12px;
+              animation: floatTag 15s linear infinite;
+              font-family: sans-serif;
+            }
+            @keyframes floatTag {
+              0% { transform: translate(-100%, -100%); top: 0; left: 0; }
+              100% { transform: translate(100vw, 100vh); top: 0; left: 0; }
+            }
+          </style>
         `;
+        
+        const securityElements = `
+          <div class="security-tag">${watermarkText}</div>
+          <div class="security-tag" style="animation-delay: -5s; animation-duration: 25s;">${watermarkText}</div>
+          <div class="security-tag" style="animation-delay: -10s; animation-duration: 20s;">${watermarkText}</div>
+        `;
+
+        // Inject <base> and <style> into <head>
+        const headMatch = content.match(/<head[^>]*>/i);
+        if (headMatch) {
+          content = content.replace(headMatch[0], `${headMatch[0]}<base href="${baseUrl}">${securityStyle}`);
+        } else {
+          content = `<base href="${baseUrl}">${securityStyle}${content}`;
+        }
+
+        // Inject tags into <body>
+        const bodyMatch = content.match(/<body[^>]*>/i);
+        if (bodyMatch) {
+          content = content.replace(bodyMatch[0], `${bodyMatch[0]}${securityElements}`);
+        } else {
+          content = `${content}${securityElements}`;
+        }
 
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-        return res.send(shell);
+        return res.send(content);
       } else {
         res.sendFile(filePath);
       }
