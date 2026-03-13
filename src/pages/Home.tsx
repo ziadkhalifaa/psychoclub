@@ -172,7 +172,7 @@ export default function Home() {
                 <div className="space-y-6">
                   <motion.img whileHover={{ scale: 1.05 }} src="https://picsum.photos/seed/psy1/500/600" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                   <div className="bg-[#6FA65A] p-8 rounded-[3rem] text-white shadow-xl shadow-emerald-500/20">
-                    <h4 className="text-4xl font-black mb-2">+1500</h4>
+                    <h4 className="text-4xl font-black mb-2">+3000</h4>
                     <p className="text-sm font-bold opacity-80 uppercase tracking-widest">خريج متدرب</p>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function Home() {
               </div>
 
               <p className="text-slate-400 leading-[2.2] text-lg font-medium">
-                في **Clinical Cases Group | Psycho-Club**، ندرك أن المختص النفسي يحتاج لمزيج من المعرفة والإرشاد المستمر. نحن لسنا مجرد منصة تعليمية، بل نحن مظلة مهنية وعلاجية ترافقك في كل خطوة، من التدريب الأساسي وحتى الإشراف الإكلينيكي المتقدم.
+                في Clinical Cases Group | Psycho-Club، ندرك أن المختص النفسي يحتاج لمزيج من المعرفة والإرشاد المستمر. نحن لسنا مجرد منصة تعليمية، بل نحن مظلة مهنية وعلاجية ترافقك في كل خطوة، من التدريب الأساسي وحتى الإشراف الإكلينيكي المتقدم.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
