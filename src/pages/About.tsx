@@ -29,10 +29,10 @@ const specialists = [
 ];
 
 const stats = [
-    { label: 'خريج متدرب', value: '+1500', icon: Users },
-    { label: 'دورة تدريبية', value: '+50', icon: Brain },
-    { label: 'سنة خبرة', value: '+10', icon: Award },
-    { label: 'محاضر خبير', value: '+20', icon: Sparkles },
+    { label: 'خريج متدرب', value: '+3000', icon: Users },
+    { label: 'دورة تدريبية', value: '+100', icon: Brain },
+    { label: 'سنة خبرة', value: '+5', icon: Award },
+    { label: 'محاضر خبير', value: '+15', icon: Sparkles },
 ];
 
 const values = [
