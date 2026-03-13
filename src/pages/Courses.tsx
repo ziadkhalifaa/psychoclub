@@ -42,17 +42,17 @@ export default function Courses() {
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="bg-[#1F2F4A] rounded-[3rem] p-16 text-center text-white relative overflow-hidden shadow-2xl"
+        className="bg-[#1F2F4A] rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 text-center text-white relative overflow-hidden shadow-2xl mb-12"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#6FA65A]/30 via-transparent to-transparent mix-blend-overlay" />
-        <div className="absolute top-0 right-0 w-full h-full bg-[linear-gradient(45deg,#1F2F4A_25%,transparent_25%),linear-gradient(-45deg,#1F2F4A_25%,transparent_25%)] bg-[length:40px_40px] opacity-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#6FA65A]/20 via-transparent to-transparent mix-blend-overlay" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#6FA65A]/10 rounded-full blur-[100px]" />
 
         <div className="relative z-10 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/5 border border-white/10 text-[#6FA65A] text-[10px] font-black uppercase tracking-widest">
             <Sparkles className="w-3 h-3" /> التميز الأكاديمي
           </div>
-          <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tighter">الأكاديمية التدريبية</h1>
-          <p className="text-slate-400 max-w-2xl mx-auto text-lg font-medium leading-relaxed">
+          <h1 className="text-3xl md:text-6xl font-black mb-4 tracking-tighter">الأكاديمية التدريبية</h1>
+          <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-lg font-medium leading-relaxed">
             استكشف مساراتنا التدريبية المتخصصة وحول ممارسة المهنة إلى فن إكلينيكي متقن.
           </p>
         </div>

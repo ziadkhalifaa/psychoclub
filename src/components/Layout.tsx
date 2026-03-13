@@ -16,54 +16,15 @@ export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
-  const [isBlurred, setIsBlurred] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
-    
-    // Pre-emptive Screenshot Protection
-    const handleCaptureStart = () => setIsBlurred(true);
-    const handleCaptureEnd = () => setIsBlurred(false);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Block PrintScreen or Win+Shift+S or Cmd+Shift+4
-      if (
-        e.key === 'PrintScreen' || 
-        (e.metaKey && e.shiftKey && (e.key === 's' || e.key === 'S')) ||
-        (e.ctrlKey && e.key === 'p')
-      ) {
-        handleCaptureStart();
-      }
-    };
 
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('blur', handleCaptureStart);
-    window.addEventListener('focus', handleCaptureEnd);
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('mouseleave', handleCaptureStart);
-    window.addEventListener('mouseenter', handleCaptureEnd);
-    window.addEventListener('beforeprint', handleCaptureStart);
-    window.addEventListener('afterprint', handleCaptureEnd);
-    
-    // High-frequency health check for focus
-    const interval = setInterval(() => {
-      if (!document.hasFocus()) {
-        handleCaptureStart();
-      }
-    }, 500);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('blur', handleCaptureStart);
-      window.removeEventListener('focus', handleCaptureEnd);
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('mouseleave', handleCaptureStart);
-      window.removeEventListener('mouseenter', handleCaptureEnd);
-      window.removeEventListener('beforeprint', handleCaptureStart);
-      window.removeEventListener('afterprint', handleCaptureEnd);
-      clearInterval(interval);
     };
   }, []);
 
@@ -73,31 +34,12 @@ export default function Layout() {
 
   return (
     <div 
-      className={`min-h-screen text-slate-800 dark:text-slate-200 font-sans selection:bg-[#6FA65A]/30 selection:text-[#1F2F4A] dark:selection:text-white transition-colors duration-500 bg-slate-50/80 dark:bg-[#0f172a]/90 ${isBlurred ? 'blur-[50px] select-none pointer-events-none' : ''}`} 
-      style={{ transition: isBlurred ? 'none' : 'filter 0.5s, background-color 0.5s, color 0.5s' }}
+      className="min-h-screen text-slate-800 dark:text-slate-200 font-sans selection:bg-[#6FA65A]/30 selection:text-[#1F2F4A] dark:selection:text-white transition-colors duration-500 bg-slate-50/80 dark:bg-[#0f172a]/90" 
       dir="rtl"
     >
       <ScrollToTop />
       <InteractiveBackground />
       <Toaster position="top-center" reverseOrder={false} />
-
-      {/* Global Security Overlay (only visible when blurred) */}
-      {isBlurred && (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-white/20 dark:bg-black/20 backdrop-blur-3xl">
-          <div className="p-8 bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl text-center border border-rose-500/20 max-w-md mx-4">
-            <div className="w-20 h-20 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShieldAlert className="w-10 h-10 text-rose-500" />
-            </div>
-            <h2 className="text-2xl font-black text-[#1F2F4A] dark:text-white mb-4">المحتوى محميّ</h2>
-            <p className="text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
-              عذراً، لا يمكن التقاط صور للشاشة أو مغادرة الصفحة أثناء عرض المحتوى المحمي. 🛡️
-            </p>
-            <div className="mt-8 py-3 px-6 bg-slate-50 dark:bg-slate-800 rounded-2xl text-[10px] text-rose-500 font-black uppercase tracking-widest">
-              نظام الحماية الإكلينيكية المتقدم
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Navigation */}
       <nav
@@ -112,7 +54,7 @@ export default function Layout() {
               <img
                 src={theme === 'dark' ? '/logo-dark.png' : '/logo.png'}
                 alt="Clinical Cases Group | Psycho-Club"
-                style={{ height: '52px', width: 'auto' }}
+                style={{ height: window.innerWidth < 768 ? '40px' : '52px', width: 'auto' }}
                 className="object-contain transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-[0_0_15px_rgba(111,166,90,0.3)]"
               />
             </div>

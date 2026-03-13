@@ -64,7 +64,7 @@ export function HeroSlider() {
     const prevSlide = () => setCurrent((prev) => (prev === 0 ? SLIDES.length - 1 : prev - 1));
 
     return (
-        <section className="relative h-[85vh] w-full overflow-hidden bg-slate-900">
+        <section className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden bg-slate-900">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={current}
@@ -79,19 +79,19 @@ export function HeroSlider() {
                         className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] scale-110 motion-safe:animate-[zoom_20s_infinite_alternate]"
                         style={{ backgroundImage: `url(${SLIDES[current].image})` }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#1F2F4A]/95 via-[#1F2F4A]/80 to-transparent rtl:bg-gradient-to-l" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1F2F4A] via-[#1F2F4A]/80 to-transparent md:bg-gradient-to-r md:from-[#1F2F4A]/95 md:via-[#1F2F4A]/80 md:to-transparent rtl:md:bg-gradient-to-l" />
                     </div>
 
                     {/* Content Wrapper */}
                     <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-                        <div className="max-w-2xl w-full space-y-8">
+                        <div className="max-w-2xl w-full space-y-4 md:space-y-8 mt-12 md:mt-0">
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3, duration: 0.8 }}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] md:text-sm font-medium"
                             >
-                                <Sparkles className="w-4 h-4 text-[#6FA65A]" />
+                                <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-[#6FA65A]" />
                                 {SLIDES[current].tag}
                             </motion.div>
 
@@ -99,7 +99,7 @@ export function HeroSlider() {
                                 initial={{ opacity: 0, x: -30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.5, duration: 0.8 }}
-                                className="text-4xl md:text-6xl font-bold text-white leading-tight rtl:text-right"
+                                className="text-3xl md:text-6xl font-bold text-white leading-tight rtl:text-right"
                             >
                                 {SLIDES[current].title.split(' ').map((word, i) =>
                                     word.includes('الإكلينيكية') || word.includes('متخصص') || word.includes('تفاعلية') ? (
@@ -112,7 +112,7 @@ export function HeroSlider() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.7, duration: 0.8 }}
-                                className="text-lg md:text-xl text-slate-200 leading-relaxed rtl:text-right"
+                                className="text-base md:text-xl text-slate-200 leading-relaxed rtl:text-right max-w-lg"
                             >
                                 {SLIDES[current].description}
                             </motion.p>
@@ -121,18 +121,18 @@ export function HeroSlider() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.9, duration: 0.8 }}
-                                className="flex flex-wrap gap-4 pt-4"
+                                className="flex flex-col sm:flex-row gap-3 pt-2 md:pt-4"
                             >
                                 <Link
                                     to={SLIDES[current].linkPrimary}
-                                    className="bg-[#6FA65A] hover:bg-emerald-600 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/30 flex items-center gap-2"
+                                    className="bg-[#6FA65A] hover:bg-emerald-600 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-sm md:text-base"
                                 >
                                     {SLIDES[current].ctaPrimary}
-                                    <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
+                                    <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 rtl:rotate-180" />
                                 </Link>
                                 <Link
                                     to={SLIDES[current].linkSecondary}
-                                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-semibold transition-all flex items-center gap-2"
+                                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-semibold transition-all flex items-center justify-center gap-2 text-sm md:text-base"
                                 >
                                     {SLIDES[current].ctaSecondary}
                                 </Link>

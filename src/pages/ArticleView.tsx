@@ -30,31 +30,31 @@ export default function ArticleView() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative h-[500px] md:h-[600px] rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white/5"
+          className="relative h-[350px] md:h-[600px] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white/5"
         >
           <img src={article.coverImage || `https://picsum.photos/seed/${article.slug}/1600/900`} alt={article.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F2F4A] via-[#1F2F4A]/40 to-transparent" />
 
-          <div className="absolute bottom-0 left-0 right-0 p-10 md:p-20 text-white space-y-8">
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-20 text-white space-y-4 md:space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="px-4 py-1.5 bg-[#6FA65A] rounded-xl text-[10px] font-black uppercase tracking-widest inline-block shadow-lg shadow-emerald-500/20"
+              className="px-3 py-1 bg-[#6FA65A] rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest inline-block shadow-lg shadow-emerald-500/20"
             >
               {article.category}
             </motion.div>
 
-            <h1 className="text-4xl md:text-7xl font-black leading-[1.1] tracking-tighter max-w-4xl">{article.title}</h1>
+            <h1 className="text-2xl md:text-7xl font-black leading-tight tracking-tighter max-w-4xl">{article.title}</h1>
 
-            <div className="flex flex-wrap items-center gap-10 pt-4 border-t border-white/10">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-0.5 overflow-hidden">
-                  <img src={article.author.photo || article.author.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.user.name)}&background=random`} className="w-full h-full rounded-[0.9rem] object-cover" alt="" />
+            <div className="flex flex-wrap items-center gap-4 md:gap-10 pt-4 border-t border-white/10">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-0.5 overflow-hidden">
+                  <img src={article.author.photo || article.author.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.user.name)}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بقلم</p>
-                  <span className="font-black text-sm">{article.author.user.name}</span>
+                  <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بقلم</p>
+                  <span className="font-black text-xs md:text-sm">{article.author.user.name}</span>
                 </div>
               </div>
 

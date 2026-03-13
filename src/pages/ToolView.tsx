@@ -27,40 +27,6 @@ export default function ToolView() {
     enabled: !!user
   });
 
-  // Disable right-click and screenshot protection
-  useEffect(() => {
-    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Block PrintScreen
-      if (e.key === 'PrintScreen') {
-        e.preventDefault();
-      }
-      // Block DevTools & Source
-      if (
-        e.key === 'F12' || 
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
-        (e.ctrlKey && e.key === 'u')
-      ) {
-        e.preventDefault();
-      }
-      // Block Ctrl+P (print)
-      if (e.ctrlKey && e.key === 'p') {
-        e.preventDefault();
-      }
-      // Block Ctrl+S (save)
-      if (e.ctrlKey && e.key === 's') {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [previewFileId]);
-
   if (isLoading) return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="w-12 h-12 border-4 border-[#6FA65A] border-t-transparent rounded-full animate-spin" />
@@ -186,12 +152,8 @@ export default function ToolView() {
                   </button>
                 </div>
                 <div
-                  className="relative select-none bg-slate-900"
-                  style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
-                  onContextMenu={e => e.preventDefault()}
+                  className="relative bg-slate-900"
                 >
-                  {/* High Security Overlay */}
-                  <div className="absolute inset-0 z-20 pointer-events-none border-4 border-rose-500/10 pointer-events-none" />
                   
                   <iframe
                     ref={iframeRef}

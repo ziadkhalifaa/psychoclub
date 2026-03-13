@@ -829,7 +829,6 @@ async function startServer() {
           <head>
             <meta charset="UTF-8">
             <style>
-              * { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
               @media print { body { display: none !important; } }
               body { margin: 0; padding: 0; background: #fff; overflow-x: hidden; font-family: sans-serif; }
               #app-container { width: 100%; min-height: 100vh; position: relative; }
@@ -850,11 +849,7 @@ async function startServer() {
                 0% { transform: translate(-100%, -100%); top: 0; left: 0; }
                 100% { transform: translate(100vw, 100vh); top: 0; left: 0; }
               }
-              #blur-mask {
-                position: fixed; inset: 0; backdrop-filter: blur(20px); z-index: 2147483645;
-                display: none; background: rgba(255,255,255,0.8);
-                align-items: center; justify-content: center; text-align: center;
-              }
+
             </style>
           </head>
           <body>
@@ -863,19 +858,13 @@ async function startServer() {
             <div class="security-tag" style="animation-delay: -5s; animation-duration: 25s;">${watermarkText}</div>
             <div class="security-tag" style="animation-delay: -10s; animation-duration: 20s;">${watermarkText}</div>
             
-            <div id="blur-mask">
-                <div style="padding: 40px; border-radius: 20px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                    <h2 style="margin: 0; color: #DC2626;">الوصول مقيد</h2>
-                    <p style="color: #64748B;">تم تعليق العرض مؤقتاً لحماية المحتوى. يرجى العودة لصفحة العرض.</p>
-                </div>
-            </div>
+
 
             <div id="app-container"></div>
 
             <script>
               (function() {
                 const container = document.getElementById('app-container');
-                const blurMask = document.getElementById('blur-mask');
                 let isSecure = true;
 
                 // ─── Shadow DOM (Closed) ──────────────────────────────
@@ -890,8 +879,7 @@ async function startServer() {
                 style.textContent = \`
                     :host { display: block; }
                     #protected-content { position: relative; z-index: 1; }
-                    /* Reinforce protection inside shadow */
-                    * { -webkit-user-select: none !important; user-select: none !important; }
+
                 \`;
                 shadow.appendChild(style);
 
@@ -903,73 +891,7 @@ async function startServer() {
                 }
                 loadContent();
 
-                // ─── Aggressive Protection ───────────────────────────
-                
-                function nuke() {
-                    if (!isSecure) return;
-                    isSecure = false;
-                    mount.innerHTML = "";
-                    document.body.innerHTML = \`
-                        <div style="height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fee2e2; color:#991b1b; font-family:sans-serif; direction:rtl; text-align:center; padding:20px;">
-                            <h1 style="font-size:4rem; margin:0">⚠️</h1>
-                            <h2>انتهاك أمني خطير</h2>
-                            <p>تم اكتشاف محاولة الوصول للكود المصدري أو تصوير الشاشة. تم إلغاء الجلسة فوراً.</p>
-                            <button onclick="window.location.reload()" style="background:#b91c1c; color:white; border:none; padding:12px 24px; border-radius:12px; cursor:pointer; font-weight:bold;">إعادة المحاولة</button>
-                        </div>
-                    \`;
-                }
 
-                // 1. DevTools Detection via Dimension Check (for docked tools)
-                const checkDimensions = () => {
-                    const threshold = 160;
-                    const widthDiff = window.outerWidth - window.innerWidth;
-                    const heightDiff = window.outerHeight - window.innerHeight;
-                    if (widthDiff > threshold || heightDiff > threshold) {
-                        nuke();
-                    }
-                };
-                setInterval(checkDimensions, 1000);
-
-                // 2. Hardened Debugger Detection
-                (function detectionLoop() {
-                    const start = Date.now();
-                    (function() { debugger; })();
-                    if (Date.now() - start > 100) {
-                        nuke();
-                    }
-                    setTimeout(detectionLoop, 500);
-                })();
-
-                // 3. Screen Capture Deterrence (Blur on focus loss)
-                window.addEventListener('blur', () => { blurMask.style.display = 'flex'; });
-                window.addEventListener('focus', () => { blurMask.style.display = 'none'; });
-
-                // 4. Block Key Shortcuts & Right Click
-                window.addEventListener('contextmenu', e => e.preventDefault());
-                window.addEventListener('keydown', e => {
-                    if (
-                        e.keyCode === 123 || // F12
-                        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
-                        (e.ctrlKey && e.keyCode === 85) || 
-                        (e.ctrlKey && e.keyCode === 83) || 
-                        (e.ctrlKey && e.keyCode === 80)
-                    ) {
-                        e.preventDefault();
-                        nuke();
-                        return false;
-                    }
-                });
-
-                // 5. Anti-Console Inspection
-                let devtools = function() {};
-                devtools.toString = function() {
-                    nuke();
-                    return "Security Active";
-                };
-                console.log('%c', devtools);
-
-                // Detect Print
-                window.onbeforeprint = nuke;
 
               })();
             </script>

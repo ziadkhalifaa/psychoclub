@@ -101,41 +101,41 @@ export default function CourseView() {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1F2F4A] rounded-[3.5rem] overflow-hidden relative shadow-2xl"
+        className="bg-[#1F2F4A] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden relative shadow-2xl mt-10"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#6FA65A]/40 via-transparent to-transparent mix-blend-overlay" />
         <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_20%,#6FA65A10_0%,transparent_40%)]" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-10 md:p-20 relative z-10 items-center">
-          <div className="space-y-8 text-white">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 p-6 md:p-20 relative z-10 items-center">
+          <div className="space-y-6 md:space-y-8 text-white">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em]"
+              className="flex flex-wrap items-center gap-3 md:gap-4 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]"
             >
-              <span className="bg-[#6FA65A] px-4 py-1.5 rounded-xl shadow-lg shadow-emerald-500/20">{course.category}</span>
-              <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-[#6FA65A]" /> {course.level}</span>
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-[#6FA65A]" /> {course.duration}</span>
+              <span className="bg-[#6FA65A] px-3 py-1 md:px-4 md:py-1.5 rounded-xl shadow-lg shadow-emerald-500/20">{course.category}</span>
+              <span className="flex items-center gap-1.5"><BookOpen className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#6FA65A]" /> {course.level}</span>
+              <span className="flex items-center gap-1.5"><Clock className="w-3 md:w-3.5 h-3 md:h-3.5 text-[#6FA65A]" /> {course.duration}</span>
             </motion.div>
 
-            <h1 className="text-4xl md:text-6xl font-black leading-[1.1] tracking-tighter">{course.title}</h1>
-            <p className="text-slate-400 text-lg leading-relaxed max-w-xl font-medium">{course.description}</p>
+            <h1 className="text-2xl md:text-6xl font-black leading-tight tracking-tighter">{course.title}</h1>
+            <p className="text-slate-400 text-sm md:text-lg leading-relaxed max-w-xl font-medium">{course.description}</p>
 
-            <div className="flex items-center gap-5 pt-6 border-t border-white/5">
-              <div className="w-16 h-16 rounded-[2rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 group overflow-hidden">
+            <div className="flex items-center gap-4 md:gap-5 pt-6 border-t border-white/5">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 group overflow-hidden">
                 {course.instructor.photo || course.instructor.user.avatar ? (
-                  <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                  <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover rounded-xl md:rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-2xl">
+                  <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-xl">
                     {course.instructor.user.name.charAt(0)}
                   </div>
                 )}
               </div>
               <div>
-                <p className="text-[10px] text-[#6FA65A] font-black uppercase tracking-widest mb-1">المحاضر المعتمد</p>
-                <div className="font-black text-xl">{course.instructor.user.name}</div>
-                <div className="text-slate-500 text-xs font-bold">{course.instructor.title}</div>
+                <p className="text-[9px] md:text-[10px] text-[#6FA65A] font-black uppercase tracking-widest mb-1">المحاضر المعتمد</p>
+                <div className="font-black text-lg md:text-xl">{course.instructor.user.name}</div>
+                <div className="text-slate-500 text-[10px] md:text-xs font-bold">{course.instructor.title}</div>
               </div>
             </div>
           </div>

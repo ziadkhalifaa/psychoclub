@@ -58,10 +58,10 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
               <img src="/images/therapy_session.png" alt="Therapy Session" className="rounded-[2.5rem] object-cover h-64 md:h-80 w-full shadow-2xl border-4 border-white dark:border-slate-800" referrerPolicy="no-referrer" />
-              <img src="/images/clinical_training.png" alt="Clinical Training" className="rounded-[2.5rem] object-cover h-64 md:h-80 w-full mt-12 shadow-2xl border-4 border-white dark:border-slate-800" referrerPolicy="no-referrer" />
+              <img src="/images/clinical_training.png" alt="Clinical Training" className="rounded-[2.5rem] object-cover h-64 md:h-80 w-full md:mt-12 shadow-2xl border-4 border-white dark:border-slate-800" referrerPolicy="no-referrer" />
             </motion.div>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function Home() {
               transition={{ duration: 1 }}
               className="relative order-2 lg:order-1"
             >
-              <div className="relative z-10 grid grid-cols-2 gap-6">
+              <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-6">
                   <motion.img whileHover={{ scale: 1.05 }} src="https://picsum.photos/seed/psy1/500/600" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                   <div className="bg-[#6FA65A] p-8 rounded-[3rem] text-white shadow-xl shadow-emerald-500/20">
@@ -176,7 +176,7 @@ export default function Home() {
                     <p className="text-sm font-bold opacity-80 uppercase tracking-widest">خريج متدرب</p>
                   </div>
                 </div>
-                <div className="space-y-6 pt-12">
+                <div className="space-y-6 md:pt-12">
                   <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[3rem] border border-white/10 text-white">
                     <Activity className="w-10 h-10 text-[#6FA65A] mb-4" />
                     <h4 className="text-xl font-bold mb-2">منهجية إكلينيكية</h4>

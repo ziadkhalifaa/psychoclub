@@ -351,23 +351,23 @@ function PostDetailsModal({ post: initialPost, onClose }: any) {
     <div className="fixed inset-0 z-[60] flex items-center justify-center lg:p-4">
       <div className="absolute inset-0 bg-[#1F2F4A]/80 backdrop-blur-md" onClick={onClose} />
       <div className="relative bg-white w-full max-w-4xl h-full lg:h-[90vh] lg:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-500">
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="p-4 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
               {activePost.author.avatar ? <img src={activePost.author.avatar} className="w-full h-full object-cover rounded-2xl" /> : <User className="text-slate-300" />}
             </div>
             <div>
-              <h4 className="font-black text-[#1F2F4A]">{activePost.author.name}</h4>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{formatDistanceToNow(new Date(activePost.createdAt), { addSuffix: true, locale: ar })}</p>
+              <h4 className="font-black text-sm md:text-base text-[#1F2F4A]">{activePost.author.name}</h4>
+              <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest">{formatDistanceToNow(new Date(activePost.createdAt), { addSuffix: true, locale: ar })}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 hover:bg-slate-200 rounded-2xl transition-colors text-slate-400"><X className="w-6 h-6" /></button>
+          <button onClick={onClose} className="p-2 md:p-3 hover:bg-slate-200 rounded-2xl transition-colors text-slate-400"><X className="w-5 h-5 md:w-6 md:h-6" /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 space-y-12">
-          <div className="space-y-6">
-            <h1 className="text-3xl font-black text-[#1F2F4A] leading-tight">{activePost.title}</h1>
-            <p className="text-slate-600 text-lg leading-relaxed whitespace-pre-wrap font-medium">{activePost.body}</p>
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-10 md:space-y-12">
+          <div className="space-y-4 md:space-y-6">
+            <h1 className="text-xl md:text-3xl font-black text-[#1F2F4A] leading-tight">{activePost.title}</h1>
+            <p className="text-slate-600 text-sm md:text-lg leading-relaxed whitespace-pre-wrap font-medium">{activePost.body}</p>
             <div className="flex gap-2">
               <span className="bg-[#6FA65A]/10 text-[#6FA65A] px-4 py-2 rounded-xl text-xs font-black">{activePost.category.name}</span>
             </div>

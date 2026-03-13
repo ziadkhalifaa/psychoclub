@@ -97,15 +97,17 @@ export default function About() {
                                     clickable: true,
                                 }}
                                 loop={true}
-                                className="w-full h-full aspect-[4/5] lg:aspect-auto"
+                                className="w-full h-full aspect-square sm:aspect-[4/5] lg:aspect-auto"
                             >
                                 {specialists.map((item, index) => (
                                     <SwiperSlide key={index}>
-                                        <img
-                                            src={item.src}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                                            <img
+                                                src={item.src}
+                                                alt={item.name}
+                                                className="w-full h-full object-contain"
+                                            />
+                                        </div>
                                     </SwiperSlide>
                                 ))}
                             </Swiper>
@@ -195,8 +197,8 @@ export default function About() {
             {/* Founder Section */}
             <section className="py-24 bg-white dark:bg-transparent transition-colors duration-500">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-slate-50 dark:bg-slate-900 rounded-[4rem] p-12 lg:p-24 flex flex-col lg:flex-row gap-16 items-center border border-transparent dark:border-slate-800">
-                        <div className="w-64 h-64 lg:w-96 lg:h-96 rounded-[3rem] overflow-hidden shadow-2xl shrink-0">
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 lg:p-24 flex flex-col lg:flex-row gap-12 lg:gap-16 items-center border border-transparent dark:border-slate-800">
+                        <div className="w-48 h-48 lg:w-96 lg:h-96 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl shrink-0">
                             <img
                                 src="/images/specialists/spicialist12.png"
                                 alt="Founder"
