@@ -86,12 +86,13 @@ export default function About() {
                         transition={{ duration: 1 }}
                         className="relative"
                     >
-                        <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-slate-800 bg-white dark:bg-slate-900">
+                        <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-slate-800 bg-white dark:bg-slate-900 aspect-[4/5]">
                             <Swiper
                                 modules={[Autoplay, EffectFade, Pagination, Controller]}
                                 onSwiper={setFirstSwiper}
                                 controller={{ control: secondSwiper }}
                                 effect="fade"
+                                fadeEffect={{ crossFade: true }}
                                 autoplay={{
                                     delay: 3500,
                                     disableOnInteraction: false,
@@ -100,15 +101,16 @@ export default function About() {
                                     clickable: true,
                                 }}
                                 loop={true}
-                                className="w-full h-full aspect-square sm:aspect-[4/5] lg:aspect-auto"
+                                className="w-full h-full"
                             >
                                 {specialists.map((item, index) => (
                                     <SwiperSlide key={index}>
-                                        <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                                        <div className="w-full h-full flex items-center justify-center bg-white dark:bg-slate-900">
                                             <img
                                                 src={item.src}
                                                 alt={item.name}
                                                 className="w-full h-full object-contain"
+                                                loading="lazy"
                                             />
                                         </div>
                                     </SwiperSlide>
