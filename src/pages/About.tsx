@@ -205,7 +205,7 @@ export default function About() {
                     <div className="bg-slate-50 dark:bg-slate-900 rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 lg:p-24 flex flex-col lg:flex-row gap-12 lg:gap-16 items-center border border-transparent dark:border-slate-800">
                         <div className="w-48 h-48 lg:w-96 lg:h-96 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl shrink-0">
                             <img
-                                src="/images/specialists/specialist1.png"
+                                src="/images/specialists/admin.png"
                                 alt="Founder"
                                 className="w-full h-full object-cover"
                             />
