@@ -13,16 +13,19 @@ import 'swiper/css/pagination';
 
 const specialists = [
     { src: '/images/specialists/specialist1.png', name: 'أ.مصطفى صالح' },
-    { src: '/images/specialists/specialist2.png', name: 'أ.سهى خيري' },
-    { src: '/images/specialists/specialist3.png', name: 'أ.احمد عبد العظيم' },
-    { src: '/images/specialists/specialist4.png', name: 'أ.رانيا محمد' },
-    { src: '/images/specialists/spicialist5.png', name: 'أ.مريم السيد' },
-    { src: '/images/specialists/spicialist6.png', name: 'أ.صفية سويلم' },
-    { src: '/images/specialists/spicialist7.png', name: 'أ.حنان بلال' },
-    { src: '/images/specialists/spicialist8.png', name: 'أ.شروق فتوح' },
-    { src: '/images/specialists/spicialist9.png', name: 'أ.مصطفى احمد' },
-    { src: '/images/specialists/spicialist10.png', name: 'أ.سماح احمد' },
-    { src: '/images/specialists/spicialist11.png', name: 'أ.شيرين همام' },
+    { src: '/images/specialists/specialist2.png', name: 'أ.احمد عبد العظيم' },
+    { src: '/images/specialists/specialist3.png', name: 'أ.مالك وليد' },
+    { src: '/images/specialists/specialist4.png', name: 'أ.مصطفى احمد' },
+    { src: '/images/specialists/specialist5.png', name: 'أ.بدير محمد' },
+    { src: '/images/specialists/specialist6.png', name: 'أ.صفية سويلم' },
+    { src: '/images/specialists/specialist7.png', name: 'أ.سماح احمد' },
+    { src: '/images/specialists/specialist8.png', name: 'أ.مريم السيد' },
+    { src: '/images/specialists/specialist9.png', name: 'أ.حنان بلال' },
+    { src: '/images/specialists/specialist10.png', name: 'أ.بسمة شعبان' },
+    { src: '/images/specialists/specialist11.png', name: 'أ.شروق فتوح' },
+    { src: '/images/specialists/specialist12.png', name: 'أ.سها خيري' },
+    { src: '/images/specialists/specialist13.png', name: 'أ.شيرين همام' },
+    { src: '/images/specialists/specialist14.png', name: 'أ.رانيا محمد' },
 ];
 
 const stats = [
@@ -200,7 +203,7 @@ export default function About() {
                     <div className="bg-slate-50 dark:bg-slate-900 rounded-[2rem] md:rounded-[4rem] p-6 md:p-12 lg:p-24 flex flex-col lg:flex-row gap-12 lg:gap-16 items-center border border-transparent dark:border-slate-800">
                         <div className="w-48 h-48 lg:w-96 lg:h-96 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl shrink-0">
                             <img
-                                src="/images/specialists/spicialist12.png"
+                                src="/images/specialists/specialist1.png"
                                 alt="Founder"
                                 className="w-full h-full object-cover"
                             />
