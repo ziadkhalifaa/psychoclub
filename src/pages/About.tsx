@@ -26,6 +26,7 @@ const specialists = [
     { src: '/images/specialists/specialist12.png', name: 'أ.سها خيري' },
     { src: '/images/specialists/specialist13.png', name: 'أ.شيرين همام' },
     { src: '/images/specialists/specialist14.png', name: 'أ.رانيا محمد' },
+    { src: '/images/specialists/specialist15.png', name: 'أ.سماء عثمان' },
 ];
 
 const stats = [

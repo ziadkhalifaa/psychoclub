@@ -170,7 +170,7 @@ export default function Home() {
             >
               <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-6">
-                  <motion.img whileHover={{ scale: 1.05 }} src="https://picsum.photos/seed/psy1/500/600" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
+                  <motion.img whileHover={{ scale: 1.05 }} src="/images/home_about_therapy.png" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                   <div className="bg-[#6FA65A] p-8 rounded-[3rem] text-white shadow-xl shadow-emerald-500/20">
                     <h4 className="text-4xl font-black mb-2">+3000</h4>
                     <p className="text-sm font-bold opacity-80 uppercase tracking-widest">خريج متدرب</p>
@@ -182,7 +182,7 @@ export default function Home() {
                     <h4 className="text-xl font-bold mb-2">منهجية إكلينيكية</h4>
                     <p className="text-xs text-slate-400 font-medium">نركز على التطبيق العملي للنماذج العلاجية الحديثة.</p>
                   </div>
-                  <motion.img whileHover={{ scale: 1.05 }} src="https://picsum.photos/seed/psy2/500/600" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
+                  <motion.img whileHover={{ scale: 1.05 }} src="/images/home_about_training.png" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                 </div>
               </div>
             </motion.div>
