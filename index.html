@@ -7,6 +7,25 @@
   <title>Clinical Cases Group | Psycho-Club</title>
   <meta name="description" content="البوابة الشاملة للنمو الإكلينيكي والاستقرار النفسي. نقدم منظومة متكاملة من التدريب التخصصي، الإرشاد المهني، والدعم العلاجي لمجتمع الصحة النفسية العربي." />
   <link rel="icon" type="image/png" href="/favicon.png" />
+  <style>
+    /* Critical UI Accessibility Fix: Force black text on all inputs */
+    input, textarea, select, 
+    input[type="text"], input[type="email"], input[type="password"], 
+    .form-input, .form-textarea {
+      color: #000000 !important;
+      -webkit-text-fill-color: #000000 !important;
+      font-weight: 500 !important;
+      opacity: 1 !important;
+    }
+    label, .label-text {
+      color: #1a1a1a !important;
+      font-weight: 600 !important;
+    }
+    ::placeholder {
+      color: #64748b !important;
+      opacity: 0.8 !important;
+    }
+  </style>
 </head>
 
 <body>

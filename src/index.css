@@ -2,16 +2,26 @@
 
 @variant dark (&:where(.dark, .dark *));
 
-/* Ensure all user input is black and clearly visible */
-input, textarea, select {
-  color: #000000 !important;
-  font-weight: 500;
+/* Force all user input text to be black and clearly visible */
+input, textarea, select, 
+input[type="text"], input[type="email"], input[type="password"], 
+.form-input, .form-textarea {
+  color: #1a1a1a !important; /* Very dark/black */
+  -webkit-text-fill-color: #1a1a1a !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+/* Ensure labels and icons are also readable */
+label, .label-text {
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
 }
 
 /* Ensure placeholders are readable but distinct */
 ::placeholder {
-  color: #94a3b8 !important;
-  opacity: 1;
+  color: #64748b !important; /* Slightly darker slate */
+  opacity: 0.8 !important;
 }
 
 /* Specific fix for dark mode if needed (though user asked for black everywhere) */
