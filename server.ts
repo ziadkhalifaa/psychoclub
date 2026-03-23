@@ -1740,14 +1740,23 @@ async function startServer() {
 
   apiRouter.get("/doctors/:id/reviews", async (req, res) => {
     try {
+      // Check if requester is admin for enhanced data
+      let isAdmin = false;
+      // Try both header and cookie for the token
+      const token = req.cookies.token || (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+      
+      if (token) {
+        try {
+          const decoded: any = jwt.verify(token, JWT_SECRET);
+          if (decoded.role === "ADMIN") isAdmin = true;
+        } catch (e) { /* Invalid token, proceed as anonymous */ }
+      }
+
       const reviews = await prisma.review.findMany({
         where: { doctorId: req.params.id },
         orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          rating: true,
-          comment: true,
-          createdAt: true
+        include: {
+          user: isAdmin ? { select: { name: true } } : false
         }
       });
       res.json(reviews);

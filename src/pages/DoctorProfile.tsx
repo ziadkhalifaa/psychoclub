@@ -27,7 +27,11 @@ export default function DoctorProfile() {
 
     const { data: reviews } = useQuery({
         queryKey: ['doctor-reviews', id],
-        queryFn: () => fetch(`/api/doctors/${id}/reviews`).then(res => res.json()),
+        queryFn: () => fetch(`/api/doctors/${id}/reviews`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        }).then(res => res.json()),
         enabled: !!doctor
     });
 
@@ -170,7 +174,9 @@ export default function DoctorProfile() {
                                             <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
                                                 <User className="w-3 h-3 text-slate-400" />
                                             </div>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">مُراجع مجهول</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                                                {user?.role === 'ADMIN' && rev.user?.name ? rev.user.name : 'مُراجع مجهول'}
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
