@@ -1523,7 +1523,8 @@ async function startServer() {
           }
         },
         include: {
-          user: { select: { name: true, avatar: true } }
+          user: { select: { name: true, avatar: true } },
+          _count: { select: { reviews: true } }
         }
       });
       res.json(doctors);
@@ -1542,7 +1543,8 @@ async function startServer() {
           slots: {
             where: { isBooked: false, startAt: { gte: new Date() } },
             orderBy: { startAt: 'asc' }
-          }
+          },
+          _count: { select: { reviews: true } }
         }
       });
       if (!doctor) return res.status(404).json({ error: "Doctor not found" });
@@ -1681,6 +1683,74 @@ async function startServer() {
 
       await logAudit(res.locals.user.userId, "REJECT_BOOKING", "Booking", booking.id);
       res.json(booking);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // ─── Reviews ──────────────────────────────────────────────────
+
+  apiRouter.post("/reviews", requireAuth, async (req, res) => {
+    try {
+      const { doctorId, bookingId, rating, comment } = req.body;
+      const userId = res.locals.user.userId;
+
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: "التقييم يجب أن يكون بين 1 و 5" });
+      }
+
+      // Check if already reviewed this booking
+      if (bookingId) {
+        const existing = await prisma.review.findUnique({ where: { bookingId } });
+        if (existing) return res.status(400).json({ error: "لقد قمت بتقييم هذه الجلسة بالفعل" });
+
+        const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+        if (!booking || booking.userId !== userId) {
+          return res.status(403).json({ error: "ليس لديك صلاحية لتقييم هذا الحجز" });
+        }
+      }
+
+      const review = await prisma.review.create({
+        data: {
+          doctorId,
+          userId,
+          bookingId,
+          rating: parseInt(rating),
+          comment
+        }
+      });
+
+      // Update doctor average rating
+      const allReviews = await prisma.review.findMany({ where: { doctorId }, select: { rating: true } });
+      const avg = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+      
+      await prisma.doctor.update({
+        where: { id: doctorId },
+        data: { rating: avg }
+      });
+
+      await logAudit(userId, "CREATE_REVIEW", "Review", review.id);
+      res.json({ success: true, review });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  apiRouter.get("/doctors/:id/reviews", async (req, res) => {
+    try {
+      const reviews = await prisma.review.findMany({
+        where: { doctorId: req.params.id },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          createdAt: true
+        }
+      });
+      res.json(reviews);
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });

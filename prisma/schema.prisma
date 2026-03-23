@@ -30,6 +30,7 @@ model User {
   notifications  Notification[]
   courseProgress CourseProgress[]
   forumLikes     ForumLike[]
+  reviews        Review[]
 }
 
 model Doctor {
@@ -51,6 +52,7 @@ model Doctor {
   articles          Article[]
   slots             AvailableSlot[]
   bookings          Booking[]
+  reviews           Review[]
 }
 
 model Course {
@@ -171,12 +173,14 @@ model Booking {
   paymentReceiptUrl String?
   paymentStatus     String   @default("PENDING") // PENDING, APPROVED, REJECTED
   createdAt         DateTime @default(now())
+
+  review            Review?
 }
 
 model Purchase {
   id              String   @id @default(uuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
   type            String   // COURSE, PACKAGE
   itemId          String
   amount          Float
@@ -295,4 +299,17 @@ model CourseProgress {
   updatedAt DateTime     @updatedAt
   
   @@unique([userId, lessonId])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  bookingId String?   @unique
+  booking   Booking?  @relation(fields: [bookingId], references: [id])
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
 }

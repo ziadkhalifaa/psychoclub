@@ -25,6 +25,12 @@ export default function DoctorProfile() {
         })
     });
 
+    const { data: reviews } = useQuery({
+        queryKey: ['doctor-reviews', id],
+        queryFn: () => fetch(`/api/doctors/${id}/reviews`).then(res => res.json()),
+        enabled: !!doctor
+    });
+
     const handleBooking = async () => {
         if (!user) {
             alert("يرجى تسجيل الدخول أولاً");
@@ -81,7 +87,14 @@ export default function DoctorProfile() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-10 md:p-20 relative z-10 items-center text-white">
                     <div className="space-y-6">
                         <h1 className="text-4xl md:text-5xl font-black">{doctor.user.name}</h1>
-                        <p className="text-[#6FA65A] font-black text-xl tracking-widest">{doctor.title}</p>
+                        <div className="flex items-center gap-4">
+                            <p className="text-[#6FA65A] font-black text-xl tracking-widest">{doctor.title}</p>
+                            <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+                                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                <span className="text-sm font-black">{doctor.rating?.toFixed(1) || '0.0'}</span>
+                                <span className="text-[10px] text-slate-400">({doctor._count?.reviews || 0})</span>
+                            </div>
+                        </div>
                         <p className="text-slate-300 text-lg leading-relaxed max-w-xl font-medium">{doctor.bio || 'لم يقم الأخصائي بإضافة نبذة شخصية حتى الآن.'}</p>
 
                         <div className="flex flex-wrap gap-3 pt-6">
@@ -124,6 +137,49 @@ export default function DoctorProfile() {
                                 <p className="italic text-slate-400">لا توجد تفاصيل إضافية للسيرة الذاتية.</p>
                             )}
                         </div>
+                    </section>
+
+                    {/* Reviews Section */}
+                    <section className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/50">
+                        <h2 className="text-2xl font-black text-[#1F2F4A] mb-8 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center">
+                                    <Star className="w-6 h-6 fill-amber-500" />
+                                </div>
+                                آراء المراجعين
+                            </div>
+                            <span className="text-sm font-bold text-slate-400">{reviews?.length || 0} مراجعة</span>
+                        </h2>
+
+                        {reviews && reviews.length > 0 ? (
+                            <div className="space-y-6">
+                                {reviews.map((rev: any) => (
+                                    <div key={rev.id} className="p-6 bg-slate-50/50 rounded-3xl border border-slate-100">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex gap-1">
+                                                {[1, 2, 3, 4, 5].map(n => (
+                                                    <Star key={n} className={`w-3.5 h-3.5 ${n <= rev.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                                                ))}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-400">{new Date(rev.createdAt).toLocaleDateString('ar-EG')}</span>
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-600 leading-relaxed text-right">
+                                            {rev.comment || <span className="italic opacity-50">لا يوجد تعليق مضاف</span>}
+                                        </p>
+                                        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
+                                                <User className="w-3 h-3 text-slate-400" />
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">مُراجع مجهول</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-100 italic text-slate-400 font-bold">
+                                لا توجد مراجعات حتى الآن.
+                            </div>
+                        )}
                     </section>
                 </div>
 

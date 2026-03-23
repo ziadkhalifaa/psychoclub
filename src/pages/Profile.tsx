@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, Calendar, Download, Settings, User, Camera, Mail, Phone, Lock, Check, X, Shield, Clock, Video } from 'lucide-react';
+import { BookOpen, Calendar, Download, Settings, User, Camera, Mail, Phone, Lock, Check, X, Shield, Clock, Video, Star } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../components/Toast';
 
@@ -10,6 +10,10 @@ export default function Profile() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [reviewingBooking, setReviewingBooking] = useState<any>(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -131,6 +135,37 @@ export default function Profile() {
 
   const myCourses = courses?.filter((c: any) => myPurchases?.some((p: any) => p.itemId === c.id && p.type === 'COURSE' && p.status === 'APPROVED'));
   const myTools = tools?.filter((t: any) => myPurchases?.some((p: any) => p.itemId === t.id && p.type === 'TOOL' && p.status === 'APPROVED'));
+
+  const submitReview = async () => {
+    if (!reviewingBooking) return;
+    setIsSubmittingReview(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctorId: reviewingBooking.doctorId,
+          bookingId: reviewingBooking.id,
+          rating,
+          comment
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('تم إرسال التقييم بنجاح', 'success');
+        setReviewingBooking(null);
+        setRating(5);
+        setComment('');
+        queryClient.invalidateQueries({ queryKey: ['myBookings'] });
+      } else {
+        showToast(data.error || 'فشل إرسال التقييم', 'error');
+      }
+    } catch (err) {
+      showToast('حدث خطأ أثناء إرسال التقييم', 'error');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12 animate-in fade-in duration-700">
@@ -369,10 +404,21 @@ export default function Profile() {
                     </div>
                     <div>
                       {booking.status === 'CONFIRMED' ? (
-                        <a href={booking.meetingLink || booking.doctor?.sessionLink || '#'} target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2">
-                          <Video className="w-5 h-5" />
-                          رابط Zoom
-                        </a>
+                        <div className="flex flex-col md:flex-row gap-2">
+                          <a href={booking.meetingLink || booking.doctor?.sessionLink || '#'} target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2">
+                            <Video className="w-5 h-5" />
+                            رابط Zoom
+                          </a>
+                          {!booking.review && (
+                            <button
+                              onClick={() => setReviewingBooking(booking)}
+                              className="bg-emerald-50 text-[#6FA65A] border border-emerald-100 px-6 py-3 rounded-xl font-bold hover:bg-[#6FA65A] hover:text-white transition-all flex items-center gap-2"
+                            >
+                              <Star className="w-5 h-5" />
+                              تقييم الجلسة
+                            </button>
+                          )}
+                        </div>
                       ) : booking.status === 'PENDING' ? (
                         <span className="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl font-bold text-sm">قيد المراجعة</span>
                       ) : (
@@ -436,6 +482,61 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {reviewingBooking && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-300">
+            <h3 className="text-2xl font-black text-[#1F2F4A] mb-2 text-right">تقييم الجلسة</h3>
+            <p className="text-slate-500 mb-8 font-bold text-right">مع د. {reviewingBooking.doctor?.user?.name}</p>
+
+            <div className="space-y-8">
+              <div className="flex flex-col items-center gap-4">
+                <span className="text-sm font-black text-slate-400 uppercase tracking-widest">اختر التقييم</span>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setRating(num)}
+                      className="transition-transform active:scale-90"
+                    >
+                      <Star
+                        className={`w-10 h-10 ${num <= rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-right">
+                <label className="text-sm font-black text-slate-400 mr-2 uppercase tracking-widest">تعليقك (اختياري)</label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="كيف كانت تجربتك مع الأخصائي؟"
+                  className="w-full bg-slate-50 border-2 border-slate-100 focus:border-[#6FA65A] rounded-2xl px-4 py-3 min-h-[120px] outline-none transition-all font-medium text-right"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={submitReview}
+                  disabled={isSubmittingReview}
+                  className="flex-1 bg-[#6FA65A] text-white py-4 rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 disabled:opacity-50"
+                >
+                  {isSubmittingReview ? 'جاري الإرسال...' : 'إرسال التقييم'}
+                </button>
+                <button
+                  onClick={() => setReviewingBooking(null)}
+                  className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all border border-slate-200"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

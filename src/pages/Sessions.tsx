@@ -40,6 +40,12 @@ export default function Sessions() {
               </div>
               <h3 className="font-black text-xl text-[#1F2F4A] group-hover:text-[#6FA65A] transition-colors text-center">{doc.user?.name}</h3>
               <p className="text-sm font-bold text-slate-400 mt-1 text-center">{doc.title || "أخصائي"}</p>
+              
+              <div className="flex items-center gap-1.5 mt-3 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                <Star className={`w-3.5 h-3.5 ${doc.rating > 0 ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                <span className="text-xs font-black text-[#1F2F4A]">{doc.rating?.toFixed(1) || '0.0'}</span>
+                <span className="text-[10px] font-bold text-slate-400">({doc._count?.reviews || 0})</span>
+              </div>
             </div>
 
             <div className="flex items-center justify-between pt-6 border-t border-slate-100">
