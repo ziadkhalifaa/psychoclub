@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Brain, Target, Users, Award, Heart, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Brain, Target, Users, Award, Heart, Sparkles, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Pagination, Controller } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
@@ -57,9 +59,57 @@ const values = [
 ];
 
 export default function About() {
+    const { t } = useTranslation();
+    const { isRTL } = useLanguage();
     const { user } = useAuth();
     const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
     const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
+
+    const specialistNames: Record<string, string> = {
+        'أ.مصطفى صالح': 'Mustafa Saleh',
+        'أ.احمد عبد العظيم': 'Ahmed Abdel-Azim',
+        'أ.مالك وليد': 'Malek Walid',
+        'أ.مصطفى احمد': 'Mustafa Ahmed',
+        'أ.بدير محمد': 'Bedir Mohamed',
+        'أ.صفية سويلم': 'Safia Sweilem',
+        'أ.سماح احمد': 'Samah Ahmed',
+        'أ.مريم السيد': 'Mariam El-Sayed',
+        'أ.حنان بلال': 'Hanan Belal',
+        'أ.بسمة شعبان': 'Basma Shaaban',
+        'أ.شروق فتوح': 'Shorouk Fattouh',
+        'أ.سها خيري': 'Soha Khairy',
+        'أ.شيرين همام': 'Shereen Hammam',
+        'أ.رانيا محمد': 'Rania Mohamed',
+        'أ.سماء عثمان': 'Samaa Osman',
+        'أ.سمر احمد': 'Samar Ahmed',
+        'أ.عمرو ناجح': 'Amr Nagah'
+    };
+
+    const stats = [
+        { label: t('about.stats.graduates'), value: '+3000', icon: Users },
+        { label: t('about.stats.courses'), value: '+100', icon: Brain },
+        { label: t('about.stats.experience'), value: '+5', icon: Award },
+        { label: t('about.stats.lecturers'), value: '+15', icon: Sparkles },
+    ];
+
+    const values = [
+        {
+            title: t('about.values.scientific.title'),
+            description: t('about.values.scientific.desc'),
+            icon: Heart,
+        },
+        {
+            title: t('about.values.practical.title'),
+            description: t('about.values.practical.desc'),
+            icon: Target,
+        },
+        {
+            title: t('about.values.community.title'),
+            description: t('about.values.community.desc'),
+            icon: Users,
+        },
+    ];
+
     return (
         <div className="pt-20 lg:pt-32 pb-24 overflow-hidden">
             {/* Hero Section */}
@@ -72,14 +122,13 @@ export default function About() {
                         transition={{ duration: 0.8 }}
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-6 border border-emerald-100 dark:border-emerald-900">
-                            <Sparkles className="w-3 h-3" /> من نحن
+                            <Sparkles className="w-3 h-3" /> {t('about.hero.badge')}
                         </div>
                         <h1 className="text-4xl lg:text-6xl font-black text-[#1F2F4A] dark:text-white mb-8 leading-[1.1] tracking-tighter">
-                            رواد الرعاية المتخصصة.. <br />
-                            <span className="text-[#6FA65A]">من الصحة النفسية إلى التميز المهني</span>
+                            {t('about.hero.title')}
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 text-lg lg:text-xl leading-relaxed font-medium mb-10 max-w-xl">
-                            تأسست Clinical Cases Group | Psycho-Club لتكون صرحاً يجمع بين العلم والرحمة. نحن نؤمن أن جودة الرعاية تبدأ من كفاءة المعالج؛ لذا نقدم منظومة متكاملة تجمع بين تدريب الممارسين على أحدث المنهجيات العلمية، وتقديم جلسات دعم وعلاج نفسي متخصصة تضمن لكم رحلة تعافي آمنة ومستدامة.
+                            {t('about.hero.description')}
                         </p>
                     </motion.div>
 
@@ -135,7 +184,7 @@ export default function About() {
                                     {specialists.map((item, index) => (
                                         <SwiperSlide key={index} className="flex items-center justify-center">
                                             <span className="text-xl font-black text-[#1F2F4A] dark:text-white tracking-tight">
-                                                {item.name}
+                                                {isRTL ? item.name : (specialistNames[item.name] || item.name)}
                                             </span>
                                         </SwiperSlide>
                                     ))}
@@ -154,8 +203,8 @@ export default function About() {
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_50%,#6FA65A_0%,transparent_50%)]" />
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
-                        <h2 className="text-white text-3xl md:text-4xl font-black">أثرنا في أرقام</h2>
-                        <p className="text-slate-400 mt-4 font-bold">بناء مجتمع قائم على العلم، الإرشاد، والرحمة</p>
+                        <h2 className="text-white text-3xl md:text-4xl font-black">{t('about.stats.title')}</h2>
+                        <p className="text-slate-400 mt-4 font-bold">{t('about.stats.subtitle')}</p>
                     </div>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
                         {stats.map((stat, i) => (
@@ -213,14 +262,14 @@ export default function About() {
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        <div className="flex-1 text-right">
-                            <h2 className="text-3xl lg:text-5xl font-black text-[#1F2F4A] dark:text-white mb-6 tracking-tighter">رسالة من الإدارة</h2>
+                        <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                            <h2 className="text-3xl lg:text-5xl font-black text-[#1F2F4A] dark:text-white mb-6 tracking-tighter">{t('about.founder.title')}</h2>
                             <p className="text-slate-600 dark:text-slate-400 text-lg lg:text-xl leading-loose italic mb-10">
-                                "في Clinical Cases Group | Psycho-Club، هدفنا هو تجاوز حدود التدريب التقليدي لنصنع مجتمعاً علاجياً متكاتفاً. نؤمن أن جودة الرعاية النفسية تبدأ من التوازن بين المعرفة العلمية الرصينة وفن الإرشاد الإنساني."
+                                {t('about.founder.message')}
                             </p>
                             <div>
-                                <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">مصطفى صالح</h4>
-                                <p className="text-[#6FA65A] font-bold uppercase tracking-widest text-xs mt-1">المدير التنفيذي والمؤسس</p>
+                                <h4 className="text-xl font-black text-[#1F2F4A] dark:text-white">{t('about.founder.name')}</h4>
+                                <p className="text-[#6FA65A] font-bold uppercase tracking-widest text-xs mt-1">{t('about.founder.role')}</p>
                             </div>
                         </div>
                     </div>
@@ -237,27 +286,27 @@ export default function About() {
                         className="space-y-10"
                     >
                         <h2 className="text-4xl lg:text-6xl font-black text-[#1F2F4A] dark:text-white tracking-tighter">
-                            {user ? 'مستمرون معك في رحلة التعلم' : 'جاهز لبدء رحلتك المهنية؟'}
+                            {user ? t('common.loading').slice(0, 0) + (isRTL ? 'مستمرون معك في رحلة التعلم' : 'Continuing your learning journey') : t('about.cta.title')}
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 text-xl font-medium">
                             {user
-                                ? 'استكشف أحدث الدورات والمقالات المتاحة لتطوير مهاراتك بشكل إحترافي.'
-                                : 'انضم إلى مجتمعنا اليوم واكتشف عالمًا جديدًا من الفرص التعليمية.'}
+                                ? (isRTL ? 'استكشف أحدث الدورات والمقالات المتاحة لتطوير مهاراتك بشكل إحترافي.' : 'Explore the latest courses and articles to professionally develop your skills.')
+                                : t('about.cta.subtitle')}
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                             {user ? (
                                 <a href="/courses" className="w-full sm:w-auto px-10 py-5 bg-[#1F2F4A] dark:bg-[#6FA65A] text-white rounded-[2rem] font-black text-lg hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95 flex items-center justify-center gap-3 group">
-                                    تصفح الدورات التدريبية
-                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform rotate-180" />
+                                    {t('about.cta.courses')}
+                                    {isRTL ? <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> : <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                                 </a>
                             ) : (
                                 <a href="/register" className="w-full sm:w-auto px-10 py-5 bg-[#1F2F4A] dark:bg-[#6FA65A] text-white rounded-[2rem] font-black text-lg hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95 flex items-center justify-center gap-3 group">
-                                    انضم إلينا الآن
-                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform rotate-180" />
+                                    {t('about.cta.register')}
+                                    {isRTL ? <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> : <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                                 </a>
                             )}
                             <a href={user ? "/community" : "/courses"} className="w-full sm:w-auto px-10 py-5 bg-white dark:bg-slate-800 text-[#1F2F4A] dark:text-white border border-slate-200 dark:border-slate-700 rounded-[2rem] font-black text-lg hover:border-[#6FA65A] transition-all flex items-center justify-center">
-                                {user ? "المجتمع المهني" : "تصفح الدورات"}
+                                {user ? (isRTL ? "المجتمع المهني" : "Professional Community") : t('about.cta.courses')}
                             </a>
                         </div>
                     </motion.div>

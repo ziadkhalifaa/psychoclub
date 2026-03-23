@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, BookOpen, Clock, Users, FileText, Calendar, Sparkles, Fingerprint, Activity, Layers, PlayCircle, Star, CheckCircle, ChevronDown, PenTool } from 'lucide-react';
 import { HeroSlider } from '../components/HeroSlider';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Home() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+
   const { data: courses } = useQuery({
     queryKey: ['courses'],
     queryFn: () => fetch('/api/courses').then(res => res.json())
@@ -34,12 +39,12 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="space-y-8"
             >
-              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-6 uppercase">عن Clinical Cases Group <span className="text-[#6FA65A] block md:inline text-2xl md:text-3xl font-black">| Psycho-Club</span></h2>
+              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-6 uppercase">{t('home.aboutShort.title')} <span className="text-[#6FA65A] block md:inline text-2xl md:text-3xl font-black">| Psycho-Club</span></h2>
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg font-medium">
-                نحن في Clinical Cases Group | Psycho-Club، نؤمن بأن الصحة النفسية هي رحلة مستمرة من التعلم والدعم. نسعى لتقديم خدمات تخصصية تجمع بين التدريب المتقدم، الإرشاد المهني، والجلسات العلاجية المبنية على أحدث الأسس العلمية، لنكون شريكك الدائم في مسار التميز والاستقرار النفسي.
+                {t('home.aboutShort.subtitle')}
               </p>
               <ul className="space-y-4">
-                {['تدريب عملي مبني على الأدلة', 'دعم وعلاج نفسي متخصص', 'أدوات ومقاييس نفسية معتمدة', 'مجتمع مهني داعم'].map((item, i) => (
+                {[t('home.aboutShort.item1'), t('home.aboutShort.item2'), t('home.aboutShort.item3'), t('home.aboutShort.item4')].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-bold">
                     <div className="w-6 h-6 rounded-full bg-[#6FA65A]/10 dark:bg-[#6FA65A]/20 flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-[#6FA65A]" />
@@ -49,8 +54,8 @@ export default function Home() {
                 ))}
               </ul>
               <Link to="/about" className="inline-block mt-8 text-[#6FA65A] font-semibold hover:text-emerald-400 transition-colors flex items-center gap-2">
-                اقرأ المزيد عنا
-                <ArrowLeft className="w-4 h-4" />
+                {t('home.aboutShort.more')}
+                {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4 rotate-180" />}
               </Link>
             </motion.div>
             <motion.div
@@ -79,14 +84,14 @@ export default function Home() {
         >
           <div className="text-center md:text-right">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-4 border border-emerald-100 dark:border-emerald-900 shadow-sm">
-              <Sparkles className="w-3 h-3" /> التميز الإكلينيكي
+              <Sparkles className="w-3 h-3" /> {t('home.hero.secondaryCta')}
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4">آفاق التعلم والعلاج</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-xl text-lg font-medium leading-relaxed">بوابتك المتكاملة للبروتوكولات العلاجية المبتكرة والتدريب الإكلينيكي العميق.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4">{t('nav.courses')}</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl text-lg font-medium leading-relaxed">{t('home.features.subtitle')}</p>
           </div>
           <Link to="/courses" className="group flex items-center gap-3 bg-[#1F2F4A] dark:bg-[#6FA65A] hover:bg-[#6FA65A] dark:hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">
-            تصفح الأكاديمية
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            {t('home.hero.secondaryCta')}
+            {isRTL ? <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> : <ArrowLeft className="w-5 h-5 group-hover:translate-x-1 transition-transform rotate-180" />}
           </Link>
         </motion.div>
 
@@ -173,14 +178,14 @@ export default function Home() {
                   <motion.img whileHover={{ scale: 1.05 }} src="/images/home_about_therapy.png" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                   <div className="bg-[#6FA65A] p-8 rounded-[3rem] text-white shadow-xl shadow-emerald-500/20">
                     <h4 className="text-4xl font-black mb-2">+3000</h4>
-                    <p className="text-sm font-bold opacity-80 uppercase tracking-widest">خريج متدرب</p>
+                    <p className="text-sm font-bold opacity-80 uppercase tracking-widest">{t('home.stats.students')}</p>
                   </div>
                 </div>
                 <div className="space-y-6 md:pt-12">
                   <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[3rem] border border-white/10 text-white">
                     <Activity className="w-10 h-10 text-[#6FA65A] mb-4" />
-                    <h4 className="text-xl font-bold mb-2">منهجية إكلينيكية</h4>
-                    <p className="text-xs text-slate-400 font-medium">نركز على التطبيق العملي للنماذج العلاجية الحديثة.</p>
+                    <h4 className="text-xl font-bold mb-2">{t('home.vision.badge')}</h4>
+                    <p className="text-xs text-slate-400 font-medium">{t('home.vision.description')}</p>
                   </div>
                   <motion.img whileHover={{ scale: 1.05 }} src="/images/home_about_training.png" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                 </div>
@@ -195,20 +200,20 @@ export default function Home() {
               className="space-y-10 order-1 lg:order-2"
             >
               <div>
-                <div className="inline-block px-5 py-2 rounded-2xl bg-white/5 border border-white/10 text-[#6FA65A] text-xs font-black uppercase tracking-[0.3em] mb-6">رؤيتنا المهنية</div>
-                <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tighter">الريادة مع <span className="text-[#6FA65A]">Psycho-Club</span> <br />في الإرشاد والعلاج</h2>
+                <div className="inline-block px-5 py-2 rounded-2xl bg-white/5 border border-white/10 text-[#6FA65A] text-xs font-black uppercase tracking-[0.3em] mb-6">{t('home.vision.badge')}</div>
+                <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tighter">{t('home.vision.title')}</h2>
               </div>
 
               <p className="text-slate-400 leading-[2.2] text-lg font-medium">
-                في Clinical Cases Group | Psycho-Club، ندرك أن المختص النفسي يحتاج لمزيج من المعرفة والإرشاد المستمر. نحن لسنا مجرد منصة تعليمية، بل نحن مظلة مهنية وعلاجية ترافقك في كل خطوة، من التدريب الأساسي وحتى الإشراف الإكلينيكي المتقدم.
+                {t('home.vision.description')}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
-                  { title: 'جلسات علاجية', desc: 'دعم نفسي وعلاج متخصص للأفرد' },
-                  { title: 'مواد حصرية', desc: 'مكتبة من المقاييس والأدوات المعتمدة' },
-                  { title: 'شهادات مهنية', desc: 'اعتماد مهني يعزز مسارك الوظيفي' },
-                  { title: 'دعم تقني', desc: 'مساعدة مستمرة طوال فترة التعلم' }
+                  { title: t('home.vision.feature1'), desc: t('home.aboutShort.item2') },
+                  { title: t('home.vision.feature2'), desc: t('home.aboutShort.item3') },
+                  { title: t('home.vision.feature3'), desc: t('home.aboutShort.item1') },
+                  { title: t('home.vision.feature4'), desc: t('home.vision.feature4') }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4 items-start group">
                     <div className="w-12 h-12 rounded-2xl bg-[#6FA65A]/10 border border-[#6FA65A]/20 flex items-center justify-center shrink-0 group-hover:bg-[#6FA65A] transition-all">
@@ -224,8 +229,8 @@ export default function Home() {
 
               <div className="pt-6">
                 <Link to="/about" className="inline-flex items-center gap-3 text-white bg-white/5 hover:bg-[#6FA65A] px-10 py-5 rounded-[2rem] font-black border border-white/10 transition-all shadow-xl active:scale-95 group">
-                  تعرف على الفريق
-                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform" />
+                  {t('home.vision.cta')}
+                  {isRTL ? <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform" /> : <ArrowLeft className="w-5 h-5 group-hover:translate-x-2 transition-transform rotate-180" />}
                 </Link>
               </div>
             </motion.div>
@@ -244,8 +249,8 @@ export default function Home() {
         >
           <div className="flex-1 space-y-8">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4 leading-tight">المعرفة الإرشادية <br /> <span className="text-[#6FA65A]">والعلاجية الحديثة</span></h2>
-              <p className="text-slate-500 dark:text-slate-400 text-lg font-medium leading-relaxed">كن دائماً في طليعة العلم من خلال مقالاتنا الدورية المترجمة والأصلية في مختلف المدارس العلاجية.</p>
+              <h2 className="text-3xl md:text-5xl font-black text-[#1F2F4A] dark:text-white tracking-tighter mb-4 leading-tight">{t('home.articles.title')}</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-lg font-medium leading-relaxed">{t('home.articles.subtitle')}</p>
             </div>
             <div className="space-y-4">
               {articles?.slice(0, 3).map((article: any, i: number) => (
@@ -270,8 +275,8 @@ export default function Home() {
               ))}
             </div>
             <Link to="/articles" className="inline-flex items-center gap-3 bg-slate-900 dark:bg-[#6FA65A] text-white px-8 py-4 rounded-2xl font-black hover:bg-[#6FA65A] dark:hover:bg-emerald-600 transition-all shadow-xl shadow-slate-900/10 active:scale-95">
-              تصفح جميع المقالات
-              <PenTool className="w-5 h-5" />
+              {t('home.articles.more')}
+              {isRTL ? <PenTool className="w-5 h-5" /> : <PenTool className="w-5 h-5" />}
             </Link>
           </div>
           <div className="flex-1 w-full lg:w-auto">

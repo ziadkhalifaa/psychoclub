@@ -1689,6 +1689,91 @@ async function startServer() {
     }
   });
 
+  apiRouter.post("/bookings/:id/retry", requireAuth, async (req, res) => {
+    try {
+      const { paymentMethod, payerPhone } = req.body;
+      const userId = res.locals.user.userId;
+      const bookingId = req.params.id;
+
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { slot: true }
+      });
+
+      if (!booking || booking.userId !== userId) {
+        return res.status(404).json({ error: "Booking not found" });
+      }
+
+      if (booking.status !== 'CANCELLED' && booking.paymentStatus !== 'REJECTED') {
+        return res.status(400).json({ error: "Only cancelled or rejected bookings can be retried" });
+      }
+
+      // Check if slot is still available
+      const slot = await prisma.availableSlot.findUnique({ where: { id: booking.slotId } });
+      if (!slot || slot.isBooked) {
+        return res.status(400).json({ error: "هذا الموعد لم يعد متاحاً. يرجى حجز جلسة جديدة." });
+      }
+
+      // Update booking and re-lock slot
+      const updated = await prisma.$transaction([
+        prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            status: 'PENDING',
+            paymentStatus: 'PENDING',
+            paymentMethod,
+            payerPhone,
+            createdAt: new Date()
+          }
+        }),
+        prisma.availableSlot.update({
+          where: { id: booking.slotId },
+          data: { isBooked: true }
+        })
+      ]);
+
+      await logAudit(userId, "RETRY_BOOKING", "Booking", bookingId);
+      res.json({ success: true, booking: updated[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "حدث خطأ أثناء إعادة محاولة الحجز" });
+    }
+  });
+
+  apiRouter.post("/purchases/:id/retry", requireAuth, async (req, res) => {
+    try {
+      const { paymentMethod, payerPhone } = req.body;
+      const userId = res.locals.user.userId;
+      const purchaseId = req.params.id;
+
+      const purchase = await prisma.purchase.findUnique({ where: { id: purchaseId } });
+
+      if (!purchase || purchase.userId !== userId) {
+        return res.status(404).json({ error: "Purchase not found" });
+      }
+
+      if (purchase.status !== 'REJECTED') {
+        return res.status(400).json({ error: "Only rejected purchases can be retried" });
+      }
+
+      const updated = await prisma.purchase.update({
+        where: { id: purchaseId },
+        data: {
+          status: 'PENDING',
+          paymentMethod,
+          payerPhone,
+          createdAt: new Date()
+        }
+      });
+
+      await logAudit(userId, "RETRY_PURCHASE", "Purchase", purchaseId);
+      res.json({ success: true, purchase: updated });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "حدث خطأ أثناء إعادة محاولة الدفع" });
+    }
+  });
+
   // ─── Reviews ──────────────────────────────────────────────────
 
   apiRouter.post("/reviews", requireAuth, async (req, res) => {

@@ -14,6 +14,10 @@ export default function Profile() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [retryingItem, setRetryingItem] = useState<any>(null); // { id, type: 'BOOKING' | 'PURCHASE' }
+  const [retryPaymentMethod, setRetryPaymentMethod] = useState<string | null>(null);
+  const [retryPayerPhone, setRetryPayerPhone] = useState('');
+  const [isRetrying, setIsRetrying] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -134,7 +138,8 @@ export default function Profile() {
   if (!user) return <div className="p-24 text-center">الرجاء تسجيل الدخول</div>;
 
   const myCourses = courses?.filter((c: any) => myPurchases?.some((p: any) => p.itemId === c.id && p.type === 'COURSE' && p.status === 'APPROVED'));
-  const myTools = tools?.filter((t: any) => myPurchases?.some((p: any) => p.itemId === t.id && p.type === 'TOOL' && p.status === 'APPROVED'));
+  const myTools = tools?.filter((t: any) => myPurchases?.some((p: any) => p.itemId === t.id && p.type === 'PACKAGE' && p.status === 'APPROVED'));
+  const pendingOrRejectedPurchases = myPurchases?.filter((p: any) => p.status !== 'APPROVED');
 
   const submitReview = async () => {
     if (!reviewingBooking) return;
@@ -164,6 +169,39 @@ export default function Profile() {
       showToast('حدث خطأ أثناء إرسال التقييم', 'error');
     } finally {
       setIsSubmittingReview(false);
+    }
+  };
+
+  const handleRetryPayment = async () => {
+    if (!retryingItem || !retryPaymentMethod || !retryPayerPhone.trim()) return;
+    setIsRetrying(true);
+    try {
+      const endpoint = retryingItem.type === 'BOOKING' 
+        ? `/api/bookings/${retryingItem.id}/retry` 
+        : `/api/purchases/${retryingItem.id}/retry`;
+      
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentMethod: retryPaymentMethod,
+          payerPhone: retryPayerPhone
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('تم إعادة إرسال طلب الدفع بنجاح', 'success');
+        setRetryingItem(null);
+        setRetryPaymentMethod(null);
+        setRetryPayerPhone('');
+        queryClient.invalidateQueries({ queryKey: [retryingItem.type === 'BOOKING' ? 'myBookings' : 'myPurchases'] });
+      } else {
+        showToast(data.error || 'فشل إعادة المحاولة', 'error');
+      }
+    } catch (err) {
+      showToast('حدث خطأ أثناء المحاولة', 'error');
+    } finally {
+      setIsRetrying(false);
     }
   };
 
@@ -371,6 +409,56 @@ export default function Profile() {
                 <a href="/courses" className="text-[#6FA65A] text-sm font-bold mt-2 inline-block hover:underline">استكشف الدورات المتاحة</a>
               </div>
             )}
+
+            {pendingOrRejectedPurchases?.length > 0 && (
+              <div className="mt-12 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-black text-[#1F2F4A]">طلبات الاشتراك المعلقة / المرفوضة</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {pendingOrRejectedPurchases.map((purchase: any) => {
+                    const item = purchase.type === 'COURSE' 
+                      ? courses?.find((c: any) => c.id === purchase.itemId)
+                      : tools?.find((t: any) => t.id === purchase.itemId);
+                    if (!item) return null;
+                    return (
+                      <div key={purchase.id} className="p-4 rounded-3xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white">
+                            <img src={item.thumbnail || 'https://picsum.photos/seed/item/100'} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs text-[#1F2F4A] truncate">{item.title}</div>
+                            <div className="flex items-center gap-2 mt-1">
+                              {purchase.status === 'PENDING' ? (
+                                <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">قيد المراجعة</span>
+                              ) : (
+                                <span className="text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">مرفوض</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {purchase.status === 'REJECTED' && (
+                          <button
+                            onClick={() => {
+                              setRetryingItem({ id: purchase.id, type: 'PURCHASE', amount: purchase.amount });
+                              setRetryPaymentMethod(purchase.paymentMethod);
+                              setRetryPayerPhone(purchase.payerPhone || '');
+                            }}
+                            className="bg-[#6FA65A] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition-all shrink-0"
+                          >
+                            تعديل الدفع
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
@@ -422,7 +510,19 @@ export default function Profile() {
                       ) : booking.status === 'PENDING' ? (
                         <span className="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl font-bold text-sm">قيد المراجعة</span>
                       ) : (
-                        <span className="bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-bold text-sm">ملغي/مرفوض</span>
+                        <div className="flex flex-col items-center gap-2">
+                          <span className="bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-bold text-sm">ملغي/مرفوض</span>
+                          <button
+                            onClick={() => {
+                              setRetryingItem({ id: booking.id, type: 'BOOKING', amount: booking.amount });
+                              setRetryPaymentMethod(booking.paymentMethod);
+                              setRetryPayerPhone(booking.payerPhone || '');
+                            }}
+                            className="text-[#6FA65A] text-xs font-bold hover:underline"
+                          >
+                            إعادة محاولة الدفع
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -528,6 +628,68 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={() => setReviewingBooking(null)}
+                  className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all border border-slate-200"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Retry Payment Modal */}
+      {retryingItem && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 text-right">
+          <div className="bg-white rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-300">
+            <h3 className="text-2xl font-black text-[#1F2F4A] mb-4">إعادة محاولة الدفع</h3>
+            <p className="text-slate-500 mb-8 font-bold">يرجى إعادة إدخال بيانات الدفع لتأكيد طلبك</p>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">اختر طريقة الدفع</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => setRetryPaymentMethod('VODAFONE_CASH')} className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all border ${retryPaymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-500 ring-2 ring-rose-200' : 'bg-slate-50 border-slate-100 hover:bg-rose-50'}`}>
+                    <img src="/images/logos/vodafone-cash.png" alt="Vodafone Cash" className="h-6 object-contain mb-2" />
+                    <span className="font-bold text-[10px] text-rose-700">فودافون كاش</span>
+                  </button>
+                  <button onClick={() => setRetryPaymentMethod('INSTAPAY')} className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all border ${retryPaymentMethod === 'INSTAPAY' ? 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200' : 'bg-slate-50 border-slate-100 hover:bg-indigo-50'}`}>
+                    <img src="/images/logos/instapay.png" alt="InstaPay" className="h-6 object-contain mb-2" />
+                    <span className="font-bold text-[10px] text-indigo-700">إنستاباي</span>
+                  </button>
+                </div>
+              </div>
+
+              {retryPaymentMethod && (
+                <div className={`p-4 rounded-2xl border text-center ${retryPaymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
+                  <p className="text-[10px] font-black mb-1 opacity-60">حول مبلغ {retryingItem.amount} ج.م إلى:</p>
+                  <p className="font-black text-lg tracking-wider" dir="ltr">{retryPaymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}</p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 mr-2 uppercase tracking-widest flex items-center gap-1 justify-end">
+                  رقم الموبايل المحوّل منه <Phone className="w-3 h-3 text-[#6FA65A]" />
+                </label>
+                <input 
+                  type="tel" 
+                  value={retryPayerPhone}
+                  onChange={e => setRetryPayerPhone(e.target.value)}
+                  placeholder="01xxxxxxxxx"
+                  dir="ltr"
+                  className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center font-bold focus:border-[#6FA65A] outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={handleRetryPayment}
+                  disabled={isRetrying || !retryPaymentMethod || !retryPayerPhone.trim()}
+                  className="flex-1 bg-[#6FA65A] text-white py-4 rounded-2xl font-black hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 disabled:opacity-50"
+                >
+                  {isRetrying ? 'جاري الإرسال...' : 'تأكيد الإرسال'}
+                </button>
+                <button
+                  onClick={() => setRetryingItem(null)}
                   className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-all border border-slate-200"
                 >
                   إلغاء

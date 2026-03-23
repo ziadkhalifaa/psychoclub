@@ -1,23 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { User, Star, ArrowLeft } from 'lucide-react';
+import { User, Star, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Sessions() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const { data: doctors, isLoading } = useQuery({
     queryKey: ['doctors'],
     queryFn: () => fetch('/api/doctors').then(res => res.json())
   });
 
-  if (isLoading) return <div className="p-24 text-center">جاري تحميل قائمة الأخصائيين...</div>;
+  if (isLoading) return <div className="p-24 text-center">{t('sessions.hero.loading')}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
       <div className="bg-[#1F2F4A] rounded-3xl p-6 md:p-12 text-center text-white relative overflow-hidden mt-10">
         <div className="absolute inset-0 bg-gradient-to-br from-[#6FA65A]/20 to-transparent mix-blend-overlay" />
-        <h1 className="text-2xl md:text-4xl font-bold mb-4 relative z-10">حجز جلسة علاجية</h1>
+        <h1 className="text-2xl md:text-4xl font-bold mb-4 relative z-10">{t('sessions.hero.title')}</h1>
         <p className="text-slate-300 max-w-2xl mx-auto relative z-10 font-bold text-sm md:text-base">
-          احجز جلستك الآن مع نخبة من الأخصائيين النفسيين المعتمدين للحصول على الدعم النفسي والعلاج المتكامل في بيئة آمنة ومهنية.
+          {t('sessions.hero.subtitle')}
         </p>
       </div>
 
@@ -39,7 +43,7 @@ export default function Sessions() {
                 )}
               </div>
               <h3 className="font-black text-xl text-[#1F2F4A] group-hover:text-[#6FA65A] transition-colors text-center">{doc.user?.name}</h3>
-              <p className="text-sm font-bold text-slate-400 mt-1 text-center">{doc.title || "أخصائي"}</p>
+              <p className="text-sm font-bold text-slate-400 mt-1 text-center">{doc.title || t('sessions.card.specialist')}</p>
               
               <div className="flex items-center gap-1.5 mt-3 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
                 <Star className={`w-3.5 h-3.5 ${doc.rating > 0 ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
@@ -50,18 +54,18 @@ export default function Sessions() {
 
             <div className="flex items-center justify-between pt-6 border-t border-slate-100">
               <div className="text-sm font-black text-[#1F2F4A]">
-                {doc.sessionPrice} <span className="text-[#6FA65A] text-xs">ج.م / جلسة</span>
+                {doc.sessionPrice} <span className="text-[#6FA65A] text-xs">{t('sessions.card.currency')}</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-black text-[#6FA65A] group-hover:translate-x-[-4px] transition-transform">
-                احجز الآن
-                <ArrowLeft className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-xs font-black text-[#6FA65A] group-hover:opacity-80 transition-all">
+                {t('sessions.card.bookNow')}
+                {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
               </div>
             </div>
           </Link>
         ))}
         {(!doctors || doctors.length === 0) && (
           <div className="col-span-full py-20 text-center text-slate-400 font-bold">
-            لا يوجد أخصائيين متاحين حالياً
+            {t('sessions.empty')}
           </div>
         )}
       </div>

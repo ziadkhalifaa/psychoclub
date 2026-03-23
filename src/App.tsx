@@ -26,8 +26,10 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { ToastProvider } from './components/Toast';
 import LoadingScreen from './components/LoadingScreen';
+import './i18n';
 
 const queryClient = new QueryClient();
 
@@ -77,14 +79,16 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <ToastProvider>
-            <AnimatePresence mode="wait">
-              {isLoading && <LoadingScreen key="loading" />}
-            </AnimatePresence>
-            <RouterProvider router={router} />
-          </ToastProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <AnimatePresence mode="wait">
+                {isLoading && <LoadingScreen key="loading" />}
+              </AnimatePresence>
+              <RouterProvider router={router} />
+            </ToastProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

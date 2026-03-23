@@ -6,12 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InteractiveBackground } from './InteractiveBackground';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
+import { LanguageToggle } from './LanguageToggle';
 import { Toaster } from 'react-hot-toast';
 import ScrollToTop from './ScrollToTop';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const { theme } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
@@ -35,7 +40,7 @@ export default function Layout() {
   return (
     <div 
       className="min-h-screen text-slate-800 dark:text-slate-200 font-sans selection:bg-[#6FA65A]/30 selection:text-[#1F2F4A] dark:selection:text-white transition-colors duration-500 bg-slate-50/80 dark:bg-[#0f172a]/90" 
-      dir="rtl"
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       <ScrollToTop />
       <InteractiveBackground />
@@ -63,35 +68,38 @@ export default function Layout() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-10">
             {[
-              { to: '/courses', label: 'الدورات' },
-              { to: '/articles', label: 'المقالات' },
-              { to: '/about', label: 'من نحن' },
-              { to: '/sessions', label: 'حجز جلسة' },
-              { to: '/tools', label: 'الأدوات' },
-              { to: '/community', label: 'المجتمع' }
+              { to: '/courses', label: t('nav.courses') },
+              { to: '/articles', label: t('nav.articles') },
+              { to: '/about', label: t('nav.about') },
+              { path: '/sessions', label: t('nav.sessions') },
+              { to: '/tools', label: t('nav.tools') },
+              { to: '/community', label: t('nav.community') }
             ].map((link) => (
               <Link
-                key={link.to}
-                to={link.to}
-                className={`text-sm font-bold transition-all duration-300 relative group py-1 ${location.pathname === link.to ? 'text-[#6FA65A]' : 'text-[#1F2F4A]/70 dark:text-slate-400 hover:text-[#1F2F4A] dark:hover:text-white'
+                key={link.to || link.path}
+                to={link.to || link.path || '/'}
+                className={`text-sm font-bold transition-all duration-300 relative group py-1 ${location.pathname === (link.to || link.path) ? 'text-[#6FA65A]' : 'text-[#1F2F4A]/70 dark:text-slate-400 hover:text-[#1F2F4A] dark:hover:text-white'
                   }`}
               >
                 {link.label}
-                <span className={`absolute bottom-0 right-0 h-0.5 bg-[#6FA65A] transition-all duration-300 ${location.pathname === link.to ? 'w-full' : 'w-0 group-hover:w-full'
+                <span className={`absolute bottom-0 ${isRTL ? 'right-0' : 'left-0'} h-0.5 bg-[#6FA65A] transition-all duration-300 ${location.pathname === (link.to || link.path) ? 'w-full' : 'w-0 group-hover:w-full'
                   }`} />
               </Link>
             ))}
           </nav>
 
           <div className="hidden md:flex items-center gap-6">
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
             {user ? (
               <div className="flex items-center gap-5">
                 {user.role === 'ADMIN' && (
-                  <Link to="/admin" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">لوحة الإدارة</Link>
+                  <Link to="/admin" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">{t('nav.admin')}</Link>
                 )}
                 {user.role === 'DOCTOR' && (
-                  <Link to="/doctor" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">لوحة الطبيب</Link>
+                  <Link to="/doctor" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">{t('nav.doctor')}</Link>
                 )}
                 <Link to="/profile" className="flex items-center gap-2 group">
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-transparent group-hover:border-[#6FA65A] transition-all overflow-hidden">
@@ -103,14 +111,14 @@ export default function Layout() {
                   </div>
                   <span className="text-sm font-extrabold text-[#1F2F4A] dark:text-white group-hover:text-[#6FA65A] transition-colors">{user.name}</span>
                 </Link>
-                <button onClick={handleLogout} className="p-2 text-slate-300 hover:text-red-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all">
+                <button onClick={handleLogout} className="p-2 text-slate-300 hover:text-red-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-all" title={t('nav.logout')}>
                   <LogOut className="w-5 h-5" />
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <Link to="/login" className="text-sm font-bold text-[#1F2F4A] dark:text-slate-300 hover:text-[#6FA65A] transition-colors">دخول</Link>
-                <Link to="/register" className="text-sm font-black bg-[#1F2F4A] dark:bg-[#6FA65A] text-white px-7 py-3 rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">انضم إلينا</Link>
+                <Link to="/login" className="text-sm font-bold text-[#1F2F4A] dark:text-slate-300 hover:text-[#6FA65A] transition-colors">{t('nav.login')}</Link>
+                <Link to="/register" className="text-sm font-black bg-[#1F2F4A] dark:bg-[#6FA65A] text-white px-7 py-3 rounded-2xl hover:opacity-90 transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">{t('nav.join')}</Link>
               </div>
             )}
           </div>
@@ -134,26 +142,26 @@ export default function Layout() {
               className="md:hidden absolute top-full left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl border-t border-slate-100 dark:border-slate-800 overflow-hidden"
             >
               <div className="flex flex-col p-6 gap-6 text-right">
-                <Link to="/courses" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>الدورات</Link>
-                <Link to="/articles" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>المقالات</Link>
-                <Link to="/about" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>من نحن</Link>
-                <Link to="/sessions" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>حجز جلسة</Link>
-                <Link to="/tools" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>الأدوات</Link>
-                <Link to="/community" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>المجتمع</Link>
+                <Link to="/courses" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.courses')}</Link>
+                <Link to="/articles" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.articles')}</Link>
+                <Link to="/about" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.about')}</Link>
+                <Link to="/sessions" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.sessions')}</Link>
+                <Link to="/tools" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.tools')}</Link>
+                <Link to="/community" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.community')}</Link>
 
                 <div className="h-px bg-slate-100 dark:bg-slate-800 my-2" />
 
                 {user ? (
                   <div className="flex flex-col gap-6">
-                    <Link to="/profile" className="text-lg font-black text-[#6FA65A]" onClick={() => setIsMenuOpen(false)}>الملف الشخصي ({user.name})</Link>
-                    {user.role === 'ADMIN' && <Link to="/admin" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>لوحة الإدارة</Link>}
-                    {user.role === 'DOCTOR' && <Link to="/doctor" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>لوحة الطبيب</Link>}
-                    <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="text-right text-lg font-black text-rose-500">تسجيل الخروج</button>
+                    <Link to="/profile" className="text-lg font-black text-[#6FA65A]" onClick={() => setIsMenuOpen(false)}>{t('nav.profile')} ({user.name})</Link>
+                    {user.role === 'ADMIN' && <Link to="/admin" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.admin')}</Link>}
+                    {user.role === 'DOCTOR' && <Link to="/doctor" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.doctor')}</Link>}
+                    <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="text-right text-lg font-black text-rose-500">{t('nav.logout')}</button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-6">
-                    <Link to="/login" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>تسجيل الدخول</Link>
-                    <Link to="/register" className="bg-[#1F2F4A] dark:bg-[#6FA65A] text-white p-4 rounded-2xl text-center font-black" onClick={() => setIsMenuOpen(false)}>انضم إلينا</Link>
+                    <Link to="/login" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.login')}</Link>
+                    <Link to="/register" className="bg-[#1F2F4A] dark:bg-[#6FA65A] text-white p-4 rounded-2xl text-center font-black" onClick={() => setIsMenuOpen(false)}>{t('nav.join')}</Link>
                   </div>
                 )}
               </div>
@@ -181,7 +189,7 @@ export default function Layout() {
                 </div>
               </Link>
               <p className="text-slate-400 text-sm leading-8 max-w-md font-medium">
-                بوابتك الشاملة للنمو الإكلينيكي والاستقرار النفسي. نقدم منظومة متكاملة تجمع بين التدريب التخصصي، الإرشاد المهني، والدعم العلاجي المتقدم لخدمة مجتمع الصحة النفسية العربي بكفاءة عالمية.
+                {t('footer.description')}
               </p>
               <div className="flex gap-4 mt-8">
                 {/* Social placeholders could go here */}
@@ -191,13 +199,13 @@ export default function Layout() {
             </div>
 
             <div>
-              <h3 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">استكشاف المنصة</h3>
+              <h3 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">{t('footer.explore')}</h3>
               <ul className="space-y-4">
                 {[
-                  { to: '/courses', label: 'الأكاديمية التدريبية' },
-                  { to: '/articles', label: 'المستودع العلمي' },
-                  { to: '/tools', label: 'الحقيبة الإكلينيكية' },
-                  { to: '/sessions', label: 'حجز جلسة' }
+                  { to: '/courses', label: t('footer.academy') },
+                  { to: '/articles', label: t('footer.journal') },
+                  { to: '/tools', label: t('footer.toolkit') },
+                  { to: '/sessions', label: t('nav.sessions') }
                 ].map((link) => (
                   <li key={link.to}>
                     <Link to={link.to} className="text-slate-400 hover:text-[#6FA65A] text-sm font-bold transition-colors flex items-center gap-2 group">
@@ -210,22 +218,22 @@ export default function Layout() {
             </div>
 
             <div>
-              <h3 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">دعم الأعضاء</h3>
+              <h3 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">{t('footer.support')}</h3>
               <ul className="space-y-4">
-                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">البريد الإلكتروني</p><p className="text-white font-bold text-sm">support@psychoclub.space</p></li>
-                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">المكتب الرئيسي</p><p className="text-white font-bold text-sm">القاهرة، مدينة نصر</p></li>
-                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">الخط الساخن</p><p className="text-[#6FA65A] font-black text-lg">+20 123 456 7890</p></li>
+                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.email')}</p><p className="text-white font-bold text-sm">support@psychoclub.space</p></li>
+                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.office')}</p><p className="text-white font-bold text-sm">{t('footer.cairo')}</p></li>
+                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.hotline')}</p><p className="text-[#6FA65A] font-black text-lg">+20 123 456 7890</p></li>
               </ul>
             </div>
           </div>
 
           <div className="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-              © {new Date().getFullYear()} Clinical Cases Group | Psycho-Club. رحلة مهنية متكاملة بلمسة إنسانية.
+              {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
             <div className="flex gap-8 text-slate-500 text-[10px] font-black uppercase tracking-tighter">
-              <Link to="/privacy" className="hover:text-white transition-colors">سياسة الخصوصية</Link>
-              <Link to="/terms" className="hover:text-white transition-colors">شروط الاستخدام</Link>
+              <Link to="/privacy" className="hover:text-white transition-colors">{t('footer.privacy')}</Link>
+              <Link to="/terms" className="hover:text-white transition-colors">{t('footer.terms')}</Link>
             </div>
           </div>
         </div>
