@@ -13,7 +13,7 @@ const SLIDES = [
         ctaSecondary: 'تعرف علينا',
         linkPrimary: '/sessions',
         linkSecondary: '/about',
-        tag: 'دعم مهني مستمر'
+        tag: 'دعم نفسي مستمر'
     },
     {
         id: 2,
