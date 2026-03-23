@@ -1,3 +1,20 @@
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
+
+/* Ensure all user input is black and clearly visible */
+input, textarea, select {
+  color: #000000 !important;
+  font-weight: 500;
+}
+
+/* Ensure placeholders are readable but distinct */
+::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+/* Specific fix for dark mode if needed (though user asked for black everywhere) */
+.dark input, .dark textarea, .dark select {
+  color: #ffffff !important;
+}
