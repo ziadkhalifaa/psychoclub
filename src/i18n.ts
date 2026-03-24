@@ -114,21 +114,26 @@ const resources = {
           cta: 'تعرف على الفريق'
         },
         articles: {
-          hero: {
-            badge: 'المستودع العلمي',
-            title: 'المقالات والأبحاث',
-            subtitle: 'مكتبة متجددة من المعرفة الإكلينيكية، تضم أبحاثاً مترجمة ومقالات أصلية لنخبة من المتخصصين.'
-          },
-          filters: {
-            search: 'البحث السريع',
-            placeholder: 'ماذا تريد أن تقرأ اليوم؟',
-            categories: 'الأقسام العلمية',
-            all: 'الكل'
-          },
-          card: {
-            readMore: 'اقرأ المقال كاملاً',
-            author: 'الإدارة'
-          }
+          title: 'آخر المقالات العلمية',
+          subtitle: 'اكتشف أحدث الأبحاث والدراسات في مجال الصحة النفسية بأقلام خبراء Psycho-Club.',
+          more: 'استكشاف المستودع العلمي'
+        }
+      },
+      articles: {
+        hero: {
+          badge: 'المستودع العلمي',
+          title: 'المقالات والأبحاث',
+          subtitle: 'مكتبة متجددة من المعرفة الإكلينيكية، تضم أبحاثاً مترجمة ومقالات أصلية لنخبة من المتخصصين.'
+        },
+        filters: {
+          search: 'البحث السريع',
+          placeholder: 'ماذا تريد أن تقرأ اليوم؟',
+          categories: 'الأقسام العلمية',
+          all: 'الكل'
+        },
+        card: {
+          readMore: 'اقرأ المقال كاملاً',
+          author: 'الإدارة'
         }
       },
       about: {
@@ -330,21 +335,26 @@ const resources = {
           cta: 'Meet Our Team'
         },
         articles: {
-          hero: {
-            badge: 'Scientific Repository',
-            title: 'Articles & Research',
-            subtitle: 'A renewing library of clinical knowledge, featuring translated research and original articles by top specialists.'
-          },
-          filters: {
-            search: 'Quick Search',
-            placeholder: 'What do you want to read today?',
-            categories: 'Scientific Branches',
-            all: 'All'
-          },
-          card: {
-            readMore: 'Read Full Article',
-            author: 'Administration'
-          }
+          title: 'Latest Scientific Articles',
+          subtitle: 'Explore the latest research and studies in mental health by Psycho-Club experts.',
+          more: 'Explore Knowledge Hub'
+        }
+      },
+      articles: {
+        hero: {
+          badge: 'Scientific Repository',
+          title: 'Articles & Research',
+          subtitle: 'A renewing library of clinical knowledge, featuring translated research and original articles by top specialists.'
+        },
+        filters: {
+          search: 'Quick Search',
+          placeholder: 'What do you want to read today?',
+          categories: 'Scientific Branches',
+          all: 'All'
+        },
+        card: {
+          readMore: 'Read Full Article',
+          author: 'Administration'
         }
       },
       about: {
