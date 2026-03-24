@@ -1,6 +1,6 @@
-import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Clock, Users, FileText, Calendar, Sparkles, Fingerprint, Activity, Layers, PlayCircle, Star, CheckCircle, ChevronDown, PenTool } from 'lucide-react';
 import { HeroSlider } from '../components/HeroSlider';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,11 @@ import { useLanguage } from '../context/LanguageContext';
 export default function Home() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+
+  const { data: stats } = useQuery({
+    queryKey: ['public-stats'],
+    queryFn: () => fetch('/api/public/stats').then(res => res.json())
+  });
 
   const { data: courses } = useQuery({
     queryKey: ['courses'],
@@ -177,7 +182,7 @@ export default function Home() {
                 <div className="space-y-6">
                   <motion.img whileHover={{ scale: 1.05 }} src="/images/home_about_therapy.png" className="rounded-[3rem] shadow-2xl border-4 border-white/5 w-full h-72 object-cover" />
                   <div className="bg-[#6FA65A] p-8 rounded-[3rem] text-white shadow-xl shadow-emerald-500/20">
-                    <h4 className="text-4xl font-black mb-2">0</h4>
+                    <h4 className="text-4xl font-black mb-2">{(stats?.totalUsers || 0).toLocaleString()}</h4>
                     <p className="text-sm font-bold opacity-80 uppercase tracking-widest">{t('home.stats.students')}</p>
                   </div>
                 </div>
@@ -290,7 +295,7 @@ export default function Home() {
                 </div>
                 <div className="flex -space-x-3 space-x-reverse">
                   {[1, 2, 3, 4].map(n => <div key={n} className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 dark:bg-slate-700 overflow-hidden"><img src={`https://i.pravatar.cc/100?u=${n}`} alt="" /></div>)}
-                  <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 bg-[#1F2F4A] dark:bg-slate-700 flex items-center justify-center text-[10px] text-white font-bold opacity-80">0</div>
+                  <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 bg-[#1F2F4A] dark:bg-slate-700 flex items-center justify-center text-[10px] text-white font-bold opacity-80">{(stats?.totalArticles || 0).toLocaleString()}</div>
                 </div>
               </div>
             </div>

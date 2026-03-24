@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { Brain, Target, Users, Award, Heart, Sparkles, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
@@ -8,7 +9,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectFade, Pagination, Controller } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 
-// Import Swiper styles
+// Swiper styles
 import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
@@ -33,35 +34,16 @@ const specialists = [
     { src: '/images/specialists/specialist17.png', name: 'أ.عمرو ناجح' },
 ];
 
-const stats = [
-    { label: 'خريج متدرب', value: '0', icon: Users },
-    { label: 'دورة تدريبية', value: '0', icon: Brain },
-    { label: 'سنة خبرة', value: '0', icon: Award },
-    { label: 'محاضر خبير', value: '0', icon: Sparkles },
-];
-
-const values = [
-    {
-        title: 'الأمانة العلمية',
-        description: 'نلتزم بتقديم محتوى علمي رصين ومبني على أحدث الأدلة والبراهين في مجال الصحة النفسية.',
-        icon: Heart,
-    },
-    {
-        title: 'التطبيق العملي',
-        description: 'تركيزنا الأساسي هو سد الفجوة بين النظرية والممارسة لتمكين المعالج من أدواته.',
-        icon: Target,
-    },
-    {
-        title: 'المجتمع المهني',
-        description: 'نسعى لبناء بيئة داعمة تجمع المختصين لتبادل الخبرات والنمو المشترك.',
-        icon: Users,
-    },
-];
-
 export default function About() {
     const { t } = useTranslation();
     const { isRTL } = useLanguage();
     const { user } = useAuth();
+
+    const { data: statsData } = useQuery({
+        queryKey: ['public-stats'],
+        queryFn: () => fetch('/api/public/stats').then(res => res.json())
+    });
+
     const [firstSwiper, setFirstSwiper] = useState<SwiperType | null>(null);
     const [secondSwiper, setSecondSwiper] = useState<SwiperType | null>(null);
 
@@ -86,10 +68,10 @@ export default function About() {
     };
 
     const stats = [
-        { label: t('about.stats.graduates'), value: '0', icon: Users },
-        { label: t('about.stats.courses'), value: '0', icon: Brain },
-        { label: t('about.stats.experience'), value: '0', icon: Award },
-        { label: t('about.stats.lecturers'), value: '0', icon: Sparkles },
+        { label: t('about.stats.graduates'), value: (statsData?.totalUsers || 0).toLocaleString(), icon: Users },
+        { label: t('about.stats.courses'), value: (statsData?.totalCourses || 0).toLocaleString(), icon: Brain },
+        { label: t('about.stats.experience'), value: '5', icon: Award },
+        { label: t('about.stats.lecturers'), value: '15', icon: Sparkles },
     ];
 
     const values = [
