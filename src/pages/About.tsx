@@ -34,10 +34,10 @@ const specialists = [
 ];
 
 const stats = [
-    { label: 'خريج متدرب', value: '+3000', icon: Users },
-    { label: 'دورة تدريبية', value: '+100', icon: Brain },
-    { label: 'سنة خبرة', value: '+5', icon: Award },
-    { label: 'محاضر خبير', value: '+15', icon: Sparkles },
+    { label: 'خريج متدرب', value: '0', icon: Users },
+    { label: 'دورة تدريبية', value: '0', icon: Brain },
+    { label: 'سنة خبرة', value: '0', icon: Award },
+    { label: 'محاضر خبير', value: '0', icon: Sparkles },
 ];
 
 const values = [
@@ -86,10 +86,10 @@ export default function About() {
     };
 
     const stats = [
-        { label: t('about.stats.graduates'), value: '+3000', icon: Users },
-        { label: t('about.stats.courses'), value: '+100', icon: Brain },
-        { label: t('about.stats.experience'), value: '+5', icon: Award },
-        { label: t('about.stats.lecturers'), value: '+15', icon: Sparkles },
+        { label: t('about.stats.graduates'), value: '0', icon: Users },
+        { label: t('about.stats.courses'), value: '0', icon: Brain },
+        { label: t('about.stats.experience'), value: '0', icon: Award },
+        { label: t('about.stats.lecturers'), value: '0', icon: Sparkles },
     ];
 
     const values = [
