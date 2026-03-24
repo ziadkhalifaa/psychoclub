@@ -237,7 +237,21 @@ async function startServer() {
       if (!user) return res.status(404).json({ error: "المستخدم غير موجود" });
 
       const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!valid) return res.status(400).json({ error: "كلمة المرور الحالية غير ص�  // ─── Admin Stats (Dynamic) ────────────────────────────────────
+      if (!valid) return res.status(400).json({ error: "كلمة المرور الحالية غير صحيحة" });
+
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { passwordHash }
+      });
+      res.json({ message: "تم تحديث كلمة المرور بنجاح" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "خطأ في تحديث كلمة المرور" });
+    }
+  });
+
+  // ─── Admin Stats (Dynamic) ────────────────────────────────────
   apiRouter.get("/admin/stats", requireAdmin, async (req, res) => {
     try {
       const [totalUsers, totalCourses, totalArticles, totalTools, purchases, recentPurchases] = await Promise.all([
@@ -276,23 +290,7 @@ async function startServer() {
       const usersChart = monthNames.map(name => ({ name, total: monthlyUsers[name] || 0 })).filter(d => d.total > 0);
 
       // Pending purchases count
-      const pendingPurchases = await prisma.purchase.count({ where: { status: "PENDING" } });
-
-      res.json({
-        totalUsers,
-        totalCourses,
-        totalArticles,
-        totalTools,
-        totalRevenue,
-        pendingPurchases,
-        revenueChart: revenueChart.length > 0 ? revenueChart : monthNames.slice(0, 7).map(name => ({ name, total: 0 })),
-        usersChart: usersChart.length > 0 ? usersChart : monthNames.slice(0, 7).map(name => ({ name, total: 0 })),
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Server error" });
-    }
-  });
+      const pendingPurchases = await 
 
   apiRouter.get("/public/stats", async (req, res) => {
     try {
