@@ -297,8 +297,8 @@ export default function PrivacyPolicy() {
                   فريق الدعم الفني لدينا متواجد دائماً للرد على أسئلتك ومخاوفك المتعلقة بالخصوصية وأمان بياناتك. لا تتردد في مراسلتنا في أي وقت.
                 </p>
                 <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-[#152238]/50 p-2 sm:pr-6 rounded-3xl sm:rounded-full border border-white/10 backdrop-blur-md w-full sm:w-auto overflow-hidden">
-                  <span className="font-black text-lg md:text-xl tracking-wider text-white px-4 py-2 select-all">support@psychoclub.space</span>
-                  <a href="mailto:support@psychoclub.space" className="w-full sm:w-auto px-8 py-4 bg-[#6FA65A] text-white rounded-2xl sm:rounded-[2rem] font-black hover:bg-emerald-600 transition-colors shadow-lg">
+                  <span className="font-black text-lg md:text-xl tracking-wider text-white px-4 py-2 select-all">psychoclub10@gmail.com</span>
+                  <a href="mailto:psychoclub10@gmail.com" className="w-full sm:w-auto px-8 py-4 bg-[#6FA65A] text-white rounded-2xl sm:rounded-[2rem] font-black hover:bg-emerald-600 transition-colors shadow-lg">
                     إرسال بريد
                   </a>
                 </div>

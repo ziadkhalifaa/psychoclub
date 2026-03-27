@@ -76,6 +76,7 @@ export default function AdminDashboard() {
   const [toolForm, setToolForm] = useState({ title: '', description: '', price: '', coverImage: '' });
   const [articleForm, setArticleForm] = useState({ title: '', excerpt: '', coverImage: '', contentRichText: '', category: 'مقالات عامة', tags: '' });
   const [newFileForm, setNewFileForm] = useState({ title: '', file: null as File | null });
+  const [toolUploadProgress, setToolUploadProgress] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -197,14 +198,45 @@ export default function AdminDashboard() {
 
   // ─── Handlers ─────────────────────────────────────────
 
-  const handleFileUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      return data.url;
-    } catch { showToast('حدث خطأ أثناء الرفع', 'error'); return null; }
+  const handleFileUpload = async (file: File, onProgress?: (percent: number) => void) => {
+    return new Promise<string | null>((resolve) => {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload', true);
+
+      if (onProgress) {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            onProgress(percent);
+          }
+        };
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            resolve(data.url);
+          } catch {
+            showToast('خطأ في معالجة الرد', 'error');
+            resolve(null);
+          }
+        } else {
+          showToast('حدث خطأ أثناء الرفع', 'error');
+          resolve(null);
+        }
+      };
+
+      xhr.onerror = () => {
+        showToast('خطأ في الاتصال بالسيرفر', 'error');
+        resolve(null);
+      };
+
+      xhr.send(formData);
+    });
   };
 
   const submitCourse = async (courseData: any) => {
@@ -277,10 +309,13 @@ export default function AdminDashboard() {
       let fileName = editingFile?.fileName;
 
       if (newFileForm.file) {
-        const url = await handleFileUpload(newFileForm.file);
+        const url = await handleFileUpload(newFileForm.file, (p) => {
+          setToolUploadProgress(prev => ({ ...prev, newFile: p }));
+        });
         if (!url) return;
         fileUrl = url;
         fileName = newFileForm.file.name;
+        setToolUploadProgress(prev => { const n = { ...prev }; delete n.newFile; return n; });
       }
 
       const method = editingFile ? 'PUT' : 'POST';
@@ -809,35 +844,41 @@ export default function AdminDashboard() {
                   <select
                     value={u.role}
                     onChange={e => handleChangeRole(u.id, e.target.value)}
-                    disabled={u.role === 'ADMIN'}
-                    className={`px-6 py-3 rounded-xl text-[10px] font-black border border-slate-100 outline-none focus:ring-4 focus:ring-[#1F2F4A]/5 transition-all text-center min-w-[140px] ${u.role === 'ADMIN' ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-50 cursor-pointer appearance-none'}`}
+                    disabled={u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space'}
+                    className={`px-6 py-3 rounded-xl text-[10px] font-black border border-slate-100 outline-none focus:ring-4 focus:ring-[#1F2F4A]/5 transition-all text-center min-w-[140px] ${(u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space') ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-50 cursor-pointer appearance-none'}`}
                   >
                     <option value="USER">متدرب</option>
-                    <option value="DOCTOR">طبيب / مشرف</option>
+                    <option value="DOCTOR">طبيب</option>
+                    <option value="SPECIALIST">معالج مختص</option>
+                    <option value="SUPERVISOR">مشرف محتوى</option>
                     <option value="ADMIN">مدير النظام</option>
                   </select>
                 </td>
                 <td className="px-10 py-8 bg-white border-y border-slate-50 shadow-sm group-hover:shadow-xl transition-all">
-                  {u.role === 'DOCTOR' && u.doctorProfile && (
+                  {["DOCTOR", "SPECIALIST", "SUPERVISOR"].includes(u.role) && u.doctorProfile && (
                     <div className="flex gap-2 flex-wrap">
-                      {[['canWriteCourses', 'دورات'], ['canWriteArticles', 'مقالات'], ['canManageSlots', 'مواعيد']].map(([key, label]) => (
-                        <button
-                          key={key}
-                          onClick={() => handleTogglePermission(u.doctorProfile.id, key, !u.doctorProfile[key])}
-                          className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${u.doctorProfile[key] ? 'bg-[#6FA65A] text-white border-[#6FA65A] shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-300 border-slate-100 opacity-60'}`}
-                        >
-                          {label}
-                        </button>
-                      ))}
+                      {[['canWriteCourses', 'دورات'], ['canWriteArticles', 'مقالات'], ['canManageSlots', 'مواعيد']].map(([key, label]) => {
+                        // Skip courses and slots for Supervisors
+                        if (u.role === 'SUPERVISOR' && (key === 'canWriteCourses' || key === 'canManageSlots')) return null;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => handleTogglePermission(u.doctorProfile.id, key, !u.doctorProfile[key])}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${u.doctorProfile[key] ? 'bg-[#6FA65A] text-white border-[#6FA65A] shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-300 border-slate-100 opacity-60'}`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
-                  {u.role !== 'DOCTOR' && <div className="w-10 h-1 bg-slate-50 rounded-full" />}
+                  {!["DOCTOR", "SPECIALIST", "SUPERVISOR"].includes(u.role) && <div className="w-10 h-1 bg-slate-50 rounded-full" />}
                 </td>
                 <td className="px-10 py-8 text-center bg-white border-y border-slate-50 shadow-sm group-hover:shadow-xl transition-all">
                   <button
                     onClick={() => handleChangeStatus(u.id, u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')}
-                    disabled={u.role === 'ADMIN'}
-                    className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black tracking-[0.2em] transition-all ${u.role === 'ADMIN' ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70' : u.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'}`}
+                    disabled={u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space'}
+                    className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black tracking-[0.2em] transition-all ${(u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space') ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70' : u.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'}`}
                   >
                     <div className={`w-2 h-2 rounded-full ${u.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                     {u.status === 'ACTIVE' ? 'نشط' : 'غير نشط'}
@@ -1169,6 +1210,15 @@ export default function AdminDashboard() {
               </button>
             )}
           </div>
+          {toolUploadProgress['newFile'] !== undefined && (
+            <div className="mt-4 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${toolUploadProgress['newFile']}%` }}
+                className="h-full bg-[#6FA65A]"
+              />
+            </div>
+          )}
         </div>
 
         {/* Files List */}
@@ -1267,8 +1317,13 @@ export default function AdminDashboard() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const url = await handleFileUpload(file);
-                      if (url) setToolForm(prev => ({ ...prev, coverImage: url }));
+                      const url = await handleFileUpload(file, (p) => {
+                        setToolUploadProgress(prev => ({ ...prev, toolCover: p }));
+                      });
+                      if (url) {
+                        setToolForm(prev => ({ ...prev, coverImage: url }));
+                        setToolUploadProgress(prev => { const n = { ...prev }; delete n.toolCover; return n; });
+                      }
                     }
                   }}
                 />
@@ -1463,7 +1518,9 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 pt-10">
         <DashboardHeader
           title="نظام الإدارة المتكامل "
+          roleLabel="لوحة التحكم"
           subtitle="تحكم شمولي في منصة Clinical Cases Group | Psycho-Club وإدارة شؤون المتدربين"
+          onSettingsClick={() => setActiveTab('myProfile')}
           extra={<div className="bg-[#6FA65A]/10 text-[#6FA65A] border border-[#6FA65A]/30 px-6 py-2.5 rounded-2xl font-bold shadow-xl flex items-center gap-3 backdrop-blur-md"><Activity className="w-5 h-5 animate-pulse" /> استقرار النظام: 100%</div>}
         />
         <div className="flex flex-col lg:flex-row gap-10">

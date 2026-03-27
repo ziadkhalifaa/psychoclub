@@ -204,7 +204,7 @@ export default function CourseView() {
                       <div className="space-y-4">
                         <div className={`p-4 rounded-2xl border ${paymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
                           <p className="text-[10px] font-black mb-1 opacity-60">حول المبلغ إلى:</p>
-                          <p className="font-black text-lg tracking-wider" dir="ltr">{paymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}</p>
+                          <p className="font-black text-lg tracking-wider" dir="ltr">{paymentMethod === 'VODAFONE_CASH' ? '01031611290' : 'mustafasaleh97@instapay'}</p>
                         </div>
 
                         <div className="space-y-2 text-right">

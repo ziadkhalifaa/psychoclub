@@ -6,7 +6,7 @@ import {
   BookOpen, FileText, Calendar, Users,
   Settings, DollarSign, Activity, Star,
   Trash2, PlusCircle, LayoutDashboard,
-  ArrowLeft, Search, Filter
+  ArrowLeft, Search, Filter, User, PenTool
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -17,19 +17,20 @@ import { DashboardHeader } from '../components/DashboardHeader';
 import { CourseCreator } from '../components/CourseCreator';
 import { ArticleEditor } from '../components/ArticleEditor';
 
-const SIDEBAR_ITEMS = [
-  { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard },
-  { id: 'portfolio', label: 'البورتفوليو', icon: Users },
-  { id: 'slots', label: 'مواعيد الجلسات', icon: Calendar },
-  { id: 'courses', label: 'دوراتي التدريبية', icon: BookOpen },
-  { id: 'articles', label: 'مقالاتي العلمية', icon: FileText },
-  { id: 'earnings', label: 'التقارير المالية', icon: DollarSign },
+const menuItems = [
+  { id: 'overview', label: 'نظرة عامة', icon: LayoutDashboard, roles: ['DOCTOR', 'SPECIALIST'] },
+  { id: 'portfolio', label: 'الملف الشخصي', icon: User, roles: ['DOCTOR', 'SPECIALIST'] },
+  { id: 'slots', label: 'مواعيد الجلسات', icon: Calendar, roles: ['DOCTOR', 'SPECIALIST'] },
+  { id: 'courses', label: 'الدورات التدريبية', icon: BookOpen, roles: ['DOCTOR', 'SPECIALIST'] },
+  { id: 'articles', label: 'إدارة المقالات', icon: PenTool, roles: ['DOCTOR', 'SPECIALIST', 'SUPERVISOR'] },
+  { id: 'earnings', label: 'الأرباح', icon: Activity, roles: ['DOCTOR', 'SPECIALIST'] },
 ];
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState('overview');
+  const filteredMenuItems = menuItems.filter(item => user && item.roles.includes(user.role));
+  const [activeTab, setActiveTab] = useState(user && user.role === 'SUPERVISOR' ? 'articles' : 'overview');
   const [stats, setStats] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [articles, setArticles] = useState<any[]>([]);
@@ -44,7 +45,7 @@ export default function DoctorDashboard() {
   const [newSlot, setNewSlot] = useState({ date: '', time: '', durationMinutes: 45 });
 
   useEffect(() => {
-    if (!user || user.role !== 'DOCTOR') return;
+    if (!user || !['DOCTOR', 'SPECIALIST', 'SUPERVISOR'].includes(user.role)) return;
     const fetchData = async () => {
       try {
         if (activeTab === 'overview') {
@@ -87,29 +88,49 @@ export default function DoctorDashboard() {
     fetchData();
   }, [activeTab, showAddCourse, showAddArticle, user]);
 
-  if (!user || user.role !== 'DOCTOR') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center p-12 bg-white rounded-[2rem] shadow-xl border border-slate-100">
-          <Settings className="w-16 h-16 text-slate-300 mx-auto mb-4 animate-spin-slow" />
-          <h2 className="text-2xl font-bold text-[#1F2F4A]">غير مصرح لك بالوصول</h2>
-          <p className="text-slate-500 mt-2">هذه الصفحة مخصصة للأطباء والمشرفين فقط.</p>
-        </div>
-      </div>
-    );
+  if (!user || !['DOCTOR', 'SPECIALIST', 'SUPERVISOR'].includes(user.role)) {
+    return <div className="p-24 text-center">غير مصرح لك بدخول هذه الصفحة</div>;
   }
 
-  const handleFileUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      return data.url;
-    } catch (err) {
-      showToast('حدث خطأ أثناء رفع الملف', 'error');
-      return null;
-    }
+  const handleFileUpload = async (file: File, onProgress?: (percent: number) => void) => {
+    return new Promise<string | null>((resolve) => {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload', true);
+
+      if (onProgress) {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            onProgress(percent);
+          }
+        };
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            resolve(data.url);
+          } catch {
+            showToast('خطأ في معالجة الرد', 'error');
+            resolve(null);
+          }
+        } else {
+          showToast('حدث خطأ أثناء الرفع', 'error');
+          resolve(null);
+        }
+      };
+
+      xhr.onerror = () => {
+        showToast('خطأ في الاتصال بالسيرفر', 'error');
+        resolve(null);
+      };
+
+      xhr.send(formData);
+    });
   };
 
   const submitCourse = async (courseForm: any) => {
@@ -505,12 +526,21 @@ export default function DoctorDashboard() {
     <div className="min-h-screen bg-slate-50/50 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 md:space-y-10 pt-6 md:pt-10">
         <DashboardHeader
-          title={`مرحباً بك، د. ${user.name}`}
-          subtitle="إدارة دوراتك، مقالاتك، ومتابعة أداءك المالي بكل سهولة"
+          roleLabel={user.role === 'DOCTOR' ? "لوحة الطبيب" : user.role === 'SPECIALIST' ? "لوحة المعالج المختص" : "لوحة المشرف"}
+          title={user.role === 'SUPERVISOR' ? `مرحباً بك، أ. ${user.name}` : 
+                 user.role === 'SPECIALIST' ? `مرحباً بك، أ. ${user.name}` :
+                 `مرحباً بك، د. ${user.name}`}
+          subtitle={user.role === 'SUPERVISOR' ? "إدارة المقالات والمحتوى العلمي بكل سهولة" : 
+                    user.role === 'SPECIALIST' ? "إدارة دوراتك، مقالاتك، ومتابعة أداءك المالي بكل سهولة" :
+                    "إدارة دوراتك، مقالاتك، ومتابعة أداءك المالي بكل سهولة"}
+          onSettingsClick={() => setActiveTab('portfolio')}
           extra={
             <div className="flex items-center gap-2 bg-amber-400/20 text-amber-300 px-4 md:px-5 py-2 md:py-2.5 rounded-xl md:rounded-[1.25rem] border border-amber-400/30 text-xs md:text-base">
               <Star className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              <span className="font-bold">4.9 / 5 تقييم المشرف</span>
+              <span className="font-bold">
+                {stats?.rating ? Number(stats.rating).toFixed(1) : '0.0'} / 5 تقييم {user.role === 'SUPERVISOR' ? 'المشرف' : 'الطبيب'}
+                {stats?.reviewsCount > 0 && <span className="text-[10px] mr-1 opacity-60">({stats.reviewsCount})</span>}
+              </span>
             </div>
           }
         />
@@ -518,7 +548,7 @@ export default function DoctorDashboard() {
         <div className="flex flex-col lg:flex-row gap-8 md:gap-10">
           <div className="lg:w-80">
             <DashboardSidebar
-              items={SIDEBAR_ITEMS}
+              items={filteredMenuItems}
               activeTab={activeTab}
               onTabChange={(id) => { setActiveTab(id); setShowAddCourse(false); setShowAddArticle(false); }}
             />

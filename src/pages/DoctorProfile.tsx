@@ -75,8 +75,8 @@ export default function DoctorProfile() {
         }
     };
 
-    if (isLoading) return <div className="p-24 text-center">جاري تحميل بيانات الأخصائي...</div>;
-    if (!doctor || error) return <div className="p-24 text-center">لم يتم العثور على الأخصائي</div>;
+    if (isLoading) return <div className="p-24 text-center font-bold text-[#1F2F4A]">جاري تحميل البيانات...</div>;
+    if (!doctor || error) return <div className="p-24 text-center font-bold text-rose-500">لم يتم العثور على البيانات المطلوبة</div>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -99,7 +99,9 @@ export default function DoctorProfile() {
                                 <span className="text-[10px] text-slate-400">({doctor._count?.reviews || 0})</span>
                             </div>
                         </div>
-                        <p className="text-slate-300 text-lg leading-relaxed max-w-xl font-medium">{doctor.bio || 'لم يقم الأخصائي بإضافة نبذة شخصية حتى الآن.'}</p>
+                        <p className="text-slate-300 text-lg leading-relaxed max-w-xl font-medium">
+                            {doctor.bio || (doctor.user.role === 'SPECIALIST' ? 'لم يقم المعالج المختص بإضافة نبذة شخصية حتى الآن.' : 'لم يقم الطبيب بإضافة نبذة شخصية حتى الآن.')}
+                        </p>
 
                         <div className="flex flex-wrap gap-3 pt-6">
                             {doctor.specialties && JSON.parse(doctor.specialties).map((spec: string, i: number) => (
@@ -262,7 +264,7 @@ export default function DoctorProfile() {
                                             <div className="space-y-4">
                                                 <div className={`p-4 rounded-2xl border ${paymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
                                                     <p className="text-[10px] font-black mb-1 opacity-60 text-right">حول المبلغ إلى:</p>
-                                                    <p className="font-black text-lg tracking-wider text-center" dir="ltr">{paymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}</p>
+                                                    <p className="font-black text-lg tracking-wider text-center" dir="ltr">{paymentMethod === 'VODAFONE_CASH' ? '01031611290' : 'mustafasaleh97@instapay'}</p>
                                                 </div>
 
                                                 <div className="space-y-2 text-right">

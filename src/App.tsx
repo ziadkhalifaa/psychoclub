@@ -1,35 +1,39 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import Courses from './pages/Courses';
-import CourseView from './pages/CourseView';
-import CoursePlayer from './pages/CoursePlayer';
-import Articles from './pages/Articles';
-import ArticleView from './pages/ArticleView';
-import Sessions from './pages/Sessions';
-import DoctorProfile from './pages/DoctorProfile';
-import About from './pages/About';
-import Tools from './pages/Tools';
-import ToolView from './pages/ToolView';
-import Profile from './pages/Profile';
-import AdminDashboard from './pages/AdminDashboard';
-import DoctorDashboard from './pages/DoctorDashboard';
-import Community from './pages/Community';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentFailed from './pages/PaymentFailed';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfUse from './pages/TermsOfUse';
+
+// Contexts & Components
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ToastProvider } from './components/Toast';
 import LoadingScreen from './components/LoadingScreen';
+import Layout from './components/Layout';
 import './i18n';
+
+// Lazy loaded pages
+const Home = lazy(() => import('./pages/Home'));
+const Courses = lazy(() => import('./pages/Courses'));
+const CourseView = lazy(() => import('./pages/CourseView'));
+const CoursePlayer = lazy(() => import('./pages/CoursePlayer'));
+const Articles = lazy(() => import('./pages/Articles'));
+const ArticleView = lazy(() => import('./pages/ArticleView'));
+const Sessions = lazy(() => import('./pages/Sessions'));
+const DoctorProfile = lazy(() => import('./pages/DoctorProfile'));
+const About = lazy(() => import('./pages/About'));
+const Tools = lazy(() => import('./pages/Tools'));
+const ToolView = lazy(() => import('./pages/ToolView'));
+const Profile = lazy(() => import('./pages/Profile'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const DoctorDashboard = lazy(() => import('./pages/DoctorDashboard'));
+const Community = lazy(() => import('./pages/Community'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
+const PaymentFailed = lazy(() => import('./pages/PaymentFailed'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 
 const queryClient = new QueryClient();
 

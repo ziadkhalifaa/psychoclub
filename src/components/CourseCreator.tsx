@@ -31,7 +31,7 @@ interface CourseForm {
 interface CourseCreatorProps {
     onCancel: () => void;
     onSubmit: (form: CourseForm) => Promise<void>;
-    handleFileUpload: (file: File) => Promise<string | null>;
+    handleFileUpload: (file: File, onProgress?: (percent: number) => void) => Promise<string | null>;
     initialData?: Partial<CourseForm>;
 }
 
@@ -68,6 +68,8 @@ export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialDat
             ? (initialData as any).requirements.split('|').join('\n')
             : '',
     });
+
+    const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
 
     const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
     const prev = () => setStep(s => Math.max(s - 1, 0));
@@ -223,7 +225,13 @@ export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialDat
                                         <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">غلاف الدورة (البوستر)</div>
                                         <div className="relative group">
                                             <div className={`w-full h-80 rounded-[3rem] border-4 border-dashed transition-all overflow-hidden relative flex flex-col items-center justify-center p-8 ${form.thumbnail ? 'border-[#6FA65A]/50 bg-white' : 'border-slate-100 bg-slate-50/50 hover:bg-emerald-50/30 hover:border-[#6FA65A]/20'}`}>
-                                                {form.thumbnail ? (
+                                                {uploadProgress['thumbnail'] !== undefined && uploadProgress['thumbnail'] < 100 ? (
+                                                    <div className="flex flex-col items-center gap-4">
+                                                        <div className="w-20 h-20 rounded-full border-4 border-slate-100 border-t-[#6FA65A] animate-spin" />
+                                                        <div className="text-2xl font-black text-[#1F2F4A]">{uploadProgress['thumbnail']}%</div>
+                                                        <p className="text-xs font-bold text-slate-400">جاري رفع الغلاف...</p>
+                                                    </div>
+                                                ) : form.thumbnail ? (
                                                     <>
                                                         <img src={form.thumbnail} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60" alt="" />
                                                         <div className="relative z-10 flex flex-col items-center">
@@ -242,8 +250,17 @@ export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialDat
                                                 )}
                                                 <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={async e => {
                                                     if (e.target.files?.[0]) {
-                                                        const url = await handleFileUpload(e.target.files[0]);
-                                                        if (url) setForm({ ...form, thumbnail: url });
+                                                        const url = await handleFileUpload(e.target.files[0], (p) => {
+                                                            setUploadProgress(prev => ({ ...prev, thumbnail: p }));
+                                                        });
+                                                        if (url) {
+                                                            setForm({ ...form, thumbnail: url });
+                                                            setUploadProgress(prev => {
+                                                                const next = { ...prev };
+                                                                delete next.thumbnail;
+                                                                return next;
+                                                            });
+                                                        }
                                                     }
                                                 }} />
                                             </div>
@@ -381,13 +398,29 @@ export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialDat
                                                                 <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">رابط المصدر السحابي</p>
                                                                 <div className="relative group/link">
                                                                     <Link className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within/link:text-[#6FA65A] transition-colors" />
-                                                                    <input required type="text" value={lesson.resourceUrl} onChange={e => handleLessonChange(i, 'resourceUrl', e.target.value)} className="w-full pr-12 pl-20 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-xs font-mono outline-none focus:bg-white transition-all" placeholder="https://..." />
-                                                                    <label className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#1F2F4A] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase cursor-pointer hover:bg-[#6FA65A] transition-colors shadow-lg">
-                                                                        إرفاق ملف
+                                                                    <input required type="text" value={lesson.resourceUrl} onChange={e => handleLessonChange(i, 'resourceUrl', e.target.value)} className="w-full pr-12 pl-24 py-4 bg-slate-50 border border-slate-50 rounded-2xl text-[10px] font-mono outline-none focus:bg-white transition-all" placeholder="https://..." />
+                                                                    <label className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#1F2F4A] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase cursor-pointer hover:bg-[#6FA65A] transition-colors shadow-lg flex items-center gap-2">
+                                                                        {uploadProgress[i] !== undefined ? (
+                                                                            <>
+                                                                                <div className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                                                                                {uploadProgress[i]}%
+                                                                            </>
+                                                                        ) : (
+                                                                            'إرفاق ملف'
+                                                                        )}
                                                                         <input type="file" className="hidden" onChange={async e => {
                                                                             if (e.target.files?.[0]) {
-                                                                                const url = await handleFileUpload(e.target.files[0]);
-                                                                                if (url) handleLessonChange(i, 'resourceUrl', url);
+                                                                                const url = await handleFileUpload(e.target.files[0], (p) => {
+                                                                                    setUploadProgress(prev => ({ ...prev, [i]: p }));
+                                                                                });
+                                                                                if (url) {
+                                                                                    handleLessonChange(i, 'resourceUrl', url);
+                                                                                    setUploadProgress(prev => {
+                                                                                        const next = { ...prev };
+                                                                                        delete next[i];
+                                                                                        return next;
+                                                                                    });
+                                                                                }
                                                                             }
                                                                         }} />
                                                                     </label>

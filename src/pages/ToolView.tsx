@@ -361,7 +361,7 @@ export default function ToolView() {
                       {paymentMethod === 'VODAFONE_CASH' ? 'حوّل المبلغ على الرقم' : 'حوّل المبلغ على حساب'}
                     </p>
                     <p className="font-black text-[#1F2F4A] text-lg tracking-wider" dir="ltr">
-                      {paymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}
+                      {paymentMethod === 'VODAFONE_CASH' ? '01031611290' : 'mustafasaleh97@instapay'}
                     </p>
                     <p className="text-xs font-bold text-[#6FA65A] mt-1">المبلغ: {pkg.price} ج.م</p>
                   </div>

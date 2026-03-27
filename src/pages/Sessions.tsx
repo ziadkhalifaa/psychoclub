@@ -43,7 +43,11 @@ export default function Sessions() {
                 )}
               </div>
               <h3 className="font-black text-xl text-[#1F2F4A] group-hover:text-[#6FA65A] transition-colors text-center">{doc.user?.name}</h3>
-              <p className="text-sm font-bold text-slate-400 mt-1 text-center">{doc.title || t('sessions.card.specialist')}</p>
+              <p className="text-sm font-bold text-slate-400 mt-1 text-center">
+                {doc.title || (doc.user?.role === 'SPECIALIST' ? t('roles.specialist') : 
+                               doc.user?.role === 'SUPERVISOR' ? t('roles.supervisor') : 
+                               t('roles.doctor'))}
+              </p>
               
               <div className="flex items-center gap-1.5 mt-3 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
                 <Star className={`w-3.5 h-3.5 ${doc.rating > 0 ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />

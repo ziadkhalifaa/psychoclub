@@ -5,6 +5,7 @@ import { Search, FileText, ArrowLeft, ArrowRight, ChevronDown, ChevronRight, Che
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
+import { ArticleCardSkeleton } from '../components/Skeleton';
 
 export default function Articles() {
   const { t } = useTranslation();
@@ -38,8 +39,6 @@ export default function Articles() {
       return matchesSearch && matchesCategory;
     });
   }, [articles, searchTerm, selectedCategory]);
-
-  if (isLoading) return <div className="p-24 text-center">{t('common.loading')}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -101,7 +100,11 @@ export default function Articles() {
 
         {/* Article Grid */}
         <div className="lg:col-span-3">
-          {filteredArticles.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {Array.from({ length: 4 }).map((_, i) => <ArticleCardSkeleton key={i} />)}
+            </div>
+          ) : filteredArticles.length === 0 ? (
             <div className="text-center py-20 text-slate-500 font-bold">
               {isRTL ? 'لا توجد مقالات تطابق بحثك حالياً.' : 'No articles match your search currently.'}
             </div>

@@ -65,6 +65,12 @@ export default function Profile() {
     queryKey: ['tools'],
     queryFn: () => fetch('/api/tools').then(res => res.json())
   });
+  
+  const { data: doctorProfile } = useQuery({
+    queryKey: ['doctorProfile'],
+    queryFn: () => fetch('/api/doctor/me').then(res => res.ok ? res.json() : null),
+    enabled: !!user && ['DOCTOR', 'SPECIALIST', 'SUPERVISOR'].includes(user.role)
+  });
 
   const updateProfileMutation = useMutation({
     mutationFn: async (newData: typeof formData) => {
@@ -257,8 +263,18 @@ export default function Profile() {
                 )}
                 <div className="flex items-center gap-2 bg-[#1F2F4A] text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg shadow-slate-200">
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  {user.role === 'USER' ? 'متدرب' : user.role === 'DOCTOR' ? 'طبيب/مشرف' : 'مدير'}
+                  {user.role === 'USER' ? 'متدرب / عميل' : 
+                   user.role === 'DOCTOR' ? 'طبيب' : 
+                   user.role === 'SPECIALIST' ? 'أخصائي / معالج' :
+                   user.role === 'SUPERVISOR' ? 'مشرف محتوى' :
+                   user.role === 'ADMIN' ? 'مدير النظام' : 'عضو'}
                 </div>
+                {doctorProfile && (
+                  <div className="flex items-center gap-2 bg-amber-400 text-[#1F2F4A] px-4 py-2 rounded-2xl text-sm font-black shadow-lg shadow-amber-100">
+                    <Star className="w-4 h-4 fill-current" />
+                    {doctorProfile.rating ? Number(doctorProfile.rating).toFixed(1) : '0.0'} / 5
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -662,7 +678,7 @@ export default function Profile() {
               {retryPaymentMethod && (
                 <div className={`p-4 rounded-2xl border text-center ${retryPaymentMethod === 'VODAFONE_CASH' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-indigo-50 border-indigo-100 text-indigo-700'}`}>
                   <p className="text-[10px] font-black mb-1 opacity-60">حول مبلغ {retryingItem.amount} ج.م إلى:</p>
-                  <p className="font-black text-lg tracking-wider" dir="ltr">{retryPaymentMethod === 'VODAFONE_CASH' ? '01032238095' : 'mustafasaleh97@instapay'}</p>
+                  <p className="font-black text-lg tracking-wider" dir="ltr">{retryPaymentMethod === 'VODAFONE_CASH' ? '01031611290' : 'mustafasaleh97@instapay'}</p>
                 </div>
               )}
 

@@ -15,9 +15,18 @@ const resources = {
         login: 'دخول',
         join: 'انضم إلينا',
         profile: 'الملف الشخصي',
-        admin: 'لوحة الإدارة',
+        admin: 'لوحة التحكم',
         doctor: 'لوحة الطبيب',
+        specialist: 'لوحة المعالج المختص',
+        supervisor: 'لوحة المشرف',
         logout: 'تسجيل الخروج'
+      },
+      roles: {
+        user: 'متدرب',
+        doctor: 'طبيب',
+        specialist: 'معالج مختص',
+        supervisor: 'مشرف محتوى',
+        admin: 'مدير النظام'
       },
       footer: {
         description: 'بوابتك الشاملة للنمو الإكلينيكي والاستقرار النفسي. نقدم منظومة متكاملة تجمع بين التدريب التخصصي، الإرشاد المهني، والدعم العلاجي المتقدم لخدمة مجتمع الصحة النفسية العربي بكفاءة عالمية.',
@@ -28,8 +37,7 @@ const resources = {
         support: 'دعم الأعضاء',
         email: 'البريد الإلكتروني',
         office: 'المكتب الرئيسي',
-        cairo: 'القاهرة، مدينة نصر',
-        hotline: 'الخط الساخن',
+        cairo: 'القاهرة',
         privacy: 'سياسة الخصوصية',
         terms: 'شروط الاستخدام',
         copyright: '© {{year}} Clinical Cases Group | Psycho-Club. رحلة مهنية متكاملة بلمسة إنسانية.'
@@ -216,7 +224,7 @@ const resources = {
           loading: 'جاري تحميل قائمة الأخصائيين...'
         },
         card: {
-          specialist: 'أخصائي',
+          specialist: 'معالج مختص',
           currency: 'ج.م / جلسة',
           bookNow: 'احجز الآن'
         },
@@ -236,9 +244,18 @@ const resources = {
         login: 'Login',
         join: 'Join Us',
         profile: 'Profile',
-        admin: 'Admin Dashboard',
+        admin: 'Control Panel',
         doctor: 'Doctor Dashboard',
+        specialist: 'Therapist Dashboard',
+        supervisor: 'Supervisor Dashboard',
         logout: 'Logout'
+      },
+      roles: {
+        user: 'Trainee',
+        doctor: 'Doctor',
+        specialist: 'Specialist Therapist',
+        supervisor: 'Content Supervisor',
+        admin: 'System Admin'
       },
       footer: {
         description: 'Your comprehensive portal for clinical growth and mental stability. We provide an integrated ecosystem combining specialized training, professional guidance, and advanced therapeutic support to serve the Arab mental health community with global excellence.',
@@ -249,8 +266,7 @@ const resources = {
         support: 'Member Support',
         email: 'Email Support',
         office: 'Headquarters',
-        cairo: 'Cairo, Nasr City',
-        hotline: 'Hotline',
+        cairo: 'Cairo',
         privacy: 'Privacy Policy',
         terms: 'Terms of Use',
         copyright: '© {{year}} Clinical Cases Group | Psycho-Club. An integrated professional journey with a human touch.'
@@ -437,7 +453,7 @@ const resources = {
           loading: 'Loading specialist directory...'
         },
         card: {
-          specialist: 'Specialist',
+          specialist: 'Therapist',
           currency: 'EGP / Session',
           bookNow: 'Book Now'
         },

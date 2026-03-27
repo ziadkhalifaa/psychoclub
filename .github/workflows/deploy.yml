@@ -1,0 +1,33 @@
+name: Producion Deployment
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/psychoclub
+            # Fetch latest changes
+            git fetch origin main
+            
+            # Ensure local modifications to tracked files don't block the reset
+            # But preserve untracked files like .env and prisma/dev.db (once added to .gitignore)
+            git reset --hard origin/main
+            
+            # Install dependencies and build
+            npm install
+            npx prisma generate
+            export NODE_OPTIONS=--max-old-space-size=2048
+            npm run build
+            
+            # Restart PM2 processes
+            pm2 restart psychoclub psychoclub-api || pm2 start server.ts --name psychoclub-api

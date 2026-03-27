@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { Search, Filter, BookOpen, Clock, User, Sparkles, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
+import { CourseCardSkeleton } from '../components/Skeleton';
 
 export default function Courses() {
   const { t } = useTranslation();
@@ -50,8 +51,6 @@ export default function Courses() {
   const toggleLevel = (level: string) => {
     setSelectedLevels(prev => prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]);
   };
-
-  if (isLoading) return <div className="p-24 text-center">{t('common.loading')}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -157,7 +156,9 @@ export default function Courses() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredCourses.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => <CourseCardSkeleton key={i} />)
+            ) : filteredCourses.length === 0 ? (
               <div className="col-span-full py-24 text-center">
                 <div className="w-24 h-24 rounded-[2rem] bg-slate-100 flex items-center justify-center mx-auto mb-6 text-slate-300">
                   <Search className="w-10 h-10" />

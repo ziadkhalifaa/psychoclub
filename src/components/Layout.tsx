@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Suspense } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Brain, LogOut, Menu, User, BookOpen, PenTool, LayoutDashboard, ChevronDown, X, Activity, Layers, ShieldAlert } from 'lucide-react';
+import { Brain, LogOut, Menu, User, BookOpen, PenTool, LayoutDashboard, ChevronDown, X, Activity, Layers, ShieldAlert, Instagram, Facebook, MessageCircle, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InteractiveBackground } from './InteractiveBackground';
@@ -98,8 +99,12 @@ export default function Layout() {
                 {user.role === 'ADMIN' && (
                   <Link to="/admin" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">{t('nav.admin')}</Link>
                 )}
-                {user.role === 'DOCTOR' && (
-                  <Link to="/doctor" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">{t('nav.doctor')}</Link>
+                {(user.role === 'DOCTOR' || user.role === 'SPECIALIST' || user.role === 'SUPERVISOR') && (
+                  <Link to="/doctor" className="text-[10px] font-black tracking-widest uppercase text-white bg-[#1F2F4A] dark:bg-slate-800 px-4 py-2 rounded-xl hover:bg-[#6FA65A] transition-all shadow-md">
+                    {user.role === 'DOCTOR' ? t('nav.doctor') :
+                     user.role === 'SPECIALIST' ? t('nav.specialist') :
+                     t('nav.supervisor')}
+                  </Link>
                 )}
                 <Link to="/profile" className="flex items-center gap-2 group">
                   <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-transparent group-hover:border-[#6FA65A] transition-all overflow-hidden">
@@ -155,7 +160,7 @@ export default function Layout() {
                   <div className="flex flex-col gap-6">
                     <Link to="/profile" className="text-lg font-black text-[#6FA65A]" onClick={() => setIsMenuOpen(false)}>{t('nav.profile')} ({user.name})</Link>
                     {user.role === 'ADMIN' && <Link to="/admin" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.admin')}</Link>}
-                    {user.role === 'DOCTOR' && <Link to="/doctor" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.doctor')}</Link>}
+                    {['DOCTOR', 'SPECIALIST', 'SUPERVISOR'].includes(user.role) && <Link to="/doctor" className="text-lg font-black text-[#1F2F4A] dark:text-white" onClick={() => setIsMenuOpen(false)}>{t('nav.doctor')}</Link>}
                     <button onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="text-right text-lg font-black text-rose-500">{t('nav.logout')}</button>
                   </div>
                 ) : (
@@ -171,7 +176,13 @@ export default function Layout() {
       </nav >
 
       <main className="pt-24 pb-12 min-h-screen">
-        <Outlet />
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="w-12 h-12 border-4 border-[#6FA65A]/20 border-t-[#6FA65A] rounded-full animate-spin" />
+          </div>
+        }>
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="relative bg-[#1F2F4A] dark:bg-slate-900 pt-24 pb-12 overflow-hidden transition-colors duration-500">
@@ -192,9 +203,25 @@ export default function Layout() {
                 {t('footer.description')}
               </p>
               <div className="flex gap-4 mt-8">
-                {/* Social placeholders could go here */}
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] transition-all cursor-pointer"><Activity className="w-5 h-5 text-white/50" /></div>
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] transition-all cursor-pointer"><Layers className="w-5 h-5 text-white/50" /></div>
+                <a href="https://www.facebook.com/share/1EFu6oGhVg/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] hover:border-[#6FA65A] transition-all duration-300 group/social">
+                  <Facebook className="w-5 h-5 text-white/50 group-hover/social:text-white" />
+                </a>
+                <a href="https://www.instagram.com/psychoclub10?igsh=dzRlZTVubGhnem9t" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] hover:border-[#6FA65A] transition-all duration-300 group/social">
+                  <Instagram className="w-5 h-5 text-white/50 group-hover/social:text-white" />
+                </a>
+                <a href="https://x.com/psychoclub10" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] hover:border-[#6FA65A] transition-all duration-300 group/social">
+                  <svg className="w-4 h-4 text-white/50 group-hover/social:text-white fill-current" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+                <a href="https://www.tiktok.com/@psycho.club.ccg?_r=1&_t=ZS-94wP0g3CkLt" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] hover:border-[#6FA65A] transition-all duration-300 group/social">
+                  <svg className="w-5 h-5 text-white/50 group-hover/social:text-white fill-current" viewBox="0 0 24 24">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47-.28-.2-.55-.42-.8-.65V15.5c0 1.95-.65 3.91-1.93 5.39-1.39 1.61-3.5 2.58-5.61 2.54-2.11.04-4.22-.93-5.61-2.54-1.28-1.48-1.93-3.44-1.93-5.39.02-2.11.99-4.22 2.6-5.61 1.48-1.28 3.44-1.93 5.39-1.93.01 1.42.01 2.83.01 4.25-1.55-.02-3.11.45-4.23 1.53-1.07 1.05-1.52 2.61-1.37 4.11.16 1.55.94 2.97 2.22 3.86 1.08.76 2.45 1.05 3.75.87 1.3-.18 2.42-.96 3.12-2.06.52-.82.76-1.79.76-2.76-.01-5.12-.01-10.23-.01-15.35z" />
+                  </svg>
+                </a>
+                <a href="https://wa.me/201228867384" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#6FA65A] hover:border-[#6FA65A] transition-all duration-300 group/social">
+                  <MessageCircle className="w-5 h-5 text-white/50 group-hover/social:text-white" />
+                </a>
               </div>
             </div>
 
@@ -220,9 +247,8 @@ export default function Layout() {
             <div>
               <h3 className="text-white font-black text-xs uppercase tracking-[0.2em] mb-8">{t('footer.support')}</h3>
               <ul className="space-y-4">
-                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.email')}</p><p className="text-white font-bold text-sm">support@psychoclub.space</p></li>
+                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.email')}</p><p className="text-white font-bold text-sm">psychoclub10@gmail.com</p></li>
                 <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.office')}</p><p className="text-white font-bold text-sm">{t('footer.cairo')}</p></li>
-                <li><p className="text-slate-500 text-[10px] font-black uppercase mb-1">{t('footer.hotline')}</p><p className="text-[#6FA65A] font-black text-lg">+20 123 456 7890</p></li>
               </ul>
             </div>
           </div>

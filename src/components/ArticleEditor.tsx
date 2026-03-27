@@ -18,7 +18,7 @@ interface ArticleForm {
 interface ArticleEditorProps {
     onCancel: () => void;
     onSubmit: (form: ArticleForm) => Promise<void>;
-    handleFileUpload: (file: File) => Promise<string | null>;
+    handleFileUpload: (file: File, onProgress?: (percent: number) => void) => Promise<string | null>;
     initialData?: Partial<ArticleForm>;
 }
 
@@ -39,6 +39,8 @@ export function ArticleEditor({ onCancel, onSubmit, handleFileUpload, initialDat
         category: initialData?.category || 'مقالات عامة',
         tags: Array.isArray(initialData?.tags) ? initialData.tags.join(', ') : (initialData?.tags || '')
     });
+
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
     const [availableCategories, setAvailableCategories] = useState<any[]>([]);
     const [availableTags, setAvailableTags] = useState<any[]>([]);
@@ -254,7 +256,13 @@ export function ArticleEditor({ onCancel, onSubmit, handleFileUpload, initialDat
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">صورة الغلاف (Cover Image)</div>
                                     <div className="relative group max-w-2xl mx-auto">
                                         <div className={`w-full h-96 rounded-[3.5rem] border-4 border-dashed transition-all overflow-hidden relative flex flex-col items-center justify-center p-8 ${form.coverImage ? 'border-[#6FA65A]/50 bg-white' : 'border-slate-100 bg-slate-50/50 hover:bg-[#1F2F4A]/5 hover:border-[#1F2F4A]/20'}`}>
-                                            {form.coverImage ? (
+                                            {uploadProgress !== null ? (
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <div className="w-20 h-20 rounded-full border-4 border-slate-100 border-t-[#6FA65A] animate-spin" />
+                                                    <div className="text-2xl font-black text-[#1F2F4A]">{uploadProgress}%</div>
+                                                    <p className="text-xs font-bold text-slate-400">جاري رفع الغلاف...</p>
+                                                </div>
+                                            ) : form.coverImage ? (
                                                 <>
                                                     <img src={form.coverImage} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -270,8 +278,13 @@ export function ArticleEditor({ onCancel, onSubmit, handleFileUpload, initialDat
                                             )}
                                             <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" onChange={async e => {
                                                 if (e.target.files?.[0]) {
-                                                    const url = await handleFileUpload(e.target.files[0]);
-                                                    if (url) setForm({ ...form, coverImage: url });
+                                                    const url = await handleFileUpload(e.target.files[0], (p) => {
+                                                        setUploadProgress(p);
+                                                    });
+                                                    if (url) {
+                                                        setForm({ ...form, coverImage: url });
+                                                        setUploadProgress(null);
+                                                    }
                                                 }
                                             }} />
                                         </div>
