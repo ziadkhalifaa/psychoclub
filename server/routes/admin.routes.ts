@@ -86,10 +86,21 @@ router.post("/users/:id/role", requireAdmin, async (req, res) => {
     if (!targetUser) return res.status(404).json({ error: "User not found" });
 
     // Super Admin Check (hardcoded email)
-    const isSuperAdmin = res.locals.user.email === "admin@psychoclub.space";
+    const isSuperAdmin = res.locals.user.email === "admin@psychoclub.org";
 
+    // 1. Check if trying to modify the Super Admin account
+    if (targetUser.email === "admin@psychoclub.org" && res.locals.user.email !== "admin@psychoclub.org") {
+      return res.status(403).json({ error: "Only the Super Admin can modify their own account" });
+    }
+
+    // 2. Check if a non-super admin is trying to modify an ADMIN role
     if (targetUser.role === "ADMIN" && !isSuperAdmin && res.locals.user.userId !== targetUser.id) {
-      return res.status(403).json({ error: "Only super admin can modify other admins" });
+      return res.status(403).json({ error: "Only the Super Admin can modify other administrators" });
+    }
+
+    // 3. Prevent non-super admins from promoting anyone to ADMIN
+    if (role === "ADMIN" && !isSuperAdmin) {
+      return res.status(403).json({ error: "Only the Super Admin can promote users to administrators" });
     }
 
     const user = await prisma.user.update({
@@ -123,6 +134,14 @@ router.post("/users/:id/role", requireAdmin, async (req, res) => {
 
 router.post("/users/:id/status", requireAdmin, async (req, res) => {
   try {
+    const targetUser = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!targetUser) return res.status(404).json({ error: "User not found" });
+
+    // Protect Super Admin status
+    if (targetUser.email === "admin@psychoclub.org" && res.locals.user.email !== "admin@psychoclub.org") {
+      return res.status(403).json({ error: "Only the Super Admin can modify their own status" });
+    }
+
     const { status } = req.body;
     const user = await prisma.user.update({
       where: { id: req.params.id },
@@ -371,6 +390,8 @@ router.post("/doctors/:id/permissions", requireAdmin, async (req, res) => {
 // ─── System Maintenance ────────────────────────────────────────
 
 router.post("/clear-data", requireAdmin, async (req, res) => {
+  const isSuperAdmin = res.locals.user.email === "admin@psychoclub.org";
+  if (!isSuperAdmin) return res.status(403).json({ error: "Only Super Admin can clear all data" });
   try {
     await prisma.courseLesson.deleteMany();
     await prisma.course.deleteMany();
@@ -388,6 +409,8 @@ router.post("/clear-data", requireAdmin, async (req, res) => {
 });
 
 router.get("/audit-log", requireAdmin, async (req, res) => {
+  const isSuperAdmin = res.locals.user.email === "admin@psychoclub.org";
+  if (!isSuperAdmin) return res.status(403).json({ error: "Only Super Admin can access audit logs" });
   try {
     const logs = await prisma.auditLog.findMany({
       orderBy: { createdAt: 'desc' },
