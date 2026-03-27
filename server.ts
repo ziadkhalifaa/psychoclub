@@ -33,6 +33,7 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 async function startServer() {
   const app = express();
+  app.set("trust proxy", 1); 
   const PORT = Number(process.env.PORT) || 3000;
 
   // 1. Helmet Security

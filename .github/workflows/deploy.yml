@@ -16,18 +16,18 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/psychoclub
-            # Fetch latest changes
             git fetch origin main
-            
-            # Ensure local modifications to tracked files don't block the reset
-            # But preserve untracked files like .env and prisma/dev.db (once added to .gitignore)
             git reset --hard origin/main
-            
-            # Install dependencies and build
             npm install
             npx prisma generate
             export NODE_OPTIONS=--max-old-space-size=2048
             npm run build
             
-            # Restart PM2 processes
-            pm2 restart psychoclub psychoclub-api || pm2 start server.ts --name psychoclub-api
+            # Consolidate into a single process for reliability
+            # Stop the redundant 'psychoclub' process if it exists
+            pm2 stop psychoclub || true
+            pm2 delete psychoclub || true
+            
+            # Restart or Start the main API process which serves the frontend on 3000
+            pm2 restart psychoclub-api || pm2 start server.ts --name psychoclub-api
+            pm2 save
