@@ -140,7 +140,6 @@ async function startServer() {
   apiRouter.use("/courses", courseRoutes);
   apiRouter.use("/articles", articleRoutes);
   apiRouter.use("/public", publicRoutes);
-  apiRouter.use("/", articleRoutes);    // For /api/article-categories etc
   apiRouter.use("/packages", packageRoutes);
   apiRouter.use("/admin", adminRoutes);
   apiRouter.use("/bookings", bookingRoutes);
@@ -149,6 +148,7 @@ async function startServer() {
   // The AdminDashboard calls /api/admin/forum/categories, so we should ALSO mount forumRoutes under /api/admin
   apiRouter.use("/admin/forum", forumRoutes); 
   apiRouter.use("/doctors", doctorRoutes);
+  apiRouter.use("/", articleRoutes);    // For /api/article-categories etc (Catch-all last)
 
 
   // Auth: download all package files (requires approved purchase)
