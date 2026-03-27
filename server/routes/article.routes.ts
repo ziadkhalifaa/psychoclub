@@ -8,7 +8,7 @@ const router = express.Router();
 // ─── Articles ─────────────────────────────────────────────────
 
 // Public: list published articles
-router.get("/articles", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const articles = await prisma.article.findMany({
       include: { author: { include: { user: { select: { name: true, avatar: true } } } } },
@@ -22,7 +22,7 @@ router.get("/articles", async (req, res) => {
 });
 
 // Public: get single article by slug
-router.get("/articles/:slug", async (req, res) => {
+router.get("/:slug", async (req, res) => {
   try {
     const article = await prisma.article.findUnique({
       where: { slug: req.params.slug },
@@ -37,7 +37,7 @@ router.get("/articles/:slug", async (req, res) => {
 });
 
 // Admin/Doctor: create/update article
-router.post("/articles", requireDoctorOrAdmin, async (req, res) => {
+router.post("/", requireDoctorOrAdmin, async (req, res) => {
   try {
     const doctor = await prisma.doctor.findUnique({ where: { userId: res.locals.user.userId } });
     if (!doctor) return res.status(401).json({ error: "Doctor profile required" });
@@ -79,7 +79,7 @@ router.post("/articles", requireDoctorOrAdmin, async (req, res) => {
 });
 
 // Admin/Doctor: delete article
-router.delete("/articles/:id", requireDoctorOrAdmin, async (req, res) => {
+router.delete("/:id", requireDoctorOrAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const article = await prisma.article.findUnique({ where: { id } });

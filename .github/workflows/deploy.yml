@@ -23,11 +23,7 @@ jobs:
             export NODE_OPTIONS=--max-old-space-size=2048
             npm run build
             
-            # Consolidate into a single process for reliability
-            # Stop the redundant 'psychoclub' process if it exists
-            pm2 stop psychoclub || true
-            pm2 delete psychoclub || true
-            
-            # Restart or Start the main API process which serves the frontend on 3000
-            pm2 restart psychoclub-api || pm2 start server.ts --name psychoclub-api
+            # Use ecosystem config for reliability
+            pm2 delete all || true
+            pm2 start ecosystem.config.cjs --env production
             pm2 save

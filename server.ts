@@ -1,6 +1,16 @@
-import "dotenv/config";
-import fs from "fs";
+import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
+
+// Explicitly load .env from the current directory
+const envPath = path.resolve(process.cwd(), ".env");
+console.log(`Checking for .env at: ${envPath}`);
+if (fs.existsSync(envPath)) {
+  console.log(".env file found. Loading...");
+  dotenv.config({ path: envPath });
+} else {
+  console.log(".env file NOT FOUND at this path!");
+}
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import cookieParser from "cookie-parser";
@@ -16,6 +26,7 @@ import packageRoutes from "./server/routes/package.routes.js";
 import adminRoutes from "./server/routes/admin.routes.js";
 import bookingRoutes from "./server/routes/booking.routes.js";
 import forumRoutes from "./server/routes/forum.routes.js";
+import publicRoutes from "./server/routes/public.routes.js";
 import doctorRoutes from "./server/routes/doctor.routes.js";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
@@ -126,7 +137,8 @@ async function startServer() {
   // ─── Modular Routes ───
   apiRouter.use("/auth", authRoutes);
   apiRouter.use("/courses", courseRoutes);
-  apiRouter.use("/articles", articleRoutes); // Legacy compat (some routes use /api/articles/...)
+  apiRouter.use("/articles", articleRoutes);
+  apiRouter.use("/public", publicRoutes);
   apiRouter.use("/", articleRoutes);    // For /api/article-categories etc
   apiRouter.use("/packages", packageRoutes);
   apiRouter.use("/admin", adminRoutes);
