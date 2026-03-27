@@ -212,12 +212,26 @@ async function startServer() {
   const fsModule = await import("fs");
   const distExists = fsModule.existsSync("dist/index.html");
 
-  if (process.env.NODE_ENV === "production" && distExists) {
-    app.use(express.static("dist"));
-    app.get("*", (req, res) => {
-      res.sendFile("dist/index.html", { root: "." });
-    });
+  if (process.env.NODE_ENV === "production") {
+    if (distExists) {
+      app.use(express.static("dist"));
+      app.get("*", (req, res) => {
+        res.sendFile("dist/index.html", { root: "." });
+      });
+    } else {
+      // Production mode but no dist folder - this is an error state
+      app.get("*", (req, res) => {
+        res.status(503).send(`
+          <div style="font-family: sans-serif; text-align: center; padding: 50px;">
+            <h1>الموقع قيد التحديث...</h1>
+            <p>يتم الآن بناء الملفات النهائية للموقع. يرجى العودة بعد دقائق قليلة.</p>
+            <script>setTimeout(() => window.location.reload(), 30000);</script>
+          </div>
+        `);
+      });
+    }
   } else {
+    // Development mode fallback
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
