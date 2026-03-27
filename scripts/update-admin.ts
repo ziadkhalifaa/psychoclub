@@ -11,7 +11,7 @@ async function updateAdmin() {
             await prisma.user.update({
                 where: { id: admin.id },
                 data: {
-                    email: 'admin@psychoclub.space',
+                    email: 'admin@psychoclub.org',
                     passwordHash: passwordHash
                 }
             });

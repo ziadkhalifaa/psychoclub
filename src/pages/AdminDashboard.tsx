@@ -844,8 +844,8 @@ export default function AdminDashboard() {
                   <select
                     value={u.role}
                     onChange={e => handleChangeRole(u.id, e.target.value)}
-                    disabled={u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space'}
-                    className={`px-6 py-3 rounded-xl text-[10px] font-black border border-slate-100 outline-none focus:ring-4 focus:ring-[#1F2F4A]/5 transition-all text-center min-w-[140px] ${(u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space') ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-50 cursor-pointer appearance-none'}`}
+                    disabled={u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.org'}
+                    className={`px-6 py-3 rounded-xl text-[10px] font-black border border-slate-100 outline-none focus:ring-4 focus:ring-[#1F2F4A]/5 transition-all text-center min-w-[140px] ${(u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.org') ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-slate-50 cursor-pointer appearance-none'}`}
                   >
                     <option value="USER">متدرب</option>
                     <option value="DOCTOR">طبيب</option>
@@ -877,8 +877,8 @@ export default function AdminDashboard() {
                 <td className="px-10 py-8 text-center bg-white border-y border-slate-50 shadow-sm group-hover:shadow-xl transition-all">
                   <button
                     onClick={() => handleChangeStatus(u.id, u.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')}
-                    disabled={u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space'}
-                    className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black tracking-[0.2em] transition-all ${(u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.space') ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70' : u.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'}`}
+                    disabled={u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.org'}
+                    className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black tracking-[0.2em] transition-all ${(u.role === 'ADMIN' && user?.email !== 'admin@psychoclub.org') ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-70' : u.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'}`}
                   >
                     <div className={`w-2 h-2 rounded-full ${u.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                     {u.status === 'ACTIVE' ? 'نشط' : 'غير نشط'}
