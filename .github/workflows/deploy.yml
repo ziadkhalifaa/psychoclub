@@ -14,10 +14,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/psychoclub
-            git fetch origin main
-            git reset --hard origin/main
+            # Clean up restricted env variables from server's .env to prevent Vite build conflicts
+            [ -f .env ] && sed -i '/NODE_ENV/d' .env || true
+            
             npm install
             npx prisma generate
             export NODE_OPTIONS=--max-old-space-size=2048
