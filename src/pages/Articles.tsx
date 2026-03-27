@@ -14,20 +14,20 @@ export default function Articles() {
   const [selectedCategory, setSelectedCategory] = useState(t('articles.filters.all'));
   const [categories, setCategories] = useState<string[]>([t('articles.filters.all')]);
 
-  const { data: articles, isLoading } = useQuery({
+  const { data: articles = [], isLoading } = useQuery({
     queryKey: ['articles'],
-    queryFn: () => fetch('/api/articles').then(res => res.json())
+    queryFn: () => fetch('/api/articles').then(res => res.ok ? res.json() : [])
   });
 
   useEffect(() => {
     fetch('/api/article-categories')
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (Array.isArray(data)) {
           setCategories([t('articles.filters.all'), ...data.map((c: any) => c.name)]);
         }
       })
-      .catch(console.error);
+      .catch(() => setCategories([t('articles.filters.all')]));
   }, []);
 
   const filteredArticles = useMemo(() => {

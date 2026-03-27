@@ -8,9 +8,9 @@ import { useLanguage } from '../context/LanguageContext';
 export default function Sessions() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
-  const { data: doctors, isLoading } = useQuery({
+  const { data: doctors = [], isLoading } = useQuery({
     queryKey: ['doctors'],
-    queryFn: () => fetch('/api/doctors').then(res => res.json())
+    queryFn: () => fetch('/api/doctors').then(res => res.ok ? res.json() : [])
   });
 
   if (isLoading) return <div className="p-24 text-center">{t('sessions.hero.loading')}</div>;

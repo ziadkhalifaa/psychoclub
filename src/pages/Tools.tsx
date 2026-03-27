@@ -7,9 +7,9 @@ import { useState, useMemo } from 'react';
 export default function Tools() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: packages, isLoading } = useQuery({
+  const { data: packages = [], isLoading } = useQuery({
     queryKey: ['packages'],
-    queryFn: () => fetch('/api/packages').then(res => res.json())
+    queryFn: () => fetch('/api/packages').then(res => res.ok ? res.json() : [])
   });
 
   const filtered = useMemo(() => {

@@ -5,6 +5,68 @@ import { logAudit, deleteFile } from "../utils/helpers.js";
 
 const router = express.Router();
 
+// ─── Public Doctors Directory (Moved here) ─────────────────────
+
+router.get("/", async (req, res) => {
+  try {
+    const doctors = await prisma.doctor.findMany({
+      where: {
+        user: {
+          status: "ACTIVE",
+          role: { in: ["DOCTOR", "SPECIALIST"] }
+        }
+      },
+      include: {
+        user: { select: { name: true, avatar: true } },
+        _count: { select: { reviews: true } }
+      }
+    });
+    res.json(doctors);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: req.params.id },
+      include: {
+        user: { select: { name: true, avatar: true } },
+        slots: {
+          where: { isBooked: false, startAt: { gte: new Date() } },
+          orderBy: { startAt: 'asc' }
+        },
+        reviews: {
+          include: { user: { select: { name: true, avatar: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      }
+    });
+    if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+    res.json(doctor);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/:id/reviews", async (req, res) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { doctorId: req.params.id },
+      include: { user: { select: { name: true, avatar: true } } },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 router.get("/me", requireDoctorOrAdmin, async (req, res) => {
   try {
     const doctor = await prisma.doctor.findUnique({

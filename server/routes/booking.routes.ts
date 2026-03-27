@@ -5,53 +5,7 @@ import { logAudit } from "../utils/helpers.js";
 
 const router = express.Router();
 
-// ─── Public Doctors Directory ──────────────────────────────────
-
-router.get("/doctors", async (req, res) => {
-  try {
-    const doctors = await prisma.doctor.findMany({
-      where: {
-        user: {
-          status: "ACTIVE",
-          role: { in: ["DOCTOR", "SPECIALIST"] }
-        }
-      },
-      include: {
-        user: { select: { name: true, avatar: true } },
-        _count: { select: { reviews: true } }
-      }
-    });
-    res.json(doctors);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-router.get("/doctors/:id", async (req, res) => {
-  try {
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: req.params.id },
-      include: {
-        user: { select: { name: true, avatar: true } },
-        slots: {
-          where: { isBooked: false, startAt: { gte: new Date() } },
-          orderBy: { startAt: 'asc' }
-        },
-        reviews: {
-          include: { user: { select: { name: true, avatar: true } } },
-          orderBy: { createdAt: 'desc' },
-          take: 10
-        }
-      }
-    });
-    if (!doctor) return res.status(404).json({ error: "Doctor not found" });
-    res.json(doctor);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+// Booking Logic (Public endpoints removed, migrated to doctor.routes.ts)
 
 // ─── Booking Logic ─────────────────────────────────────────────
 

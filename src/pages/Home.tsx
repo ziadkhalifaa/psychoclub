@@ -10,19 +10,19 @@ export default function Home() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
 
-  const { data: stats } = useQuery({
+  const { data: stats = {} } = useQuery({
     queryKey: ['public-stats'],
-    queryFn: () => fetch('/api/public/stats').then(res => res.json())
+    queryFn: () => fetch('/api/public/stats').then(res => res.ok ? res.json() : {})
   });
 
-  const { data: courses } = useQuery({
+  const { data: courses = [] } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => fetch('/api/courses').then(res => res.json())
+    queryFn: () => fetch('/api/courses').then(res => res.ok ? res.json() : [])
   });
 
-  const { data: articles } = useQuery({
+  const { data: articles = [] } = useQuery({
     queryKey: ['articles'],
-    queryFn: () => fetch('/api/articles').then(res => res.json())
+    queryFn: () => fetch('/api/articles').then(res => res.ok ? res.json() : [])
   });
 
   return (

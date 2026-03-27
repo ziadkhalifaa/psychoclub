@@ -10,9 +10,9 @@ import { CourseCardSkeleton } from '../components/Skeleton';
 export default function Courses() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses = [], isLoading } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => fetch('/api/courses').then(res => res.json())
+    queryFn: () => fetch('/api/courses').then(res => res.ok ? res.json() : [])
   });
 
   const [searchTerm, setSearchTerm] = useState('');
