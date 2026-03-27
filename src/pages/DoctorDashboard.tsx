@@ -49,7 +49,7 @@ export default function DoctorDashboard() {
     const fetchData = async () => {
       try {
         if (activeTab === 'overview') {
-          const res = await fetch('/api/doctor/stats');
+          const res = await fetch('/api/doctors/stats');
           const data = await res.json();
           setStats(data);
         }
@@ -59,12 +59,12 @@ export default function DoctorDashboard() {
           setCourses(data);
         }
         if (activeTab === 'articles' && !showAddArticle) {
-          const res = await fetch('/api/doctor/articles');
+          const res = await fetch('/api/doctors/articles');
           const data = await res.json();
           setArticles(data);
         }
         if (activeTab === 'portfolio') {
-          const res = await fetch('/api/doctor/me');
+          const res = await fetch('/api/doctors/me');
           if (res.ok) {
             const data = await res.json();
             setPortfolio({
@@ -78,7 +78,7 @@ export default function DoctorDashboard() {
           }
         }
         if (activeTab === 'slots') {
-          const res = await fetch('/api/doctor/slots');
+          const res = await fetch('/api/doctors/slots');
           if (res.ok) setSlots(await res.json());
         }
       } catch (err) {
@@ -184,7 +184,7 @@ export default function DoctorDashboard() {
         ...portfolio,
         specialties: portfolio.specialties.split(',').map((s: string) => s.trim()).filter(Boolean)
       };
-      const res = await fetch('/api/doctor/portfolio', {
+      const res = await fetch('/api/doctors/portfolio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -202,7 +202,7 @@ export default function DoctorDashboard() {
       const startAt = new Date(`${newSlot.date}T${newSlot.time}`);
       const endAt = new Date(startAt.getTime() + newSlot.durationMinutes * 60000);
 
-      const res = await fetch('/api/doctor/slots', {
+      const res = await fetch('/api/doctors/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ startAt, endAt })
@@ -222,7 +222,7 @@ export default function DoctorDashboard() {
 
   const deleteSlot = async (id: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا الموعد؟')) return;
-    const res = await fetch(`/api/doctor/slots/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/doctors/slots/${id}`, { method: 'DELETE' });
     if (res.ok) {
       setSlots(slots.filter(s => s.id !== id));
       showToast('تم الحذف بنجاح');

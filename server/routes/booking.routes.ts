@@ -136,64 +136,6 @@ router.post("/reviews", requireAuth, async (req, res) => {
   }
 });
 
-// ─── Checkout Logic ────────────────────────────────────────────
-
-router.post("/checkout/manual", requireAuth, async (req, res) => {
-  try {
-    const userId = res.locals.user.userId;
-    const { itemId, type, paymentMethod, payerPhone } = req.body;
-
-    let amount = 0;
-    if (type === 'COURSE') {
-      const course = await prisma.course.findUnique({ where: { id: itemId } });
-      if (!course) return res.status(404).json({ error: "Course not found" });
-      amount = course.price;
-    } else if (type === 'PACKAGE') {
-      const pkg = await prisma.package.findUnique({ where: { id: itemId } });
-      if (!pkg) return res.status(404).json({ error: "Package not found" });
-      amount = pkg.price || 0;
-    } else {
-      return res.status(400).json({ error: "Invalid purchase type" });
-    }
-
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId, type, itemId, amount,
-        status: "PENDING", paymentMethod, payerPhone,
-        currency: "EGP"
-      }
-    });
-
-    await logAudit(userId, "MANUAL_CHECKOUT", "Purchase", purchase.id);
-    res.json({ success: true, purchaseId: purchase.id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Checkout failed" });
-  }
-});
-
-router.post("/checkout/free", requireAuth, async (req, res) => {
-  try {
-    const userId = res.locals.user.userId;
-    const { itemId, type } = req.body;
-
-    const course = await prisma.course.findUnique({ where: { id: itemId } });
-    if (!course || !course.isFree) return res.status(400).json({ error: "Not a free course" });
-
-    const purchase = await prisma.purchase.create({
-      data: {
-        userId, type, itemId, amount: 0,
-        status: "APPROVED", paymentMethod: "FREE",
-        currency: "EGP"
-      }
-    });
-
-    await logAudit(userId, "FREE_CHECKOUT", "Purchase", purchase.id);
-    res.json({ success: true, purchaseId: purchase.id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Checkout failed" });
-  }
-});
+// Checkout logic moved to purchase.routes.ts
 
 export default router;

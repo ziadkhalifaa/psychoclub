@@ -28,6 +28,7 @@ import bookingRoutes from "./server/routes/booking.routes.js";
 import forumRoutes from "./server/routes/forum.routes.js";
 import publicRoutes from "./server/routes/public.routes.js";
 import doctorRoutes from "./server/routes/doctor.routes.js";
+import purchaseRoutes from "./server/routes/purchase.routes.js";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 
@@ -142,11 +143,12 @@ async function startServer() {
   apiRouter.use("/", articleRoutes);    // For /api/article-categories etc
   apiRouter.use("/packages", packageRoutes);
   apiRouter.use("/admin", adminRoutes);
-  apiRouter.use("/booking", bookingRoutes);
+  apiRouter.use("/bookings", bookingRoutes);
+  apiRouter.use("/purchases", purchaseRoutes);
   apiRouter.use("/forum", forumRoutes); // Mounted at /api/forum
   // The AdminDashboard calls /api/admin/forum/categories, so we should ALSO mount forumRoutes under /api/admin
   apiRouter.use("/admin/forum", forumRoutes); 
-  apiRouter.use("/doctor", doctorRoutes);
+  apiRouter.use("/doctors", doctorRoutes);
 
 
   // Auth: download all package files (requires approved purchase)

@@ -147,7 +147,7 @@ export default function AdminDashboard() {
           setForumCategories(Array.isArray(data) ? data : []);
         }
         if (activeTab === 'myProfile') {
-          const res = await fetch('/api/doctor/me');
+          const res = await fetch('/api/doctors/me');
           if (res.ok) {
             const data = await res.json();
             setPortfolio({
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
               sessionPrice: data.sessionPrice || 0,
               sessionLink: data.sessionLink || '',
             });
-            const slotsRes = await fetch('/api/doctor/slots');
+            const slotsRes = await fetch('/api/doctors/slots');
             if (slotsRes.ok) setSlots(await slotsRes.json());
           }
         }
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
         ...portfolio,
         specialties: portfolio.specialties.split(',').map((s: string) => s.trim()).filter(Boolean)
       };
-      const res = await fetch('/api/doctor/portfolio', {
+      const res = await fetch('/api/doctors/portfolio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -469,7 +469,7 @@ export default function AdminDashboard() {
       const startAt = new Date(`${newSlot.date}T${newSlot.time}`);
       const endAt = new Date(startAt.getTime() + newSlot.durationMinutes * 60000);
 
-      const res = await fetch('/api/doctor/slots', {
+      const res = await fetch('/api/doctors/slots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ startAt, endAt })
@@ -489,7 +489,7 @@ export default function AdminDashboard() {
 
   const deleteSlot = async (id: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا الموعد؟')) return;
-    const res = await fetch(`/api/doctor/slots/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/doctors/slots/${id}`, { method: 'DELETE' });
     if (res.ok) {
       setSlots(slots.filter(s => s.id !== id));
       showToast('تم الحذف بنجاح');

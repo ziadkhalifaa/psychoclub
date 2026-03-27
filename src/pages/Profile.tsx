@@ -58,17 +58,19 @@ export default function Profile() {
 
   const { data: courses } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => fetch('/api/courses').then(res => res.json())
+    queryFn: () => fetch('/api/courses').then(res => res.ok ? res.json() : []),
+    initialData: []
   });
 
-  const { data: tools } = useQuery({
-    queryKey: ['tools'],
-    queryFn: () => fetch('/api/tools').then(res => res.json())
+  const { data: packages } = useQuery({
+    queryKey: ['packages'],
+    queryFn: () => fetch('/api/packages').then(res => res.ok ? res.json() : []),
+    initialData: []
   });
   
   const { data: doctorProfile } = useQuery({
     queryKey: ['doctorProfile'],
-    queryFn: () => fetch('/api/doctor/me').then(res => res.ok ? res.json() : null),
+    queryFn: () => fetch('/api/doctors/me').then(res => res.ok ? res.json() : null),
     enabled: !!user && ['DOCTOR', 'SPECIALIST', 'SUPERVISOR'].includes(user.role)
   });
 
@@ -143,9 +145,9 @@ export default function Profile() {
 
   if (!user) return <div className="p-24 text-center">الرجاء تسجيل الدخول</div>;
 
-  const myCourses = courses?.filter((c: any) => myPurchases?.some((p: any) => p.itemId === c.id && p.type === 'COURSE' && p.status === 'APPROVED'));
-  const myTools = tools?.filter((t: any) => myPurchases?.some((p: any) => p.itemId === t.id && p.type === 'PACKAGE' && p.status === 'APPROVED'));
-  const pendingOrRejectedPurchases = myPurchases?.filter((p: any) => p.status !== 'APPROVED');
+  const myCourses = courses?.filter((c: any) => myPurchases?.some((p: any) => p.itemId === c.id && p.type === 'COURSE' && p.status === 'APPROVED')) || [];
+  const myTools = packages?.filter((t: any) => myPurchases?.some((p: any) => p.itemId === t.id && p.type === 'PACKAGE' && p.status === 'APPROVED')) || [];
+  const pendingOrRejectedPurchases = myPurchases?.filter((p: any) => p.status !== 'APPROVED') || [];
 
   const submitReview = async () => {
     if (!reviewingBooking) return;
@@ -438,7 +440,7 @@ export default function Profile() {
                   {pendingOrRejectedPurchases.map((purchase: any) => {
                     const item = purchase.type === 'COURSE' 
                       ? courses?.find((c: any) => c.id === purchase.itemId)
-                      : tools?.find((t: any) => t.id === purchase.itemId);
+                      : packages?.find((t: any) => t.id === purchase.itemId);
                     if (!item) return null;
                     return (
                       <div key={purchase.id} className="p-4 rounded-3xl border border-slate-100 bg-slate-50/30 flex items-center justify-between gap-4">
