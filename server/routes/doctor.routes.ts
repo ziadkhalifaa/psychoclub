@@ -1,7 +1,7 @@
 import express from "express";
 import prisma from "../prisma.js";
 import { requireDoctorOrAdmin } from "../middleware/auth.js";
-import { logAudit } from "../utils/helpers.js";
+import { logAudit, deleteFile } from "../utils/helpers.js";
 
 const router = express.Router();
 
@@ -24,6 +24,11 @@ router.put("/portfolio", requireDoctorOrAdmin, async (req, res) => {
     const { bio, specialties, title, photo, sessionPrice, sessionLink } = req.body;
     const doctor = await prisma.doctor.findUnique({ where: { userId: res.locals.user.userId } });
     if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+
+    // Delete old photo if it changed
+    if (photo && doctor.photo && photo !== doctor.photo) {
+      deleteFile(doctor.photo);
+    }
 
     const updated = await prisma.doctor.update({
       where: { id: doctor.id },

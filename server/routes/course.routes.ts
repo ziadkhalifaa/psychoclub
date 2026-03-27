@@ -155,6 +155,69 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
   }
 });
 
+// Admin/Doctor: update course
+router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title, description, price, isFree, duration, category, level, thumbnail,
+      lessons, whatYouLearn, requirements, published
+    } = req.body;
+
+    const oldCourse = await prisma.course.findUnique({
+      where: { id },
+      include: { lessons: true }
+    });
+
+    if (!oldCourse) return res.status(404).json({ error: "Course not found" });
+
+    // 1. Delete old thumbnail if replaced
+    if (thumbnail && oldCourse.thumbnail && thumbnail !== oldCourse.thumbnail) {
+      deleteFile(oldCourse.thumbnail);
+    }
+
+    // 2. Handle lessons update (Delete removed lesson files)
+    if (Array.isArray(lessons)) {
+      const newLessonResourceUrls = lessons.map((l: any) => l.videoUrl || l.resourceUrl);
+      const removedLessons = oldCourse.lessons.filter(
+        oldL => !newLessonResourceUrls.includes(oldL.resourceUrl)
+      );
+      
+      removedLessons.forEach(l => deleteFile(l.resourceUrl));
+
+      // Re-create lessons for simplicity in this implementation
+      await prisma.courseLesson.deleteMany({ where: { courseId: id } });
+    }
+
+    const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+
+    const updated = await prisma.course.update({
+      where: { id },
+      data: {
+        title, description, price: parseFloat(price) || 0, isFree: !!isFree,
+        duration, category, level, thumbnail, slug, published: !!published,
+        whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
+        requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
+        lessons: Array.isArray(lessons) ? {
+          create: lessons.map((l: any, idx: number) => ({
+            title: l.title,
+            resourceUrl: l.videoUrl || l.resourceUrl,
+            duration: l.duration,
+            order: idx,
+            type: "VIDEO"
+          }))
+        } : undefined
+      }
+    });
+
+    await logAudit(res.locals.user.userId, "UPDATE_COURSE", "Course", id);
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
+  }
+});
+
 // Admin/Doctor: delete course
 router.delete("/:id", requireDoctorOrAdmin, async (req, res) => {
   try {

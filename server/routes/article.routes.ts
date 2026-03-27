@@ -46,6 +46,12 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
     const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
 
     if (id) {
+      // Delete old cover image if it changed
+      const oldArticle = await prisma.article.findUnique({ where: { id } });
+      if (coverImage && oldArticle?.coverImage && coverImage !== oldArticle.coverImage) {
+        deleteFile(oldArticle.coverImage);
+      }
+
       // Update
       const article = await prisma.article.update({
         where: { id },
