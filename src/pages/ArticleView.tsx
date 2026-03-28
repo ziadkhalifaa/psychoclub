@@ -50,18 +50,18 @@ export default function ArticleView() {
             <div className="flex flex-wrap items-center gap-4 md:gap-10 pt-4 border-t border-white/10">
               <div className="flex items-center gap-3 md:gap-4">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-0.5 overflow-hidden">
-                  <img src={article.author.photo || article.author.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.user.name)}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
+                  <img src={article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
                 </div>
                 <div>
                   <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بقلم</p>
-                  <span className="font-black text-xs md:text-sm">{article.author.user.name}</span>
+                  <span className="font-black text-xs md:text-sm">{article.author?.user?.name || 'Admin'}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <Calendar className="w-4 h-4 text-[#6FA65A]" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                  {new Date(article.publishedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : 'قريباً'}
                 </span>
               </div>
             </div>
@@ -98,21 +98,21 @@ export default function ArticleView() {
 
             <div className="flex flex-col md:flex-row items-center md:items-start gap-10 relative z-10">
               <div className="w-32 h-32 rounded-[2.5rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 shrink-0 shadow-2xl group overflow-hidden">
-                {article.author.photo || article.author.user.avatar ? (
-                  <img src={article.author.photo || article.author.user.avatar} alt={article.author.user.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                {article.author?.photo || article.author?.user?.avatar ? (
+                  <img src={article.author?.photo || article.author?.user?.avatar} alt={article.author?.user?.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-4xl">
-                    {article.author.user.name.charAt(0)}
+                    {article.author?.user?.name?.charAt(0) || 'A'}
                   </div>
                 )}
               </div>
               <div className="text-center md:text-right space-y-4">
                 <div>
                   <p className="text-[10px] text-[#6FA65A] font-black uppercase tracking-[0.2em] mb-1 italic">كلمة الكاتب</p>
-                  <h3 className="text-3xl font-black tracking-tighter">{article.author.user.name}</h3>
-                  <p className="text-slate-400 font-bold text-sm tracking-wide">{article.author.title}</p>
+                  <h3 className="text-3xl font-black tracking-tighter">{article.author?.user?.name || 'Admin'}</h3>
+                  <p className="text-slate-400 font-bold text-sm tracking-wide">{article.author?.title}</p>
                 </div>
-                <p className="text-slate-300 leading-relaxed text-lg font-medium opacity-80">{article.author.bio}</p>
+                <p className="text-slate-300 leading-relaxed text-lg font-medium opacity-80">{article.author?.bio}</p>
               </div>
             </div>
           </section>

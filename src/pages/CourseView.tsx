@@ -247,13 +247,13 @@ export default function CourseView() {
             <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-6">
               <h2 className="text-3xl font-black text-[#1F2F4A] tracking-tighter">المنهج الدراسي</h2>
               <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-1.5 rounded-full border border-slate-100">
-                {course.lessons.length} وحدات تعليمية
+                {course.lessons?.length || 0} وحدات تعليمية
               </div>
             </div>
 
             <div className="bg-white/40 backdrop-blur-xl rounded-[3rem] border border-white shadow-2xl shadow-slate-200/50 overflow-hidden">
-              {course.lessons.map((lesson: any, index: number) => (
-                <div key={lesson.id} className={`p-6 md:p-8 flex items-center justify-between ${index !== course.lessons.length - 1 ? 'border-b border-slate-100' : ''} hover:bg-slate-50/50 transition-all duration-300 group/lesson`}>
+              {course.lessons?.map((lesson: any, index: number) => (
+                <div key={lesson.id} className={`p-6 md:p-8 flex items-center justify-between ${index !== (course.lessons?.length || 0) - 1 ? 'border-b border-slate-100' : ''} hover:bg-slate-50/50 transition-all duration-300 group/lesson`}>
                   <div className="flex items-center gap-6">
                     <div className="w-12 h-12 rounded-2xl bg-[#1F2F4A]/5 flex items-center justify-center text-slate-400 shrink-0 group-hover/lesson:bg-[#6FA65A] group-hover/lesson:text-white transition-all">
                       {lesson.type === 'video' ? <PlayCircle className="w-5 h-5" /> : lesson.type === 'text' ? <FileText className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
@@ -297,22 +297,22 @@ export default function CourseView() {
             <h2 className="text-3xl font-black text-[#1F2F4A] mb-10 tracking-tighter">رؤية المحاضر</h2>
             <div className="flex flex-col md:flex-row gap-10 items-start">
               <div className="w-40 h-40 rounded-[2.5rem] bg-[#1F2F4A] overflow-hidden shrink-0 shadow-2xl border-4 border-white">
-                {course.instructor.photo || course.instructor.user.avatar ? (
-                  <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                {course.instructor?.photo || course.instructor?.user?.avatar ? (
+                  <img src={course.instructor?.photo || course.instructor?.user?.avatar} alt={course.instructor?.user?.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white font-black text-5xl">
-                    {course.instructor.user.name.charAt(0) || 'D'}
+                    {course.instructor?.user?.name?.charAt(0) || 'D'}
                   </div>
                 )}
               </div>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-2xl font-black text-[#1F2F4A]">{course.instructor.user.name}</h3>
-                  <p className="text-[#6FA65A] font-black text-sm uppercase tracking-widest mt-1">{course.instructor.title}</p>
+                  <h3 className="text-2xl font-black text-[#1F2F4A]">{course.instructor?.user?.name}</h3>
+                  <p className="text-[#6FA65A] font-black text-sm uppercase tracking-widest mt-1">{course.instructor?.title}</p>
                 </div>
-                <p className="text-slate-500 leading-[2] text-lg font-medium italic">"{course.instructor.bio}"</p>
+                <p className="text-slate-500 leading-[2] text-lg font-medium italic">"{course.instructor?.bio}"</p>
 
-                {course.instructor.specialties && (
+                {course.instructor?.specialties && (
                   <div className="flex flex-wrap gap-3 pt-4">
                     {JSON.parse(course.instructor.specialties).map((spec: string) => (
                       <span key={spec} className="bg-[#1F2F4A]/5 text-[#1F2F4A] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[#1F2F4A]/10">
