@@ -6,10 +6,7 @@ async function fixSlugs() {
   console.log("Checking Courses for missing slugs...");
   const courses = await prisma.course.findMany({
     where: { 
-      OR: [
-        { slug: null },
-        { slug: "" }
-      ]
+      slug: ""
     }
   });
   console.log(`Found ${courses.length} courses with missing slugs.`);
@@ -35,10 +32,7 @@ async function fixSlugs() {
   console.log("Checking Articles for missing slugs...");
   const articles = await prisma.article.findMany({
     where: {
-      OR: [
-        { slug: null },
-        { slug: "" }
-      ]
+      slug: ""
     }
   });
   console.log(`Found ${articles.length} articles with missing slugs.`);
