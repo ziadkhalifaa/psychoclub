@@ -76,7 +76,7 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
     const article = await prisma.article.create({
       data: {
         title, excerpt, coverImage, contentRichText,
-        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+        tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map((t: string) => t.trim()) : []),
         category,
         slug,
         authorId: authorId || (isDoctor ? (await prisma.doctor.findUnique({ where: { userId: res.locals.user.userId } }))?.id : undefined),
@@ -116,7 +116,7 @@ router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
       where: { id },
       data: {
         title, excerpt, coverImage, contentRichText,
-        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+        tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map((t: string) => t.trim()) : []),
         category,
         slug,
         authorId: authorId || oldArticle.authorId,

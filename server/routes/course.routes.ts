@@ -155,8 +155,8 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
         title, description, price: parseFloat(price) || 0, isFree: !!isFree,
         duration, category, level, thumbnail, slug,
         instructorId: instructorId || doctor?.id || (await prisma.doctor.findFirst())?.id || "", 
-        whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
-        requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
+        whatYouLearn: Array.isArray(whatYouLearn) ? whatYouLearn : (whatYouLearn ? whatYouLearn.split('|').map((i: string) => i.trim()) : []),
+        requirements: Array.isArray(requirements) ? requirements : (requirements ? requirements.split('|').map((i: string) => i.trim()) : []),
         published: true,
         lessons: {
           create: (lessons || []).map((l: any, idx: number) => ({
@@ -223,8 +223,8 @@ router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
           duration, category, level, thumbnail, slug, published: !!published,
           instructorId: instructorId || undefined,
           publisherId: res.locals.user.userId, // Record who updated it
-          whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
-          requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
+          whatYouLearn: Array.isArray(whatYouLearn) ? whatYouLearn : (whatYouLearn ? whatYouLearn.split('|').map((i: string) => i.trim()) : []),
+          requirements: Array.isArray(requirements) ? requirements : (requirements ? requirements.split('|').map((i: string) => i.trim()) : []),
           lessons: Array.isArray(lessons) ? {
             create: lessons.map((l: any, idx: number) => ({
               title: l.title,

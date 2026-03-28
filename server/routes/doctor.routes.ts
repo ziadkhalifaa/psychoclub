@@ -96,7 +96,7 @@ router.put("/portfolio", requireDoctorOrAdmin, async (req, res) => {
       where: { id: doctor.id },
       data: {
         bio,
-        specialties: typeof specialties === 'string' ? specialties : JSON.stringify(specialties || []),
+        specialties: Array.isArray(specialties) ? specialties : (specialties ? specialties.split(',').map((s: string) => s.trim()) : []),
         title, photo, sessionPrice: parseFloat(sessionPrice) || 0, sessionLink
       }
     });
