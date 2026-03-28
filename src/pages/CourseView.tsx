@@ -124,18 +124,18 @@ export default function CourseView() {
 
             <div className="flex items-center gap-4 md:gap-5 pt-6 border-t border-white/5">
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 group overflow-hidden">
-                {course.instructor.photo || course.instructor.user.avatar ? (
-                  <img src={course.instructor.photo || course.instructor.user.avatar} alt={course.instructor.user.name} className="w-full h-full object-cover rounded-xl md:rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                {course.instructor?.photo || course.instructor?.user?.avatar ? (
+                  <img src={course.instructor?.photo || course.instructor?.user?.avatar} alt={course.instructor?.user?.name} className="w-full h-full object-cover rounded-xl md:rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-xl">
-                    {course.instructor.user.name.charAt(0)}
+                    {course.instructor?.user?.name?.charAt(0) || 'D'}
                   </div>
                 )}
               </div>
               <div>
                 <p className="text-[9px] md:text-[10px] text-[#6FA65A] font-black uppercase tracking-widest mb-1">المحاضر المعتمد</p>
-                <div className="font-black text-lg md:text-xl">{course.instructor.user.name}</div>
-                <div className="text-slate-500 text-[10px] md:text-xs font-bold">{course.instructor.title}</div>
+                <div className="font-black text-lg md:text-xl">{course.instructor?.user?.name}</div>
+                <div className="text-slate-500 text-[10px] md:text-xs font-bold">{course.instructor?.title}</div>
               </div>
             </div>
           </div>
