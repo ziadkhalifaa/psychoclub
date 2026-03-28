@@ -8,7 +8,7 @@ const router = express.Router();
 /**
  * Get current user's purchases (Courses and Packages)
  */
-router.get("/my", requireAuth, async (req, res) => {
+router.get("/purchases/my", requireAuth, async (req, res) => {
   try {
     const userId = res.locals.user.userId;
     const purchases = await prisma.purchase.findMany({
@@ -89,7 +89,7 @@ router.post("/checkout/free", requireAuth, async (req, res) => {
 /**
  * Retry a rejected purchase payment
  */
-router.post("/:id/retry", requireAuth, async (req, res) => {
+router.post("/purchases/:id/retry", requireAuth, async (req, res) => {
   try {
     const userId = res.locals.user.userId;
     const { paymentMethod, payerPhone } = req.body;

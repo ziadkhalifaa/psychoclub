@@ -143,8 +143,7 @@ async function startServer() {
   apiRouter.use("/packages", packageRoutes);
   apiRouter.use("/admin", adminRoutes);
   apiRouter.use("/bookings", bookingRoutes);
-  apiRouter.use("/purchases", purchaseRoutes);
-  apiRouter.use("/checkout", purchaseRoutes);
+  apiRouter.use("/", purchaseRoutes);
   apiRouter.use("/forum", forumRoutes); // Mounted at /api/forum
   // The AdminDashboard calls /api/admin/forum/categories, so we should ALSO mount forumRoutes under /api/admin
   apiRouter.use("/admin/forum", forumRoutes); 
