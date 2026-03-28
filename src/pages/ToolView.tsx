@@ -21,6 +21,12 @@ export default function ToolView() {
     queryFn: () => fetch(`/api/packages/${id}`).then(res => res.json())
   });
 
+  const getImageUrl = (url: string | null | undefined) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) return url;
+    return `/${url}`;
+  };
+
   const { data: myPurchases } = useQuery({
     queryKey: ['myPurchases'],
     queryFn: () => fetch('/api/purchases/my').then(res => res.ok ? res.json() : []),
@@ -114,7 +120,7 @@ export default function ToolView() {
                 <p className="text-slate-300 text-sm leading-relaxed">{pkg.description}</p>
                 <div className="flex items-center gap-4 mt-6 pt-6 border-t border-white/10">
                    <div className="flex items-center gap-3">
-                     <img src={pkg.publisher?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(pkg.publisher?.name || 'Admin')}&background=random`} className="w-8 h-8 rounded-full border border-white/20 object-cover" alt="" />
+                     <img src={getImageUrl(pkg.publisher?.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(pkg.publisher?.name || 'Admin')}&background=random`} className="w-8 h-8 rounded-full border border-white/20 object-cover" alt="" />
                      <span className="text-xs font-bold text-slate-300 italic">بواسطة: {pkg.publisher?.name || 'Admin'}</span>
                    </div>
                    <div className="w-px h-4 bg-white/10" />

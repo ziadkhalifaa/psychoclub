@@ -11,6 +11,12 @@ export default function ArticleView() {
     queryFn: () => fetch(`/api/articles/${slug}`).then(res => res.json())
   });
 
+  const getImageUrl = (url: string | null | undefined) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) return url;
+    return `/${url}`;
+  };
+
   if (isLoading) return <div className="p-24 text-center">جاري التحميل...</div>;
   if (!article) return <div className="p-24 text-center">لم يتم العثور على المقال</div>;
 
@@ -32,7 +38,7 @@ export default function ArticleView() {
           animate={{ opacity: 1, y: 0 }}
           className="relative h-[350px] md:h-[600px] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white/5"
         >
-          <img src={article.coverImage || `https://picsum.photos/seed/${article.slug}/1600/900`} alt={article.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <img src={getImageUrl(article.coverImage) || `https://picsum.photos/seed/${article.slug}/1600/900`} alt={article.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F2F4A] via-[#1F2F4A]/40 to-transparent" />
 
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-20 text-white space-y-4 md:space-y-8">
@@ -50,7 +56,7 @@ export default function ArticleView() {
             <div className="flex flex-wrap items-center gap-4 md:gap-10 pt-4 border-t border-white/10">
               <div className="flex items-center gap-3 md:gap-4">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-0.5 overflow-hidden">
-                  <img src={article.publisher?.avatar || article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.publisher?.name || article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
+                  <img src={getImageUrl(article.publisher?.avatar || article.author?.photo || article.author?.user?.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.publisher?.name || article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
                 </div>
                 <div>
                   <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بواسطة</p>
@@ -99,7 +105,7 @@ export default function ArticleView() {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-10 relative z-10">
               <div className="w-32 h-32 rounded-[2.5rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 shrink-0 shadow-2xl group overflow-hidden">
                 {(article.author?.photo || article.author?.user?.avatar || article.publisher?.avatar) ? (
-                  <img src={article.author?.photo || article.author?.user?.avatar || article.publisher?.avatar} alt={article.author?.user?.name || article.publisher?.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                  <img src={getImageUrl(article.author?.photo || article.author?.user?.avatar || article.publisher?.avatar)} alt={article.author?.user?.name || article.publisher?.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-4xl">
                     {(article.author?.user?.name || article.publisher?.name || 'A').charAt(0)}

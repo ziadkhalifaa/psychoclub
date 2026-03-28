@@ -53,10 +53,12 @@ async function startServer() {
     contentSecurityPolicy: {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        "img-src": ["'self'", "data:", "blob:", "*"],
+        "img-src": ["'self'", "data:", "blob:", "*", "https://picsum.photos", "https://ui-avatars.com"],
         "media-src": ["'self'", "data:", "blob:", "*"],
         "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         "connect-src": ["'self'", "*"],
+        "frame-src": ["'self'", "https://www.youtube.com", "https://youtube.com", "https://youtu.be", "https://player.vimeo.com", "https://vimeo.com", "*"],
+        "child-src": ["'self'", "blob:", "*"],
       },
     },
     crossOriginEmbedderPolicy: false,

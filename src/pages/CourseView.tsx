@@ -19,6 +19,12 @@ export default function CourseView() {
     queryFn: () => fetch(`/api/courses/${slug}`).then(res => res.json())
   });
 
+  const getImageUrl = (url: string | null | undefined) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('/') || url.startsWith('data:')) return url;
+    return `/${url}`;
+  };
+
   const { data: myPurchases } = useQuery({
     queryKey: ['myPurchases'],
     queryFn: () => fetch('/api/purchases/my').then(res => res.ok ? res.json() : []),
@@ -124,7 +130,7 @@ export default function CourseView() {
 
             <div className="flex items-center gap-4 md:gap-5 pt-6 border-t border-white/5">
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 group overflow-hidden">
-                <img src={course.publisher?.avatar || course.instructor?.photo || course.instructor?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(course.publisher?.name || course.instructor?.user?.name || 'Admin')}&background=random`} alt={course.publisher?.name || course.instructor?.user?.name} className="w-full h-full object-cover rounded-xl md:rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                <img src={getImageUrl(course.publisher?.avatar || course.instructor?.photo || course.instructor?.user?.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(course.publisher?.name || course.instructor?.user?.name || 'Admin')}&background=random`} alt={course.publisher?.name || course.instructor?.user?.name} className="w-full h-full object-cover rounded-xl md:rounded-[1.8rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
               </div>
               <div>
                 <p className="text-[9px] md:text-[10px] text-[#6FA65A] font-black uppercase tracking-widest mb-1">بواسطة</p>
@@ -142,7 +148,7 @@ export default function CourseView() {
           >
             <div className="absolute -inset-6 bg-[#6FA65A]/10 blur-3xl rounded-full" />
             <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/5 aspect-video group">
-              <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" referrerPolicy="no-referrer" />
+              <img src={getImageUrl(course.thumbnail)} alt={course.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" referrerPolicy="no-referrer" />
               {hasPurchased ? (
                 <div className="absolute inset-0 bg-[#1F2F4A]/40 flex items-center justify-center backdrop-blur-sm transition-all group-hover:bg-[#1F2F4A]/60 opacity-0 group-hover:opacity-100">
                   <Link to={`/courses/${course.slug}/learn`} className="bg-white text-[#1F2F4A] px-10 py-4 rounded-full font-black text-xl hover:scale-105 transition-transform shadow-2xl flex items-center gap-3">
@@ -292,7 +298,7 @@ export default function CourseView() {
             <div className="flex flex-col md:flex-row gap-10 items-start">
               <div className="w-40 h-40 rounded-[2.5rem] bg-[#1F2F4A] overflow-hidden shrink-0 shadow-2xl border-4 border-white">
                 {course.instructor?.photo || course.instructor?.user?.avatar ? (
-                  <img src={course.instructor?.photo || course.instructor?.user?.avatar} alt={course.instructor?.user?.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <img src={getImageUrl(course.instructor?.photo || course.instructor?.user?.avatar)} alt={course.instructor?.user?.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white font-black text-5xl">
                     {course.instructor?.user?.name?.charAt(0) || 'D'}

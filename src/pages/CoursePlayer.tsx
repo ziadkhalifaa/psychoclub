@@ -192,10 +192,15 @@ export default function CoursePlayer() {
     
     // CONTENT-AWARE DETECTION: Guess type based on URL if DB type is generic/wrong
     let detectedType = activeLessonRaw?.type?.toLowerCase().trim();
-    const cleanUrl = activeLessonRaw?.resourceUrl?.replace(/\/+$/, '') || '';
+    let cleanUrl = activeLessonRaw?.resourceUrl?.replace(/\/+$/, '') || '';
     
+    // Normalize local upload paths to be absolute
+    if (cleanUrl && !cleanUrl.startsWith('http') && !cleanUrl.startsWith('/')) {
+        cleanUrl = `/${cleanUrl}`;
+    }
+
     if (cleanUrl.toLowerCase().endsWith('.pdf')) detectedType = 'pdf';
-    else if (cleanUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/)) detectedType = 'video';
+    else if (cleanUrl.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/)) detectedType = 'video';
     else if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be') || cleanUrl.includes('vimeo.com')) detectedType = 'video';
 
     const activeLesson = { ...activeLessonRaw, type: detectedType, resourceUrl: cleanUrl };
@@ -390,7 +395,7 @@ export default function CoursePlayer() {
                             <PdfViewer url={activeLesson.resourceUrl} />
                         ) : (
                             <div key={activeLesson?.id} className="absolute inset-0 bg-white p-8 overflow-y-auto prose prose-slate prose-lg max-w-none">
-                                <div dangerouslySetInnerHTML={{ __html: activeLesson?.content || activeLesson?.resourceUrl || '' }} />
+                                <div dangerouslySetInnerHTML={{ __html: activeLesson?.content || activeLesson?.resourceUrl || '<p class="text-slate-400 italic text-center py-20">لا يوجد محتوى نصي لهذا الدرس حالياً</p>' }} />
                             </div>
                         )}
                     </div>
