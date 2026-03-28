@@ -32,7 +32,7 @@ export default function CourseView() {
   });
 
   if (isLoading) return <div className="p-24 text-center">جاري التحميل...</div>;
-  if (!course) return <div className="p-24 text-center">لم يتم العثور على الدورة</div>;
+  if (!course || course.error) return <div className="p-24 text-center">لم يتم العثور على الدورة</div>;
 
   const coursePurchase = myPurchases?.find((p: any) => p.itemId === course.id && p.type === 'COURSE');
   const hasPurchased = user?.role === 'ADMIN' || coursePurchase?.status === 'APPROVED';
@@ -151,7 +151,7 @@ export default function CourseView() {
               <img src={getImageUrl(course.thumbnail)} alt={course.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" referrerPolicy="no-referrer" />
               {hasPurchased ? (
                 <div className="absolute inset-0 bg-[#1F2F4A]/40 flex items-center justify-center backdrop-blur-sm transition-all group-hover:bg-[#1F2F4A]/60 opacity-0 group-hover:opacity-100">
-                  <Link to={`/courses/${course.slug}/learn`} className="bg-white text-[#1F2F4A] px-10 py-4 rounded-full font-black text-xl hover:scale-105 transition-transform shadow-2xl flex items-center gap-3">
+                  <Link to={`/courses/${course.slug || course.id}/learn`} className="bg-white text-[#1F2F4A] px-10 py-4 rounded-full font-black text-xl hover:scale-105 transition-transform shadow-2xl flex items-center gap-3">
                     <PlayCircle className="w-6 h-6" />
                     ابدأ التعلم الآن
                   </Link>
@@ -276,7 +276,7 @@ export default function CourseView() {
 
                   <div className="shrink-0 pl-4">
                     {hasPurchased ? (
-                      <Link to={`/courses/${course.slug}/learn`} className="block bg-[#6FA65A]/10 text-[#6FA65A] p-3 rounded-2xl hover:bg-[#6FA65A] hover:text-white transition-all shadow-sm">
+                      <Link to={`/courses/${course.slug || course.id}/learn`} className="block bg-[#6FA65A]/10 text-[#6FA65A] p-3 rounded-2xl hover:bg-[#6FA65A] hover:text-white transition-all shadow-sm">
                         <PlayCircle className="w-6 h-6" />
                       </Link>
                     ) : lesson.isPreview ? (

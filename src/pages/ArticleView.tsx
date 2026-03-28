@@ -18,7 +18,7 @@ export default function ArticleView() {
   };
 
   if (isLoading) return <div className="p-24 text-center">جاري التحميل...</div>;
-  if (!article) return <div className="p-24 text-center">لم يتم العثور على المقال</div>;
+  if (!article || article.error) return <div className="p-24 text-center">لم يتم العثور على المقال</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">

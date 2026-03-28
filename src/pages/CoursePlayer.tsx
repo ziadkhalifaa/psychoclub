@@ -103,14 +103,14 @@ const PdfViewer = ({ url }: { url: string }) => {
                 className="flex flex-col items-center w-full max-w-4xl mx-auto"
             >
                 {Array.from(new Array(numPages || 0), (el, index) => (
-                    <Page
-                        key={`page_${index + 1}`}
-                        pageNumber={index + 1}
-                        className="mb-8 rounded-xl overflow-hidden shadow-2xl transition-all"
-                        renderTextLayer={false}
-                        renderAnnotationLayer={false}
-                        width={Math.min(window.innerWidth - 64, 800)}
-                    />
+                    <div key={`page_${index + 1}`} className="mb-8 rounded-xl overflow-hidden shadow-2xl transition-all">
+                        <Page
+                            pageNumber={index + 1}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                            width={Math.min(window.innerWidth - 64, 800)}
+                        />
+                    </div>
                 ))}
             </Document>
         </div>
@@ -186,7 +186,17 @@ export default function CoursePlayer() {
         return <div className="min-h-screen flex items-center justify-center bg-slate-50">جاري التحميل...</div>;
     }
 
-    if (!course) return null;
+    if (error || !course || course.error) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 text-right" dir="rtl">
+                <div className="bg-white p-12 rounded-[3rem] shadow-2xl max-w-lg w-full text-center border border-slate-100">
+                    <h2 className="text-3xl font-black text-[#1F2F4A] mb-4">خطأ في الوصول</h2>
+                    <p className="text-slate-500 mb-8 font-medium">عذراً، يبدو أنك تحاول الوصول إلى كورس غير موجود أو لم تقم بالاشتراك فيه بعد.</p>
+                    <Link to="/courses" className="block w-full bg-[#1F2F4A] text-white py-4 rounded-2xl font-black hover:bg-[#6FA65A] transition-all text-center">العودة للكورسات</Link>
+                </div>
+            </div>
+        );
+    }
 
     const activeLessonRaw = course.lessons.find((l: any) => l.id === activeLessonId) || course.lessons[0];
     
