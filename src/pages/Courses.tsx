@@ -209,15 +209,15 @@ export default function Courses() {
                     <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-auto">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-[#1F2F4A]/5 flex items-center justify-center text-xs font-black text-[#1F2F4A] border border-[#1F2F4A]/10 shadow-sm overflow-hidden">
-                          {course.instructor.photo || course.instructor.user.avatar ? (
-                            <img src={course.instructor.photo || course.instructor.user.avatar} className="w-full h-full object-cover" alt="" />
+                          {course.publisher?.avatar || course.instructor.photo || course.instructor.user.avatar ? (
+                            <img src={course.publisher?.avatar || course.instructor.photo || course.instructor.user.avatar} className="w-full h-full object-cover" alt="" />
                           ) : (
-                            course.instructor.user.name.charAt(0)
+                            (course.publisher?.name || course.instructor.user.name).charAt(0)
                           )}
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{t('courses.card.instructor')}</p>
-                          <span className="text-xs font-black text-[#1F2F4A]">{course.instructor.user.name}</span>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{course.publisher ? 'الناشر' : t('courses.card.instructor')}</p>
+                          <span className="text-xs font-black text-[#1F2F4A]">{course.publisher?.name || course.instructor.user.name}</span>
                         </div>
                       </div>
                       <div className="text-left">

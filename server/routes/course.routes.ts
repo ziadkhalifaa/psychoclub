@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
       where: { published: true },
       include: {
         instructor: { include: { user: { select: { name: true, avatar: true } } } },
+        publisher: { select: { name: true, avatar: true } },
         lessons: { orderBy: { order: 'asc' } }
       },
       orderBy: { createdAt: 'desc' }
@@ -32,6 +33,7 @@ router.get("/:slug", async (req, res) => {
       where: { slug: req.params.slug },
       include: {
         instructor: { include: { user: { select: { name: true, avatar: true } } } },
+        publisher: { select: { name: true, avatar: true } },
         lessons: { orderBy: { order: 'asc' } }
       }
     });
@@ -42,6 +44,7 @@ router.get("/:slug", async (req, res) => {
         where: { id: req.params.slug },
         include: {
           instructor: { include: { user: { select: { name: true, avatar: true } } } },
+          publisher: { select: { name: true, avatar: true } },
           lessons: { orderBy: { order: 'asc' } }
         }
       });
@@ -196,39 +199,43 @@ router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
       deleteFile(oldCourse.thumbnail);
     }
 
-    // 2. Handle lessons update (Delete removed lesson files)
-    if (Array.isArray(lessons)) {
-      const newLessonResourceUrls = lessons.map((l: any) => l.videoUrl || l.resourceUrl);
-      const removedLessons = oldCourse.lessons.filter(
-        oldL => !newLessonResourceUrls.includes(oldL.resourceUrl)
-      );
-      
-      removedLessons.forEach(l => deleteFile(l.resourceUrl));
+    // Use transaction for atomicity
+    const updated = await prisma.$transaction(async (tx) => {
+      // 2. Handle lessons update (Delete removed lesson files)
+      if (Array.isArray(lessons)) {
+        const newLessonResourceUrls = lessons.map((l: any) => l.videoUrl || l.resourceUrl);
+        const removedLessons = oldCourse.lessons.filter(
+          oldL => !newLessonResourceUrls.includes(oldL.resourceUrl)
+        );
+        
+        removedLessons.forEach(l => deleteFile(l.resourceUrl));
 
-      // Re-create lessons for simplicity in this implementation
-      await prisma.courseLesson.deleteMany({ where: { courseId: id } });
-    }
-
-    const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-
-    const updated = await prisma.course.update({
-      where: { id },
-      data: {
-        title, description, price: parseFloat(price) || 0, isFree: !!isFree,
-        duration, category, level, thumbnail, slug, published: !!published,
-        instructorId: instructorId || undefined, // Allow updating instructor
-        whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
-        requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
-        lessons: Array.isArray(lessons) ? {
-          create: lessons.map((l: any, idx: number) => ({
-            title: l.title,
-            resourceUrl: l.videoUrl || l.resourceUrl,
-            duration: l.duration,
-            order: idx,
-            type: (l.type || "VIDEO").toUpperCase()
-          }))
-        } : undefined
+        // Re-create lessons
+        await tx.courseLesson.deleteMany({ where: { courseId: id } });
       }
+
+      const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+
+      return await tx.course.update({
+        where: { id },
+        data: {
+          title, description, price: parseFloat(price) || 0, isFree: !!isFree,
+          duration, category, level, thumbnail, slug, published: !!published,
+          instructorId: instructorId || undefined,
+          publisherId: res.locals.user.userId, // Record who updated it
+          whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
+          requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
+          lessons: Array.isArray(lessons) ? {
+            create: lessons.map((l: any, idx: number) => ({
+              title: l.title,
+              resourceUrl: l.videoUrl || l.resourceUrl,
+              duration: l.duration,
+              order: idx,
+              type: (l.type || "VIDEO").toUpperCase()
+            }))
+          } : undefined
+        }
+      });
     });
 
     await logAudit(res.locals.user.userId, "UPDATE_COURSE", "Course", id);

@@ -14,9 +14,9 @@ import ScrollToTop from '../components/ScrollToTop';
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
 
 const getEmbedUrl = (url: string, type: string = 'video') => {
-    if (!url || url === '#') return url;
+    if (!url || url === '#' || url.startsWith('data:')) return url;
 
-    // For PDFs, append toolbar=0 to native viewer to hide download native buttons
+    // For PDFs, append toolbar=0 to native viewer
     if (type === 'pdf') {
         if (!url.includes('#')) {
             return `${url}#toolbar=0&navpanes=0`;
@@ -25,29 +25,43 @@ const getEmbedUrl = (url: string, type: string = 'video') => {
     }
 
     try {
-        const urlObj = new URL(url);
-        // YouTube short and long URLs
+        let cleanUrl = url.trim();
+        if (!cleanUrl.startsWith('http')) {
+            if (cleanUrl.startsWith('/')) return cleanUrl;
+            return `/${cleanUrl}`;
+        }
+
+        const urlObj = new URL(cleanUrl);
+        // YouTube
         if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-            const videoId = urlObj.searchParams.get('v') || urlObj.pathname.split('/').pop();
-            if (videoId) return `https://www.youtube.com/embed/${videoId}?rel=0`;
+            let videoId = urlObj.searchParams.get('v');
+            if (!videoId && urlObj.hostname.includes('youtu.be')) {
+                videoId = urlObj.pathname.split('/').pop() || null;
+            }
+            if (!videoId && urlObj.pathname.includes('/embed/')) {
+                videoId = urlObj.pathname.split('/embed/').pop()?.split('?')[0] || null;
+            }
+            if (!videoId && urlObj.pathname.includes('/v/')) {
+                videoId = urlObj.pathname.split('/v/').pop()?.split('?')[0] || null;
+            }
+            if (videoId) return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&shlowinfo=0`;
         }
         // Vimeo
         if (urlObj.hostname.includes('vimeo.com')) {
             const videoId = urlObj.pathname.split('/').pop();
-            if (videoId) return `https://player.vimeo.com/video/${videoId}`;
+            if (videoId) return `https://player.vimeo.com/video/${videoId}?badge=0&autopause=0`;
         }
+        return cleanUrl;
     } catch (e) {
-        // If it's not a valid URL or fails parsing, return the original
         return url;
     }
-    return url;
 };
 
 const isDirectVideo = (url: string) => {
-    if (!url || url === '#') return false;
-    if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) return false;
-    // Assume local uploads or direct video extensions are standard video elements
-    return url.startsWith('/uploads/') || url.match(/\.(mp4|webm|ogg)$/i) !== null;
+    if (!url || url === '#' || url.startsWith('data:')) return false;
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be') || lowerUrl.includes('vimeo.com')) return false;
+    return lowerUrl.includes('/uploads/') || lowerUrl.match(/\.(mp4|webm|ogg|mov)$/i) !== null;
 };
 
 const PdfViewer = ({ url }: { url: string }) => {

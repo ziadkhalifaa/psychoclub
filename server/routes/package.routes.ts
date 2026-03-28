@@ -16,7 +16,10 @@ router.get("/", async (req, res) => {
   try {
     const packages = await prisma.package.findMany({
       where: { published: true },
-      include: { files: { select: { id: true }, orderBy: { order: 'asc' } } },
+      include: { 
+        files: { select: { id: true }, orderBy: { order: 'asc' } },
+        publisher: { select: { name: true, avatar: true } }
+      },
       orderBy: { createdAt: 'desc' }
     });
     const result = packages.map(p => ({ ...p, fileCount: p.files.length }));
@@ -32,7 +35,10 @@ router.get("/:id", async (req, res) => {
   try {
     const pkg = await prisma.package.findUnique({
       where: { id: req.params.id },
-      include: { files: { orderBy: { order: 'asc' } } }
+      include: { 
+        files: { orderBy: { order: 'asc' } },
+        publisher: { select: { name: true, avatar: true } }
+      }
     });
     if (!pkg) return res.status(404).json({ error: "Package not found" });
     res.json(pkg);
@@ -120,37 +126,42 @@ router.post("/", requireAdmin, async (req, res) => {
     const { id, title, description, coverImage, files } = req.body;
     
     if (id) {
-      // Update metadata
-      const pkg = await prisma.package.update({
-        where: { id },
-        data: { title, description, coverImage, published: true }
-      });
+      // Use transaction for consistency
+      const pkg = await prisma.$transaction(async (tx) => {
+        // Update metadata
+        const updatedPkg = await tx.package.update({
+          where: { id },
+          data: { title, description, coverImage, published: true, publisherId: res.locals.user.userId }
+        });
 
-      // Handle files sync
-      if (Array.isArray(files)) {
-        const keptIds = files.filter(f => f.id).map(f => f.id);
-        const existingFiles = await prisma.packageFile.findMany({ where: { packageId: id } });
-        const removed = existingFiles.filter(f => !keptIds.includes(f.id));
-        
-        for (const f of removed) {
-          deleteFile(f.fileUrl);
-          await prisma.packageFile.delete({ where: { id: f.id } });
-        }
+        // Handle files sync
+        if (Array.isArray(files)) {
+          const keptIds = files.filter(f => f.id).map(f => f.id);
+          const existingFiles = await tx.packageFile.findMany({ where: { packageId: id } });
+          const removed = existingFiles.filter(f => !keptIds.includes(f.id));
+          
+          for (const f of removed) {
+            deleteFile(f.fileUrl);
+            await tx.packageFile.delete({ where: { id: f.id } });
+          }
 
-        for (let i = 0; i < files.length; i++) {
-          const f = files[i];
-          if (f.id) {
-            await prisma.packageFile.update({
-              where: { id: f.id },
-              data: { title: f.title, fileUrl: f.fileUrl, fileName: f.fileName, order: i }
-            });
-          } else {
-            await prisma.packageFile.create({
-              data: { packageId: id, title: f.title, fileUrl: f.fileUrl, fileName: f.fileName, order: i }
-            });
+          for (let i = 0; i < files.length; i++) {
+            const f = files[i];
+            if (f.id) {
+              await tx.packageFile.update({
+                where: { id: f.id },
+                data: { title: f.title, fileUrl: f.fileUrl, fileName: f.fileName, order: i }
+              });
+            } else {
+              await tx.packageFile.create({
+                data: { packageId: id, title: f.title, fileUrl: f.fileUrl, fileName: f.fileName, order: i }
+              });
+            }
           }
         }
-      }
+        return updatedPkg;
+      });
+
       await logAudit(res.locals.user.userId, "UPDATE_PACKAGE", "Package", id);
       res.json(pkg);
     } else {
@@ -158,6 +169,7 @@ router.post("/", requireAdmin, async (req, res) => {
       const pkg = await prisma.package.create({
         data: {
           title, description, coverImage, published: true,
+          publisherId: res.locals.user.userId,
           files: {
             create: (files || []).map((f: any, i: number) => ({
               title: f.title, fileUrl: f.fileUrl, fileName: f.fileName, order: i

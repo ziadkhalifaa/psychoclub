@@ -112,14 +112,21 @@ export default function ToolView() {
               <div className="flex-1">
                 <h1 className="text-2xl font-bold mb-2">{pkg.title}</h1>
                 <p className="text-slate-300 text-sm leading-relaxed">{pkg.description}</p>
-                <div className="flex items-center gap-4 mt-4">
-                  <span className="bg-white/10 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" />
-                    {pkg.files?.length || 0} ملف
-                  </span>
-                  <span className="bg-[#6FA65A]/20 px-3 py-1 rounded-full text-xs font-bold text-[#6FA65A]">
-                    {isFree ? 'مجاني' : `${pkg.price} ج.م`}
-                  </span>
+                <div className="flex items-center gap-4 mt-6 pt-6 border-t border-white/10">
+                   <div className="flex items-center gap-3">
+                     <img src={pkg.publisher?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(pkg.publisher?.name || 'Admin')}&background=random`} className="w-8 h-8 rounded-full border border-white/20 object-cover" alt="" />
+                     <span className="text-xs font-bold text-slate-300 italic">بواسطة: {pkg.publisher?.name || 'Admin'}</span>
+                   </div>
+                   <div className="w-px h-4 bg-white/10" />
+                   <div className="flex items-center gap-4">
+                    <span className="bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 text-slate-300">
+                      <FileText className="w-3 h-3" />
+                      {pkg.files?.length || 0} ملف
+                    </span>
+                    <span className="bg-[#6FA65A]/20 px-3 py-1 rounded-full text-[10px] font-bold text-[#6FA65A]">
+                      {isFree ? 'مجاني' : `${pkg.price} ج.م`}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

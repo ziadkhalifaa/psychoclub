@@ -130,7 +130,12 @@ export default function Tools() {
                 <h3 className="text-xl font-bold text-[#1F2F4A] mb-2 line-clamp-2 group-hover:text-[#6FA65A] transition-colors">
                   {pkg.title}
                 </h3>
-                <p className="text-slate-500 text-sm line-clamp-3 mb-6 flex-1 leading-relaxed">{pkg.description}</p>
+                <p className="text-slate-500 text-sm line-clamp-3 mb-4 flex-1 leading-relaxed">{pkg.description}</p>
+
+                <div className="flex items-center gap-3 mb-6 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                   <img src={pkg.publisher?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(pkg.publisher?.name || 'Admin')}&background=random`} className="w-8 h-8 rounded-full border border-white/20 object-cover" alt="" />
+                   <span className="text-[10px] font-bold text-slate-500 italic">بواسطة: {pkg.publisher?.name || 'Admin'}</span>
+                </div>
 
                 <div className="flex gap-3 pt-4 border-t border-slate-100">
                   <Link

@@ -50,11 +50,11 @@ export default function ArticleView() {
             <div className="flex flex-wrap items-center gap-4 md:gap-10 pt-4 border-t border-white/10">
               <div className="flex items-center gap-3 md:gap-4">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-0.5 overflow-hidden">
-                  <img src={article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
+                  <img src={article.publisher?.avatar || article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.publisher?.name || article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-[0.7rem] md:rounded-[0.9rem] object-cover" alt="" />
                 </div>
                 <div>
-                  <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بقلم</p>
-                  <span className="font-black text-xs md:text-sm">{article.author?.user?.name || 'Admin'}</span>
+                  <p className="text-[9px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">بواسطة</p>
+                  <span className="font-black text-xs md:text-sm">{article.publisher?.name || article.author?.user?.name || 'Admin'}</span>
                 </div>
               </div>
 

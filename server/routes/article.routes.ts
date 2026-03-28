@@ -11,7 +11,10 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const articles = await prisma.article.findMany({
-      include: { author: { include: { user: { select: { name: true, avatar: true } } } } },
+      include: { 
+        author: { include: { user: { select: { name: true, avatar: true } } } },
+        publisher: { select: { name: true, avatar: true } }
+      },
       orderBy: { createdAt: 'desc' }
     });
     res.json(articles);
@@ -28,6 +31,7 @@ router.get("/:slug", async (req, res) => {
       where: { slug: req.params.slug },
       include: {
         author: { include: { user: { select: { name: true, avatar: true } } } },
+        publisher: { select: { name: true, avatar: true } },
         tags: true
       }
     });
@@ -38,6 +42,7 @@ router.get("/:slug", async (req, res) => {
         where: { id: req.params.slug },
         include: {
           author: { include: { user: { select: { name: true, avatar: true } } } },
+          publisher: { select: { name: true, avatar: true } },
           tags: true
         }
       });
@@ -51,13 +56,15 @@ router.get("/:slug", async (req, res) => {
   }
 });
 
-// Admin/Doctor: create/update article
+// Admin/Doctor: create article
 router.post("/", requireDoctorOrAdmin, async (req, res) => {
   try {
-    const doctor = await prisma.doctor.findUnique({ where: { userId: res.locals.user.userId } });
-    if (!doctor) return res.status(401).json({ error: "Doctor profile required" });
+    const isDoctor = !!(await prisma.doctor.findUnique({ where: { userId: res.locals.user.userId } }));
+    const isAdmin = res.locals.user.role === 'ADMIN';
 
-    const { id, title, excerpt, coverImage, contentRichText, tags, category } = req.body;
+    if (!isDoctor && !isAdmin) return res.status(401).json({ error: "Unauthorized: Doctor or Admin role required" });
+
+    const { title, excerpt, coverImage, contentRichText, tags, category, authorId } = req.body;
     
     const slug = title.toLowerCase().trim()
       .replace(/\s+/g, '-')
@@ -65,39 +72,60 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
       .replace(/--+/g, '-')
       .replace(/^-+|-+$/g, '') || `article-${Math.random().toString(36).slice(2, 9)}`;
 
-    if (id) {
-      // Delete old cover image if it changed
-      const oldArticle = await prisma.article.findUnique({ where: { id } });
-      if (coverImage && oldArticle?.coverImage && coverImage !== oldArticle.coverImage) {
-        deleteFile(oldArticle.coverImage);
+    // Create
+    const article = await prisma.article.create({
+      data: {
+        title, excerpt, coverImage, contentRichText,
+        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+        category,
+        slug,
+        authorId: authorId || (isDoctor ? (await prisma.doctor.findUnique({ where: { userId: res.locals.user.userId } }))?.id : undefined),
+        publisherId: res.locals.user.userId,
+        published: true
       }
+    });
 
-      // Update
-      const article = await prisma.article.update({
-        where: { id },
-        data: {
-          title, excerpt, coverImage, contentRichText,
-          tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-          category,
-          slug
-        }
-      });
-      await logAudit(res.locals.user.userId, "UPDATE_ARTICLE", "Article", article.id);
-      return res.json(article);
-    } else {
-      // Create
-      const article = await prisma.article.create({
-        data: {
-          title, excerpt, coverImage, contentRichText,
-          tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
-          category,
-          slug,
-          authorId: doctor.id
-        }
-      });
-      await logAudit(res.locals.user.userId, "CREATE_ARTICLE", "Article", article.id);
-      return res.json(article);
+    await logAudit(res.locals.user.userId, "CREATE_ARTICLE", "Article", article.id);
+    return res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Admin/Doctor: update article
+router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, excerpt, coverImage, contentRichText, tags, category, authorId } = req.body;
+
+    const oldArticle = await prisma.article.findUnique({ where: { id } });
+    if (!oldArticle) return res.status(404).json({ error: "Article not found" });
+
+    if (coverImage && oldArticle.coverImage && coverImage !== oldArticle.coverImage) {
+      deleteFile(oldArticle.coverImage);
     }
+
+    const slug = title.toLowerCase().trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\u0600-\u06FF\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '') || oldArticle.slug;
+
+    const article = await prisma.article.update({
+      where: { id },
+      data: {
+        title, excerpt, coverImage, contentRichText,
+        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || []),
+        category,
+        slug,
+        authorId: authorId || oldArticle.authorId,
+        publisherId: res.locals.user.userId
+      }
+    });
+
+    await logAudit(res.locals.user.userId, "UPDATE_ARTICLE", "Article", article.id);
+    return res.json(article);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });

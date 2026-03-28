@@ -124,9 +124,9 @@ export default function Articles() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1F2F4A]/80 to-transparent opacity-60" />
                     <div className={`absolute bottom-6 ${isRTL ? 'right-6' : 'left-6'} flex items-center gap-3`}>
                       <div className="w-10 h-10 rounded-full border-2 border-[#6FA65A] p-0.5 shadow-xl overflow-hidden">
-                        <img src={article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-full object-cover" alt="" />
+                        <img src={article.publisher?.avatar || article.author?.photo || article.author?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(article.publisher?.name || article.author?.user?.name || 'Admin')}&background=random`} className="w-full h-full rounded-full object-cover" alt="" />
                       </div>
-                      <span className="text-white text-[10px] font-black uppercase tracking-wider">{article.author?.user?.name || t('articles.card.author')}</span>
+                      <span className="text-white text-[10px] font-black uppercase tracking-wider">{article.publisher?.name || article.author?.user?.name || t('articles.card.author')}</span>
                     </div>
                   </div>
                   <div className="p-10 flex flex-col flex-1">
