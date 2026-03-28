@@ -308,7 +308,7 @@ export default function CourseView() {
 
                 {course.instructor?.specialties && (
                   <div className="flex flex-wrap gap-3 pt-4">
-                    {JSON.parse(course.instructor.specialties).map((spec: string) => (
+                    {(Array.isArray(course.instructor.specialties) ? course.instructor.specialties : (typeof course.instructor.specialties === 'string' ? JSON.parse(course.instructor.specialties) : [])).map((spec: string) => (
                       <span key={spec} className="bg-[#1F2F4A]/5 text-[#1F2F4A] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-[#1F2F4A]/10">
                         {spec}
                       </span>
@@ -332,7 +332,7 @@ export default function CourseView() {
               <>
                 <h3 className="font-black text-[#1F2F4A] text-xl mb-8 border-b border-slate-100 pb-4">مكتسبات الدورة</h3>
                 <ul className="space-y-6">
-                  {course.whatYouLearn.split('|').filter(Boolean).map((item: string, i: number) => (
+                  {(Array.isArray(course.whatYouLearn) ? course.whatYouLearn : (typeof course.whatYouLearn === 'string' ? course.whatYouLearn.split('|') : [])).filter(Boolean).map((item: string, i: number) => (
                     <li key={i} className="flex items-start gap-4 group">
                       <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 group-hover:bg-[#6FA65A] transition-all">
                         <CheckCircle className="w-3.5 h-3.5 text-[#6FA65A] group-hover:text-white" />
@@ -350,7 +350,7 @@ export default function CourseView() {
               <>
                 <h3 className="font-black text-[#1F2F4A] text-xl mb-8">المهارات المطلوبة</h3>
                 <div className="space-y-4">
-                  {course.requirements.split('|').filter(Boolean).map((item: string, i: number) => (
+                  {(Array.isArray(course.requirements) ? course.requirements : (typeof course.requirements === 'string' ? course.requirements.split('|') : [])).filter(Boolean).map((item: string, i: number) => (
                     <div key={i} className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#6FA65A]" />
                       <span className="text-sm font-bold text-[#1F2F4A]">{item.trim()}</span>

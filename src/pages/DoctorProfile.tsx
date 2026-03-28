@@ -104,7 +104,7 @@ export default function DoctorProfile() {
                         </p>
 
                         <div className="flex flex-wrap gap-3 pt-6">
-                            {doctor.specialties && JSON.parse(doctor.specialties).map((spec: string, i: number) => (
+                            {doctor.specialties && (Array.isArray(doctor.specialties) ? doctor.specialties : (typeof doctor.specialties === 'string' ? JSON.parse(doctor.specialties) : [])).map((spec: string, i: number) => (
                                 <span key={i} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-black border border-white/20">
                                     {spec}
                                 </span>
