@@ -75,6 +75,9 @@ def deploy():
         print("Installing dependencies and building...")
         commands = [
             f"cd ~/{base_remote} && npm install",
+            f"cd ~/{base_remote} && npx prisma db push --accept-data-loss",
+            f"cd ~/{base_remote} && npx prisma generate",
+            f"cd ~/{base_remote} && npx tsx scripts/fix-slugs.ts",
             f"cd ~/{base_remote} && export NODE_OPTIONS=--max-old-space-size=2048 && npm run build",
             f"pm2 restart psychoclub-api",
             f"pm2 restart psychoclub"

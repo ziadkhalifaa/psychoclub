@@ -23,6 +23,7 @@ jobs:
             [ -f .env ] && sed -i '/NODE_ENV/d' .env || true
             
             npm install
+            npx prisma db push --accept-data-loss
             npx prisma generate
             npx tsx scripts/fix-slugs.ts
             export NODE_OPTIONS=--max-old-space-size=2048
