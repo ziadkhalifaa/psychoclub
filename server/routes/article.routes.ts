@@ -31,8 +31,7 @@ router.get("/:slug", async (req, res) => {
       where: { slug: req.params.slug },
       include: {
         author: { include: { user: { select: { name: true, avatar: true } } } },
-        publisher: { select: { name: true, avatar: true } },
-        tags: true
+        publisher: { select: { name: true, avatar: true } }
       }
     });
 

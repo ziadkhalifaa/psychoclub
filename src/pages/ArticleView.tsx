@@ -84,7 +84,7 @@ export default function ArticleView() {
           {article.tags && (
             <div className="mt-20 pt-12 border-t border-slate-100 flex flex-wrap items-center gap-4">
               <Tag className="w-5 h-5 text-slate-400" />
-              {JSON.parse(article.tags).map((tag: string) => (
+              {(Array.isArray(article.tags) ? article.tags : (typeof article.tags === 'string' ? JSON.parse(article.tags) : [])).map((tag: string) => (
                 <span key={tag} className="bg-slate-50 text-slate-400 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-100 hover:border-[#6FA65A] hover:text-[#6FA65A] transition-all cursor-default">
                   {tag}
                 </span>
@@ -98,19 +98,19 @@ export default function ArticleView() {
 
             <div className="flex flex-col md:flex-row items-center md:items-start gap-10 relative z-10">
               <div className="w-32 h-32 rounded-[2.5rem] bg-white/5 backdrop-blur-md p-1 border border-white/10 shrink-0 shadow-2xl group overflow-hidden">
-                {article.author?.photo || article.author?.user?.avatar ? (
-                  <img src={article.author?.photo || article.author?.user?.avatar} alt={article.author?.user?.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
+                {(article.author?.photo || article.author?.user?.avatar || article.publisher?.avatar) ? (
+                  <img src={article.author?.photo || article.author?.user?.avatar || article.publisher?.avatar} alt={article.author?.user?.name || article.publisher?.name} className="w-full h-full object-cover rounded-[2rem] transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#6FA65A] font-black text-4xl">
-                    {article.author?.user?.name?.charAt(0) || 'A'}
+                    {(article.author?.user?.name || article.publisher?.name || 'A').charAt(0)}
                   </div>
                 )}
               </div>
               <div className="text-center md:text-right space-y-4">
                 <div>
                   <p className="text-[10px] text-[#6FA65A] font-black uppercase tracking-[0.2em] mb-1 italic">كلمة الكاتب</p>
-                  <h3 className="text-3xl font-black tracking-tighter">{article.author?.user?.name || 'Admin'}</h3>
-                  <p className="text-slate-400 font-bold text-sm tracking-wide">{article.author?.title}</p>
+                  <h3 className="text-3xl font-black tracking-tighter">{article.author?.user?.name || article.publisher?.name || 'Admin'}</h3>
+                  <p className="text-slate-400 font-bold text-sm tracking-wide">{article.author?.title || (article.publisher?.role === 'ADMIN' ? 'إدارة المنصة' : '')}</p>
                 </div>
                 <p className="text-slate-300 leading-relaxed text-lg font-medium opacity-80">{article.author?.bio}</p>
               </div>
