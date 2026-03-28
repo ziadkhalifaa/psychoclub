@@ -24,10 +24,25 @@ router.get("/", async (req, res) => {
 // Public: get single article by slug
 router.get("/:slug", async (req, res) => {
   try {
-    const article = await prisma.article.findUnique({
+    let article = await prisma.article.findUnique({
       where: { slug: req.params.slug },
-      include: { author: { include: { user: { select: { name: true, avatar: true } } } } }
+      include: {
+        author: { include: { user: { select: { name: true, avatar: true } } } },
+        tags: true
+      }
     });
+
+    // Fallback to ID if slug not found
+    if (!article) {
+      article = await prisma.article.findUnique({
+        where: { id: req.params.slug },
+        include: {
+          author: { include: { user: { select: { name: true, avatar: true } } } },
+          tags: true
+        }
+      });
+    }
+
     if (!article) return res.status(404).json({ error: "Article not found" });
     res.json(article);
   } catch (err) {
@@ -43,7 +58,12 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
     if (!doctor) return res.status(401).json({ error: "Doctor profile required" });
 
     const { id, title, excerpt, coverImage, contentRichText, tags, category } = req.body;
-    const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    
+    const slug = title.toLowerCase().trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\u0600-\u06FF\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '') || `article-${Math.random().toString(36).slice(2, 9)}`;
 
     if (id) {
       // Delete old cover image if it changed

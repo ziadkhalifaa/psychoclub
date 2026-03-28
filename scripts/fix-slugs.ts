@@ -15,14 +15,19 @@ async function fixSlugs() {
   console.log(`Found ${courses.length} courses with missing slugs.`);
 
   for (const course of courses) {
-    const slug = course.title.toLowerCase().trim()
-      .replace(/ /g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-');
+    let slug = course.title.toLowerCase().trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\u0600-\u06FF\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    if (!slug || slug === "") {
+      slug = `course-${course.id.substring(0, 8)}`;
+    }
     
     await prisma.course.update({
       where: { id: course.id },
-      data: { slug: slug || `course-${course.id.slice(0, 8)}` }
+      data: { slug: slug }
     });
     console.log(`Updated course ${course.id} with slug: ${slug}`);
   }
@@ -39,14 +44,19 @@ async function fixSlugs() {
   console.log(`Found ${articles.length} articles with missing slugs.`);
 
   for (const article of articles) {
-    const slug = article.title.toLowerCase().trim()
-      .replace(/ /g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-');
+    let slug = article.title.toLowerCase().trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\u0600-\u06FF\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    if (!slug || slug === "") {
+      slug = `article-${article.id.substring(0, 8)}`;
+    }
     
     await prisma.article.update({
       where: { id: article.id },
-      data: { slug: slug || `article-${article.id.slice(0, 8)}` }
+      data: { slug: slug }
     });
     console.log(`Updated article ${article.id} with slug: ${slug}`);
   }

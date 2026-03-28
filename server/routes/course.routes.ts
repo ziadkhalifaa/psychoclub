@@ -28,13 +28,25 @@ router.get("/", async (req, res) => {
 // Public: get single course by slug
 router.get("/:slug", async (req, res) => {
   try {
-    const course = await prisma.course.findUnique({
+    let course = await prisma.course.findUnique({
       where: { slug: req.params.slug },
       include: {
         instructor: { include: { user: { select: { name: true, avatar: true } } } },
         lessons: { orderBy: { order: 'asc' } }
       }
     });
+
+    // Fallback search by ID if slug not found
+    if (!course) {
+      course = await prisma.course.findUnique({
+        where: { id: req.params.slug },
+        include: {
+          instructor: { include: { user: { select: { name: true, avatar: true } } } },
+          lessons: { orderBy: { order: 'asc' } }
+        }
+      });
+    }
+
     if (!course) return res.status(404).json({ error: "Course not found" });
     res.json(course);
   } catch (err) {
@@ -49,10 +61,18 @@ router.get("/:slug/learn", requireAuth, async (req, res) => {
     const userId = res.locals.user.userId;
     const role = res.locals.user.role;
 
-    const course = await prisma.course.findUnique({
+    let course = await prisma.course.findUnique({
       where: { slug: req.params.slug },
       include: { lessons: { orderBy: { order: 'asc' } } }
     });
+
+    if (!course) {
+      course = await prisma.course.findUnique({
+        where: { id: req.params.slug },
+        include: { lessons: { orderBy: { order: 'asc' } } }
+      });
+    }
+
     if (!course) return res.status(404).json({ error: "Course not found" });
 
     // Check if user has purchased the course (or is admin)

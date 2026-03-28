@@ -202,7 +202,7 @@ export default function Courses() {
                       <span className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-slate-100 bg-white/50"><Clock className="w-3.5 h-3.5" /> {course.duration}</span>
                     </div>
                     <h3 className="text-2xl font-black text-[#1F2F4A] mb-4 leading-snug group-hover:text-[#6FA65A] transition-colors line-clamp-2">
-                      <Link to={`/courses/${course.slug}`}>{course.title}</Link>
+                      <Link to={`/courses/${course.slug || course.id}`}>{course.title}</Link>
                     </h3>
                     <p className="text-slate-500 text-sm font-medium leading-relaxed mb-10 line-clamp-3 italic">"{course.description}"</p>
 
@@ -231,7 +231,7 @@ export default function Courses() {
                         )}
                       </div>
                     </div>
-                    <Link to={`/courses/${course.slug}`} className="mt-8 w-full py-4 bg-[#1F2F4A] hover:bg-[#6FA65A] text-white text-center rounded-2xl font-black transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">{t('courses.card.view')}</Link>
+                    <Link to={`/courses/${course.slug || course.id}`} className="mt-8 w-full py-4 bg-[#1F2F4A] hover:bg-[#6FA65A] text-white text-center rounded-2xl font-black transition-all shadow-xl shadow-[#1F2F4A]/10 active:scale-95">{t('courses.card.view')}</Link>
                   </div>
                 </motion.div>
               ))

@@ -139,13 +139,13 @@ export default function Articles() {
                       )}
                     </div>
                     <h3 className="text-2xl font-black text-[#1F2F4A] mb-4 leading-snug group-hover:text-[#6FA65A] transition-colors">
-                      <Link to={`/articles/${article.slug}`}>{article.title}</Link>
+                      <Link to={`/articles/${article.slug || article.id}`}>{article.title}</Link>
                     </h3>
                     <p className="text-slate-500 text-sm font-medium leading-[1.8] mb-10 line-clamp-3">
                       {article.excerpt}
                     </p>
 
-                    <Link to={`/articles/${article.slug}`} className="mt-auto inline-flex items-center gap-2 text-[#1F2F4A] hover:text-[#6FA65A] font-black text-sm transition-all group/link">
+                    <Link to={`/articles/${article.slug || article.id}`} className="mt-auto inline-flex items-center gap-2 text-[#1F2F4A] hover:text-[#6FA65A] font-black text-sm transition-all group/link">
                       {t('articles.card.readMore')}
                       {isRTL ? <ArrowLeft className="w-4 h-4 group-hover/link:-translate-x-1 transition-transform" /> : <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />}
                     </Link>
