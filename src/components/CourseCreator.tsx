@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, ChevronRight, Check, Upload, BookOpen,
-    Layers, Wallet, Plus, Trash2, Video, FileText, Image as ImageIcon, Sparkles, Shield, Link
+    Layers, Wallet, Plus, Trash2, Video, FileText, Image as ImageIcon, Sparkles, Shield, Link, User
 } from 'lucide-react';
 
 interface Lesson {
@@ -26,6 +26,7 @@ interface CourseForm {
     lessons: Lesson[];
     whatYouLearn: string;
     requirements: string;
+    instructorId?: string;
 }
 
 interface CourseCreatorProps {
@@ -33,6 +34,7 @@ interface CourseCreatorProps {
     onSubmit: (form: CourseForm) => Promise<void>;
     handleFileUpload: (file: File, onProgress?: (percent: number) => void) => Promise<string | null>;
     initialData?: Partial<CourseForm>;
+    doctors?: { id: string; name: string }[];
 }
 
 const STEPS = [
@@ -42,7 +44,7 @@ const STEPS = [
     { id: 'pricing', title: 'التسعير والنشر', icon: Wallet },
 ];
 
-export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialData }: CourseCreatorProps) {
+export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialData, doctors = [] }: CourseCreatorProps) {
     const [step, setStep] = useState(0);
     const [form, setForm] = useState<CourseForm>({
         title: initialData?.title || '',
@@ -53,6 +55,7 @@ export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialDat
         category: initialData?.category || 'عام',
         level: initialData?.level || 'مبتدئ',
         thumbnail: initialData?.thumbnail || '',
+        instructorId: initialData?.instructorId || '',
         lessons: initialData?.lessons?.map(l => ({
             id: (l as any).id || undefined,
             title: l.title || '',
@@ -186,6 +189,25 @@ export function CourseCreator({ onCancel, onSubmit, handleFileUpload, initialDat
                                                 placeholder="اكتب عنواناً جذاباً..."
                                             />
                                         </div>
+                                        <div className="space-y-4">
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                <User className="w-3.5 h-3.5" /> المحاضر المسؤول
+                                            </div>
+                                            <select
+                                                required
+                                                value={form.instructorId}
+                                                onChange={e => setForm({ ...form, instructorId: e.target.value })}
+                                                className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] outline-none focus:bg-white transition-all font-black text-lg appearance-none cursor-pointer"
+                                            >
+                                                <option value="">-- اختر المحاضر --</option>
+                                                {doctors.map(d => (
+                                                    <option key={d.id} value={d.id}>{d.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-4">
                                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                                 <Layers className="w-3.5 h-3.5" /> التخصص العلمي

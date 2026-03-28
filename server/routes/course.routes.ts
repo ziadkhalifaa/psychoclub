@@ -142,7 +142,7 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
 
     const {
       title, description, price, isFree, duration, category, level, thumbnail,
-      lessons, whatYouLearn, requirements
+      lessons, whatYouLearn, requirements, instructorId // Added instructorId
     } = req.body;
 
     const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
@@ -151,7 +151,7 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
       data: {
         title, description, price: parseFloat(price) || 0, isFree: !!isFree,
         duration, category, level, thumbnail, slug,
-        instructorId: doctor?.id || (await prisma.doctor.findFirst())?.id || "", 
+        instructorId: instructorId || doctor?.id || (await prisma.doctor.findFirst())?.id || "", 
         whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
         requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
         published: true,
@@ -161,7 +161,7 @@ router.post("/", requireDoctorOrAdmin, async (req, res) => {
             resourceUrl: l.videoUrl || l.resourceUrl,
             duration: l.duration,
             order: idx,
-            type: "VIDEO"
+            type: (l.type || "VIDEO").toUpperCase() // Fixed: Use provided type
           }))
         }
       }
@@ -181,7 +181,7 @@ router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
     const { id } = req.params;
     const {
       title, description, price, isFree, duration, category, level, thumbnail,
-      lessons, whatYouLearn, requirements, published
+      lessons, whatYouLearn, requirements, published, instructorId
     } = req.body;
 
     const oldCourse = await prisma.course.findUnique({
@@ -216,6 +216,7 @@ router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
       data: {
         title, description, price: parseFloat(price) || 0, isFree: !!isFree,
         duration, category, level, thumbnail, slug, published: !!published,
+        instructorId: instructorId || undefined, // Allow updating instructor
         whatYouLearn: typeof whatYouLearn === 'string' ? whatYouLearn : JSON.stringify(whatYouLearn || []),
         requirements: typeof requirements === 'string' ? requirements : JSON.stringify(requirements || []),
         lessons: Array.isArray(lessons) ? {
@@ -224,7 +225,7 @@ router.put("/:id", requireDoctorOrAdmin, async (req, res) => {
             resourceUrl: l.videoUrl || l.resourceUrl,
             duration: l.duration,
             order: idx,
-            type: "VIDEO"
+            type: (l.type || "VIDEO").toUpperCase()
           }))
         } : undefined
       }

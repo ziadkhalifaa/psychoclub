@@ -65,27 +65,15 @@ const PdfViewer = ({ url }: { url: string }) => {
         );
     }
 
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
     }
 
-    function onDocumentLoadError(error: Error): void {
-        console.error("PDF load error:", error);
-        setLoadError(error.message);
-    }
-
     return (
-        <div className="absolute inset-0 bg-slate-100 flex flex-col items-center overflow-y-auto w-full h-full p-4 custom-scrollbar">
+        <div className="flex flex-col items-center bg-slate-900 min-h-full p-8 overflow-y-auto w-full absolute inset-0 custom-scrollbar">
             <Document
                 file={url}
                 onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={
-                    <div className="flex flex-col items-center justify-center p-24 w-full h-full">
-                        <div className="w-12 h-12 border-4 border-[#6FA65A] border-t-transparent rounded-full animate-spin mb-4" />
-                        <p className="font-bold text-slate-500">جاري تحميل المستند بأمان...</p>
-                    </div>
-                }
                 error={
                     <div className="text-center p-8 bg-white rounded-3xl shadow-xl max-w-sm mx-auto border border-slate-100 mt-24">
                         <FileText className="w-16 h-16 mx-auto mb-6 text-rose-500/50" />
@@ -186,7 +174,17 @@ export default function CoursePlayer() {
 
     if (!course) return null;
 
-    const activeLesson = course.lessons.find((l: any) => l.id === activeLessonId) || course.lessons[0];
+    const activeLessonRaw = course.lessons.find((l: any) => l.id === activeLessonId) || course.lessons[0];
+    
+    // CONTENT-AWARE DETECTION: Guess type based on URL if DB type is generic/wrong
+    let detectedType = activeLessonRaw?.type?.toLowerCase().trim();
+    const cleanUrl = activeLessonRaw?.resourceUrl?.replace(/\/+$/, '') || '';
+    
+    if (cleanUrl.toLowerCase().endsWith('.pdf')) detectedType = 'pdf';
+    else if (cleanUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/)) detectedType = 'video';
+    else if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be') || cleanUrl.includes('vimeo.com')) detectedType = 'video';
+
+    const activeLesson = { ...activeLessonRaw, type: detectedType, resourceUrl: cleanUrl };
     const activeLessonIndex = course.lessons.findIndex((l: any) => l.id === activeLessonId);
     const isCompleted = progressList.some((p: any) => p.lessonId === activeLesson?.id && p.completed);
 

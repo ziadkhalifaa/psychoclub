@@ -76,6 +76,7 @@ export default function AdminDashboard() {
   const [toolForm, setToolForm] = useState({ title: '', description: '', price: '', coverImage: '' });
   const [articleForm, setArticleForm] = useState({ title: '', excerpt: '', coverImage: '', contentRichText: '', category: 'مقالات عامة', tags: '' });
   const [newFileForm, setNewFileForm] = useState({ title: '', file: null as File | null });
+  const [doctors, setDoctors] = useState<any[]>([]);
   const [toolUploadProgress, setToolUploadProgress] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
@@ -91,6 +92,16 @@ export default function AdminDashboard() {
           const data = await res.json();
           setCourses(Array.isArray(data) ? data : []);
           if (data.error) showToast(data.error, 'error');
+
+          // Fetch doctors for course assignment
+          const doctorsRes = await fetch('/api/admin/users');
+          const usersData = await doctorsRes.json();
+          if (Array.isArray(usersData)) {
+            setDoctors(usersData.filter(u => u.doctorProfile).map(u => ({
+               id: u.doctorProfile.id,
+               name: u.name
+            })));
+          }
         }
         if (activeTab === 'articles' && !showAddArticle) {
           const res = await fetch('/api/articles');
